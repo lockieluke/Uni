@@ -1,3 +1,5 @@
+import {fetch} from "expo/fetch";
+
 export async function openrouter(payload: object) {
     return await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
