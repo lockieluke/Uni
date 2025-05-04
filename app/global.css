@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.text-t-primary {
+    @apply text-black dark:text-white;
+}
+
+.flex-center {
+    @apply flex items-center justify-center;
+}
