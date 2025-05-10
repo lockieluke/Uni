@@ -3,7 +3,8 @@ import { atom } from "jotai";
 
 export const userAtom = atom<{
     signedIn: boolean;
-    user?: User
+    user?: User,
+    accessToken?: string,
 }>({
     signedIn: false
 });

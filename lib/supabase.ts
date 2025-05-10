@@ -50,7 +50,8 @@ export async function checkSignedIn() {
     getDefaultStore().set(userAtom, prevUser => ({
         ...prevUser,
         signedIn: isSignedIn,
-        user
+        user,
+        accessToken: session?.access_token
     }));
 
     return isSignedIn;

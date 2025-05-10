@@ -2,12 +2,13 @@ import TranscriptButton from "@/components/TranscriptButton";
 import TranslationText from "@/components/TranslationText";
 import { Language } from "@/constants/Language";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import translatePhase from "@/lib/language";
+import translatePhrase from "@/lib/language";
 import transcript, { TranscriptProvider } from "@/lib/speech";
 import { userAtom } from "@/lib/states";
 import { cn } from "@/lib/utils";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { to } from "await-to-js";
 import {
     getRecordingPermissionsAsync,
     RecordingPresets,
@@ -40,7 +41,7 @@ export default function HomeScreen() {
             flag: "🇭🇰"
         },
         guest: {
-            code: "en",
+            code: "en-GB",
             displayName: "English",
             flag: "🇬🇧"
         }
@@ -111,27 +112,36 @@ export default function HomeScreen() {
 
                                 const uri = audioRecorder.uri;
                                 if (uri) {
+                                    const translationTimer = performance.now();
                                     setSpeechText({
                                         host: "",
                                         guest: ""
                                     });
 
-                                    const modifiedHostLang = languages.host.code === "zh-HK" ? "zh" : languages.host.code;
-                                    const modifiedGuestLang = languages.guest.code === "zh-HK" ? "zh" : languages.guest.code;
-                                    const result = await transcript(uri, transcriptProvider, [modifiedHostLang, modifiedGuestLang]);
+                                    const hostLanguageCode = languages.host.code;
+                                    const guestLanguageCode = languages.guest.code;
+
+                                    const hints = [hostLanguageCode, guestLanguageCode];
+                                    const result = await transcript(uri, transcriptProvider, hints);
                                     const transcripted = result?.transcript;
-                                    const language = result?.language;
-                                    const modifiedLanguage = language === "zh" ? "zh-HK" : language;
 
                                     if (transcripted) {
-                                        const sourceLanguage = [languages.host.code, languages.guest.code].filter(lang => lang === modifiedLanguage)[0];
-                                        const targetLanguage = [languages.host.code, languages.guest.code].filter(lang => lang !== modifiedLanguage)[0];
-                                        const translated = await translatePhase(transcripted, sourceLanguage, targetLanguage);
+                                        const [err, response] = await to(translatePhrase(transcripted, hints));
+                                        if (err) {
+                                            console.error("Error translating:", err);
+                                            return;
+                                        }
 
-                                        setSpeechText({
-                                            host: sourceLanguage === modifiedHostLang || sourceLanguage === languages.host.code ? transcripted : translated,
-                                            guest: sourceLanguage === modifiedGuestLang || sourceLanguage === languages.guest.code ? transcripted : translated
-                                        });
+                                        if (response) {
+                                            const {translatedPhrase, sourceLanguage} = response;
+
+                                            setSpeechText({
+                                                host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
+                                                guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
+                                            });
+
+                                            console.log("Translation took", performance.now() - translationTimer, "ms");
+                                        }
                                     }
 
                                     try {

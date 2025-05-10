@@ -1,7 +1,6 @@
-import {Buffer} from "buffer";
+import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
 import qs from "qs";
-import {detectLanguageAI} from "@/lib/language";
 
 export type TranscriptProvider = 'deepgram' | 'gladia' | 'openai';
 
@@ -174,10 +173,8 @@ export default async function transcript(uri: string, provider: TranscriptProvid
         const transcript: string = json.text || '';
         console.log("Transcript received", transcript);
 
-        const language = await detectLanguageAI(transcript, hints);
-
         return {
-            language: language || hints[0],
+            language: "unknown",
             transcript
         };
     }

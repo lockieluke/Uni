@@ -38,23 +38,24 @@ export default function SignIn() {
                     } as any);
 
                     if (isSuccessResponse(response)) {
-                        const { data, error } = await supabase.auth.signInWithIdToken({
+                        const { data: {session, user}, error } = await supabase.auth.signInWithIdToken({
                             provider: "google",
                             token: response.data.idToken!,
                             nonce: rawNonce
                         });
 
-                        if (error) {
+                        if (error || !user) {
                             console.error("Error signing in", error);
                             return;
                         }
 
                         setUser({
                             signedIn: true,
-                            user: data.user
+                            user: user,
+                            accessToken: session.access_token
                         });
 
-                        console.log("User signed in", data.user);
+                        console.log("User signed in", user);
                         rootNavigation.reset({
                             routes: [{ name: "(tabs)" }],
                         });

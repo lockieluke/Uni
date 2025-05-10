@@ -1,81 +1,54 @@
-import {openrouter} from "@/lib/ai";
+import { fetch } from "expo/fetch";
+import * as z from "zod";
+import { zu } from "zod_utilz";
+import { supabase } from "./supabase";
 
-export async function detectLanguageAI(phase: string, hints: string[]) {
-    const response = await openrouter({
-        model: "qwen/qwen3-30b-a3b",
-        messages: [{
-            role: "system",
-            content: `You are a language detection AI. You will be given a text and you will return the language of the text in ISO 639-1 format.  For example, "en" for English, "fr" for French, "es" for Spanish`,
-        }, {
-            role: "user",
-            content: phase
-        }],
-        response_format: {
-            type: "json_schema",
-            json_schema: {
-                name: "result",
-                strict: true,
-                schema: {
-                    type: "object",
-                    properties: {
-                        language: {
-                            type: "string",
-                            description: `The language of the text in ISO 639-1 format, they must be either ${hints.join(" or ")}.`
-                        }
-                    },
-                    required: ["language"],
-                    additionalProperties: false
-                }
-            }
-        }
+const TranslationResponseSchema = z.object({
+    pretranslatedPhrase: z.string(),
+    translatedPhrase: z.string(),
+    sourceLanguage: z.string(),
+    targetLanguage: z.string(),
+    id: z.string(),
+    modelId: z.string(),
+    timestamp: z.string()
+});
+
+export default async function translatePhrase(phrase: string, hints: string[]) {
+    const {data: {session}, error} = await supabase.auth.getSession();
+    if (error)
+        throw new Error("Error getting session when translating");
+
+    const response = await fetch("https://uni-api.lockie.dev/translate", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+            "User-Agent": "Uni/1.0.0"
+        },
+        body: JSON.stringify({
+            phrase,
+            hints
+        })
     });
-    const json = await response.json();
-    if (!response.ok || json["error"]) {
-        console.error("Error detecting language:", json);
-        throw new Error("Error detecting language");
-    }
+    if (!response.ok)
+        throw new Error("Error translating phrase");
 
-    const payload = JSON.parse(json.choices[0].message.content);
-    const language: string = payload.language;
+    const payload = await response.json();
+    const {success, data} = zu.SPR(await TranslationResponseSchema.safeParseAsync(payload));
+    if (!success || !data)
+        throw new Error("Error parsing translation response");
 
-    return language ?? null;
-}
+    if (data.pretranslatedPhrase !== phrase)
+        throw new Error("Pretranslated phrase does not match original phrase");
 
-export default async function translatePhase(phase: string, source: string, target: string) {
-    const response = await openrouter({
-        model: "google/gemini-2.5-flash-preview",
-        messages: [{
-            role: "system",
-            content: `You are a translation AI. You will be given a text and you will return the translation of the text in the target language.  For example, "en" for English, "fr" for French, "es" for Spanish.  When "zh-HK" is the target language, please translate it to Spoken Cantonese written in Traditional Chinese characters.`
-        }, {
-            role: "user",
-            content: `Translate the following text from ${source} to ${target}: ${phase}`
-        }],
-        response_format: {
-            type: "json_schema",
-            json_schema: {
-                name: "result",
-                strict: true,
-                schema: {
-                    type: "object",
-                    properties: {
-                        translation: {
-                            type: "string"
-                        }
-                    },
-                    required: ["translation"],
-                    additionalProperties: false
-                }
-            }
-        }
-    });
-    const json = await response.json();
-    if (!response.ok || json["error"]) {
-        console.error("Error translating phase:", json);
-        throw new Error("Error translating phase");
-    }
+    if (data.sourceLanguage === data.targetLanguage)
+        throw new Error("Source and target languages are the same");
 
-    const payload = JSON.parse(json.choices[0].message.content);
-    const translation: string = payload.translation;
-    return translation ?? null;
+    if (!hints.includes(data.sourceLanguage) || !hints.includes(data.targetLanguage))
+        throw new Error("Source and target languages are not in hints");
+
+    return {
+        ...data,
+        timestamp: new Date(data.timestamp)
+    };
 }

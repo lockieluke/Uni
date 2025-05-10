@@ -56,12 +56,6 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.456406260871-794k1s0indqadv5l1klvbbmrargofh19"
         }
-      ],
-      [
-        "expo-asset",
-        {
-          "assets": ["./assets/images"]
-        }
       ]
     ],
     "experiments": {
