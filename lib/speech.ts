@@ -1,6 +1,8 @@
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system/next";
 import qs from "qs";
+import { supabase } from "./supabase";
 
 export type TranscriptProvider = 'deepgram' | 'gladia' | 'openai';
 
@@ -52,6 +54,12 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     language: string,
     transcript: string;
 } | null> {
+    const {data: {session}, error} = await supabase.auth.getSession();
+    if (error) {
+        console.error("Error getting session:", error);
+        return null;
+    }
+
     const audioBufferString = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64
     });
@@ -147,31 +155,23 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     if (provider === "openai") {
         console.log("Sending audio to OpenAI:", uri);
 
-        const formData = new FormData();
-        formData.append("file", {
-            uri: uri,
-            name: "audio.m4a",
-            type: "audio/m4a"
-        } as any);
-        formData.append("model", "gpt-4o-mini-transcribe");
-        formData.append("response_format", "json");
+        const file = new File(uri);
 
-        const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        const response = await fetch("https://uni-api.lockie.dev/transcript", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.EXPO_PUBLIC_OPEN_AI}`,
-                "Content-Type": "multipart/form-data"
+                "Authorization": `Bearer ${session?.access_token}`,
+                "Content-Type": "audio/m4a"
             },
-            body: formData
+            body: file.blob()
         });
         const json = await response.json();
         if (!response.ok) {
-            console.error("Error sending audio to OpenAI:", json);
+            console.error("Error sending audio to Uni Transcription:", json);
             return null;
         }
 
-        const transcript: string = json.text || '';
-        console.log("Transcript received", transcript);
+        const transcript: string = json.transcript;
 
         return {
             language: "unknown",
