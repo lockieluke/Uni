@@ -17,7 +17,22 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.DOWNLOAD_WITHOUT_NOTIFICATION",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "package": "me.lockie.uni"
     },
     "web": {
       "bundler": "metro",
@@ -35,18 +50,28 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      "expo-audio",
       [
-        "@react-native-voice/voice",
+        "@react-native-google-signin/google-signin",
         {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access the microphone",
-          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to recognise user speech"
+          "iosUrlScheme": "com.googleusercontent.apps.456406260871-794k1s0indqadv5l1klvbbmrargofh19"
         }
       ],
-      "expo-audio",
-      "@config-plugins/react-native-blob-util"
+      [
+        "expo-asset",
+        {
+          "assets": ["./assets/images"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a2adfebf-ba97-4fa7-9638-3bdd51ffaaba"
+      }
     }
   }
 }
