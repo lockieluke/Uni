@@ -1,4 +1,5 @@
 import { fetch } from "expo/fetch";
+import qs from "qs";
 import * as z from "zod";
 import { zu } from "zod_utilz";
 import { supabase } from "./supabase";
@@ -18,7 +19,9 @@ export default async function translatePhrase(phrase: string, hints: string[]) {
     if (error)
         throw new Error("Error getting session when translating");
 
-    const response = await fetch("https://uni-api.lockie.dev/translate", {
+    const response = await fetch(`https://uni-api.lockie.dev/translate?${qs.stringify({
+        mode: "accurate"
+    })}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
