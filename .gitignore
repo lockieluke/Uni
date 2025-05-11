@@ -40,5 +40,6 @@ yarn-error.*
 
 # IDE
 .idea/
+.vscode/
 
 app-example
