@@ -46,6 +46,7 @@ export default function HomeScreen() {
             flag: "🇬🇧"
         }
     });
+    const [translating, setTranslating] = useState(false);
     const [speechText, setSpeechText] = useState<{
         host: string;
         guest: string;
@@ -59,6 +60,8 @@ export default function HomeScreen() {
         setSpeechReady(requestedPermission.granted ? 'granted' : 'denied');
 
         setSpeechReady((await getRecordingPermissionsAsync()).granted ? 'granted' : 'denied');
+
+        setTimeout(() => setTranslating(true), 3000);
     }, []);
 
     return (
@@ -68,9 +71,9 @@ export default function HomeScreen() {
             <When condition={signedIn}>
                 <When condition={speechReady === 'granted'}>
                     <View className={"absolute top-0 py-10 w-full flex flex-col gap-10"}>
-                        <TranslationText language={languages.host} revertEnabled={revertEnabled}>{speechText.host}</TranslationText>
+                        <TranslationText translating={translating} language={languages.guest} revertEnabled={false}>{speechText.guest}</TranslationText>
                         <View className={"border-[0.05rem] border-gray-300 w-full"} />
-                        <TranslationText language={languages.guest} revertEnabled={false}>{speechText.guest}</TranslationText>
+                        <TranslationText translating={translating} language={languages.host} revertEnabled={revertEnabled}>{speechText.host}</TranslationText>
                     </View>
 
                     <View className={"flex-center absolute bottom-14"}>
@@ -95,7 +98,7 @@ export default function HomeScreen() {
                                 {/*</Picker>*/}
                                 <View className={"flex-center gap-5"}>
                                     <View className={"flex-center flex-row gap-5"}>
-                                        <Text className={"text-t-primary text-lg"}>Revert Host Language</Text>
+                                        <Text className={"text-t-primary text-lg"}>Revert Guest Language</Text>
                                         <Switch value={revertEnabled} onValueChange={setRevertEnabled} />
                                     </View>
                                 </View>
@@ -107,6 +110,7 @@ export default function HomeScreen() {
                             await audioRecorder.prepareToRecordAsync();
                             audioRecorder.record();
                         }} onPressOut={async () => {
+                            setTranslating(true);
                             if (audioRecorder.isRecording) {
                                 await audioRecorder.stop();
 
@@ -140,6 +144,7 @@ export default function HomeScreen() {
                                                 guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
                                             });
 
+                                            setTranslating(false);
                                             console.log("Translation took", performance.now() - translationTimer, "ms");
                                         }
                                     }
