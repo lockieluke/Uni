@@ -1,6 +1,5 @@
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
-import { File } from "expo-file-system/next";
 import qs from "qs";
 import { supabase } from "./supabase";
 
@@ -155,7 +154,12 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     if (provider === "openai") {
         console.log("Sending audio to OpenAI:", uri);
 
-        const file = new File(uri);
+        const formData = new FormData();
+        formData.append("file", {
+            uri: uri,
+            name: "audio.m4a",
+            type: "audio/m4a"
+        } as any);
 
         const response = await fetch("https://uni-api.lockie.dev/transcript", {
             method: "POST",
@@ -163,7 +167,7 @@ export default async function transcript(uri: string, provider: TranscriptProvid
                 "Authorization": `Bearer ${session?.access_token}`,
                 "Content-Type": "audio/m4a"
             },
-            body: file.blob()
+            body: formData
         });
         const json = await response.json();
         if (!response.ok) {
