@@ -60,8 +60,6 @@ export default function HomeScreen() {
         setSpeechReady(requestedPermission.granted ? 'granted' : 'denied');
 
         setSpeechReady((await getRecordingPermissionsAsync()).granted ? 'granted' : 'denied');
-
-        setTimeout(() => setTranslating(true), 3000);
     }, []);
 
     return (
