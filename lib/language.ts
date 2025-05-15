@@ -14,13 +14,13 @@ const TranslationResponseSchema = z.object({
     timestamp: z.string()
 });
 
-export default async function translatePhrase(phrase: string, hints: string[]) {
+export default async function translatePhrase(phrase: string, hints: string[], model: string = "accurate") {
     const {data: {session}, error} = await supabase.auth.getSession();
     if (error)
         throw new Error("Error getting session when translating");
 
     const response = await fetch(`https://uni-api.lockie.dev/translate?${qs.stringify({
-        mode: "accurate"
+        mode: model
     })}`, {
         method: "POST",
         headers: {

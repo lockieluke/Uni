@@ -4,13 +4,13 @@ import { When } from "react-if";
 import { Text, TouchableOpacity } from "react-native";
 
 export default function ColumnTrigger({children, className, onPress, subpage = false}: {
-    children: string;
+    children: string | React.ReactNode;
     className?: string;
     onPress?: () => void;
     subpage?: boolean;
 }) {
     return (<TouchableOpacity activeOpacity={0.8} onPress={() => onPress?.()} className={cn("bg-slate-200 w-[90vw] flex flex-row justify-between items-center p-4 rounded-lg", className)}>
-        <Text className="font-semibold">{children}</Text>
+        { typeof children === "string" ? <Text className="text-md font-semibold">{children}</Text> : children }
         <When condition={subpage}>
             <FontAwesome style={{
                 textAlign: "center"

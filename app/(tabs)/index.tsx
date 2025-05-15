@@ -5,6 +5,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import translatePhrase from "@/lib/language";
 import transcript, { TranscriptProvider } from "@/lib/speech";
 import { userAtom } from "@/lib/states";
+import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -20,6 +21,7 @@ import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { When } from "react-if";
 import { ActivityIndicator, Switch, Text, View } from "react-native";
+import { useMMKVStorage } from "react-native-mmkv-storage";
 import useAsyncEffect from "use-async-effect";
 
 export default function HomeScreen() {
@@ -30,20 +32,21 @@ export default function HomeScreen() {
     const { signedIn } = useAtomValue(userAtom);
     const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
     const [transcriptProvider,] = useState<TranscriptProvider>('openai');
-    const [revertEnabled, setRevertEnabled] = useState(false);
+
+    const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
+    const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
+
     const [languages,] = useState<{
         host: Language;
         guest: Language;
     }>({
         host: {
-            code: "zh-HK",
-            displayName: "Cantonese",
-            flag: "🇭🇰"
-        },
-        guest: {
             code: "en-GB",
-            displayName: "English",
-            flag: "🇬🇧"
+            displayName: "English"
+        },
+        guest : {
+            code: "zh-HK",
+            displayName: "Cantonese"
         }
     });
     const [translating, setTranslating] = useState(false);
@@ -71,7 +74,7 @@ export default function HomeScreen() {
                     <View className={"absolute top-0 py-10 w-full flex flex-col gap-10"}>
                         <TranslationText translating={translating} language={languages.guest} revertEnabled={false}>{speechText.guest}</TranslationText>
                         <View className={"border-[0.05rem] border-gray-300 w-full"} />
-                        <TranslationText translating={translating} language={languages.host} revertEnabled={revertEnabled}>{speechText.host}</TranslationText>
+                        <TranslationText translating={translating} language={languages.host} revertEnabled={flipGuestLanguage}>{speechText.host}</TranslationText>
                     </View>
 
                     <View className={"flex-center absolute bottom-14"}>
@@ -97,7 +100,7 @@ export default function HomeScreen() {
                                 <View className={"flex-center gap-5"}>
                                     <View className={"flex-center flex-row gap-5"}>
                                         <Text className={"text-t-primary text-lg"}>Revert Guest Language</Text>
-                                        <Switch value={revertEnabled} onValueChange={setRevertEnabled} />
+                                        <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
                                     </View>
                                 </View>
                             </>
@@ -128,7 +131,7 @@ export default function HomeScreen() {
                                     const transcripted = result?.transcript;
 
                                     if (transcripted) {
-                                        const [err, response] = await to(translatePhrase(transcripted, hints));
+                                        const [err, response] = await to(translatePhrase(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate"));
                                         if (err) {
                                             console.error("Error translating:", err);
                                             return;

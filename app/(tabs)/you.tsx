@@ -1,5 +1,6 @@
 import ColumnTrigger from "@/components/ColumnTrigger";
 import { userAtom } from "@/lib/states";
+import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
 import { to } from "await-to-js";
 import * as Clipboard from 'expo-clipboard';
@@ -7,12 +8,16 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "lodash-es";
-import { Alert, SafeAreaView, ScrollView, Text } from "react-native";
+import { Alert, View, SafeAreaView, ScrollView, Switch, Text } from "react-native";
+import { useMMKVStorage } from "react-native-mmkv-storage";
 
 export default function YouScreen() {
     const router = useRouter();
 
     const [{signedIn, user, accessToken}] = useAtom(userAtom);
+
+    const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
+    const [moreAccurateTranslation, setMoreAccurateTranslation] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
 
     if (!user || !signedIn)
         return null;
@@ -27,6 +32,24 @@ export default function YouScreen() {
         <Text>{user.email}</Text>
 
         <ScrollView contentContainerClassName="flex-center my-5 gap-5">
+            <ColumnTrigger>
+                <>
+                <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                    <Text className="font-semibold texT-md">Flip Guest Language</Text>
+                    <Text>Guest transcription would be turned towards the top of the phone</Text>
+                </View>
+                <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
+                </>
+            </ColumnTrigger>
+            <ColumnTrigger>
+                <>
+                <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                    <Text className="font-semibold texT-md">Use a more accurate model for all translations</Text>
+                    <Text>More accurate translations may take more time but can often produce better and more localised results</Text>
+                </View>
+                <Switch value={moreAccurateTranslation} onValueChange={setMoreAccurateTranslation} />
+                </>
+            </ColumnTrigger>
             <ColumnTrigger subpage>Licences</ColumnTrigger>
             { __DEV__ && <ColumnTrigger onPress={async () => {
                 if (accessToken)
