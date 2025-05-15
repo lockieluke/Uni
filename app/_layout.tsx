@@ -2,6 +2,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { checkSignedIn } from "@/lib/supabase";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import Entypo from '@expo/vector-icons/Entypo';
 import { Image } from "expo-image";
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +10,7 @@ import { cssInterop } from "nativewind";
 import 'react-native-reanimated';
 import useAsyncEffect from "use-async-effect";
 import "./global.css";
+import { TouchableOpacity } from 'react-native';
 
 cssInterop(Image, { className: "style" });
 
@@ -35,6 +37,23 @@ export default function RootLayout() {
                     headerShown: false,
                     animation: "none"
                 }} />
+                <Stack.Screen
+                    name="languages"
+                    options={{
+                        presentation: "modal",
+                        title: "Languages",
+                        headerLeft: ({canGoBack}) => {
+                            if (!canGoBack)
+                                return null;
+
+                            return (
+                                <TouchableOpacity onPress={() => router.back()}>
+                                    <Entypo name="chevron-down" size={24} color={colorScheme === "dark" ? "white" : "black"} />
+                                </TouchableOpacity>
+                            )
+                        } 
+                    }}
+                />
                 <Stack.Screen name="sign-in" options={{
                     headerShown: false,
                     gestureEnabled: false,

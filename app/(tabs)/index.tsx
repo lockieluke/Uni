@@ -1,10 +1,9 @@
 import TranscriptButton from "@/components/TranscriptButton";
 import TranslationText from "@/components/TranslationText";
-import { Language } from "@/constants/Language";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import translatePhrase from "@/lib/language";
 import transcript, { TranscriptProvider } from "@/lib/speech";
-import { userAtom } from "@/lib/states";
+import { languagesAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -17,38 +16,28 @@ import {
     useAudioRecorder
 } from "expo-audio";
 import * as FileSystem from "expo-file-system";
+import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { When } from "react-if";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import useAsyncEffect from "use-async-effect";
 
 export default function HomeScreen() {
+    const router = useRouter();
     const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
     const bottomTabHeight = useBottomTabBarHeight();
     const colorScheme = useColorScheme();
 
     const { signedIn } = useAtomValue(userAtom);
+    const languages = useAtomValue(languagesAtom);
     const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
     const [transcriptProvider,] = useState<TranscriptProvider>('openai');
 
     const [flipGuestLanguage,] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
 
-    const [languages,] = useState<{
-        host: Language;
-        guest: Language;
-    }>({
-        host: {
-            code: "en-GB",
-            displayName: "English"
-        },
-        guest : {
-            code: "zh-HK",
-            displayName: "Cantonese"
-        }
-    });
     const [translating, setTranslating] = useState(false);
     const [speechText, setSpeechText] = useState<{
         host: string;
@@ -100,7 +89,12 @@ export default function HomeScreen() {
                             </>
                         </When>
 
-                        <Text className={"my-5 font-bold text-2xl text-t-primary text-center flex-center"}>{languages.host.displayName}  <FontAwesome6 name="arrows-left-right" size={24} color={colorScheme === "light" ? "black" : "white"} />  {languages.guest.displayName}</Text>
+                        <TouchableOpacity className="my-5" onPress={() => {
+                            router.push("/languages");
+                        }}>
+                            <Text className={"font-bold text-2xl text-t-primary text-center flex-center"}>{languages.host.displayName}  <FontAwesome6 name="arrows-left-right" size={24} color={colorScheme === "light" ? "black" : "white"} />  {languages.guest.displayName}</Text>
+                        </TouchableOpacity>
+
                         <TranscriptButton onPressIn={async () => {
                             await audioRecorder.prepareToRecordAsync();
                             audioRecorder.record();
@@ -132,7 +126,7 @@ export default function HomeScreen() {
                                         }
 
                                         if (response) {
-                                            const {translatedPhrase, sourceLanguage} = response;
+                                            const { translatedPhrase, sourceLanguage } = response;
 
                                             setSpeechText({
                                                 host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
