@@ -20,7 +20,7 @@ import * as FileSystem from "expo-file-system";
 import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { When } from "react-if";
-import { ActivityIndicator, Switch, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import useAsyncEffect from "use-async-effect";
 
@@ -33,7 +33,7 @@ export default function HomeScreen() {
     const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
     const [transcriptProvider,] = useState<TranscriptProvider>('openai');
 
-    const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
+    const [flipGuestLanguage,] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
 
     const [languages,] = useState<{
@@ -97,12 +97,6 @@ export default function HomeScreen() {
                                 {/*    <Picker.Item label="Gladia" value="gladia" />*/}
                                 {/*    <Picker.Item label="OpenAI" value="openai" />*/}
                                 {/*</Picker>*/}
-                                <View className={"flex-center gap-5"}>
-                                    <View className={"flex-center flex-row gap-5"}>
-                                        <Text className={"text-t-primary text-lg"}>Revert Guest Language</Text>
-                                        <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
-                                    </View>
-                                </View>
                             </>
                         </When>
 
