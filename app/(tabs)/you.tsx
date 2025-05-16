@@ -18,6 +18,7 @@ export default function YouScreen() {
 
     const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation, setMoreAccurateTranslation] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
+    const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
 
     if (!user || !signedIn)
         return null;
@@ -48,6 +49,12 @@ export default function YouScreen() {
                     <Text>More accurate translations may take more time but can often produce better and more localised results</Text>
                 </View>
                 <Switch value={moreAccurateTranslation} onValueChange={setMoreAccurateTranslation} />
+                </>
+            </ColumnTrigger>
+            <ColumnTrigger>
+                <>
+                <Text className="font-semibold texT-md">Disable Cache</Text>
+                <Switch value={disableCache} onValueChange={setDisableCache} />
                 </>
             </ColumnTrigger>
             <ColumnTrigger subpage>Licences</ColumnTrigger>
