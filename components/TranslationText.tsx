@@ -13,7 +13,7 @@ export default function TranslationText({ translating = false, revertEnabled, la
     const colorScheme = useColorScheme();
 
     return (
-        <View className={"flex flex-col px-5 gap-5"}>
+        <View className={"flex flex-col px-5 gap-5 h-36"}>
             <Text className={"text-t-primary text-lg"}>{language.displayName}</Text>
             <Skeleton
                 width={"90%"}

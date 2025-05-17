@@ -6,8 +6,8 @@ import transcript, { TranscriptProvider } from "@/lib/speech";
 import { languagesAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { to } from "await-to-js";
 import {
     getRecordingPermissionsAsync,
@@ -64,6 +64,7 @@ export default function HomeScreen() {
                         <TranslationText translating={translating} language={languages.guest} revertEnabled={false}>{speechText.guest}</TranslationText>
                         <View className={"border-[0.05rem] border-gray-300 w-full"} />
                         <TranslationText translating={translating} language={languages.host} revertEnabled={flipGuestLanguage}>{speechText.host}</TranslationText>
+                        <View className={"border-[0.05rem] border-gray-300 w-full"} />
                     </View>
 
                     <View className={"flex-center absolute bottom-14"}>
@@ -89,10 +90,12 @@ export default function HomeScreen() {
                             </>
                         </When>
 
-                        <TouchableOpacity className="my-5" onPress={() => {
+                        <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
                             router.push("/languages");
                         }}>
-                            <Text className={"font-bold text-2xl text-t-primary text-center flex-center"}>{languages.host.displayName}  <FontAwesome6 name="arrows-left-right" size={24} color={colorScheme === "light" ? "black" : "white"} />  {languages.guest.displayName}</Text>
+                            <Text className="text-t-primary text-lg font-semibold">{languages.host.displayName}</Text>
+                            <MaterialIcons className="rotate-90" name="compare-arrows" size={28} color={colorScheme === "dark" ? "white" : "black"} />
+                            <Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
                         </TouchableOpacity>
 
                         <TranscriptButton onPressIn={async () => {
