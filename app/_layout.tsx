@@ -1,22 +1,31 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { getLanguages } from '@/lib/language';
+import { languagesAtom } from '@/lib/states';
+import { mmkvStorage } from '@/lib/storage';
 import { checkSignedIn } from "@/lib/supabase";
+import Entypo from '@expo/vector-icons/Entypo';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import Entypo from '@expo/vector-icons/Entypo';
 import { Image } from "expo-image";
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useSetAtom } from 'jotai';
 import { cssInterop } from "nativewind";
+import { TouchableOpacity } from 'react-native';
+import { useMMKVStorage } from 'react-native-mmkv-storage';
 import 'react-native-reanimated';
 import useAsyncEffect from "use-async-effect";
 import "./global.css";
-import { TouchableOpacity } from 'react-native';
 
 cssInterop(Image, { className: "style" });
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
     const router = useRouter();
+
+    const setLanguages = useSetAtom(languagesAtom);
+    const [hostLanguage, setHostLanguage] = useMMKVStorage("hostLanguage", mmkvStorage, "en-GB");
+    const [guestLanguage, setGuestLanguage] = useMMKVStorage("guestLanguage", mmkvStorage, "zh-HK");
 
     GoogleSignin.configure({
         scopes: [],
@@ -25,6 +34,22 @@ export default function RootLayout() {
 
     useAsyncEffect(async () => {
         const isSignedIn = await checkSignedIn();
+
+        if (isSignedIn) {
+            if (!hostLanguage)
+                setHostLanguage("en-GB");
+
+            if (!guestLanguage)
+                setGuestLanguage("zh-HK");
+
+            if (hostLanguage && guestLanguage) {
+                const supportedLanguages = await getLanguages();
+                setLanguages({
+                    host: supportedLanguages[hostLanguage],
+                    guest: supportedLanguages[guestLanguage]
+                });
+            }
+        }
 
         if (!isSignedIn)
             router.replace("/sign-in");
@@ -42,7 +67,7 @@ export default function RootLayout() {
                     options={{
                         presentation: "modal",
                         title: "Languages",
-                        headerLeft: ({canGoBack}) => {
+                        headerLeft: ({ canGoBack }) => {
                             if (!canGoBack)
                                 return null;
 
@@ -51,7 +76,7 @@ export default function RootLayout() {
                                     <Entypo name="chevron-down" size={24} color={colorScheme === "dark" ? "white" : "black"} />
                                 </TouchableOpacity>
                             )
-                        } 
+                        }
                     }}
                 />
                 <Stack.Screen name="sign-in" options={{
@@ -61,7 +86,7 @@ export default function RootLayout() {
                 }} />
                 <Stack.Screen name="+not-found" />
             </Stack>
-            <StatusBar style="auto"/>
+            <StatusBar style="auto" />
         </ThemeProvider>
     );
 }
