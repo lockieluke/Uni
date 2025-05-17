@@ -1,8 +1,9 @@
 import { Language } from "@/constants/Language";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { cn } from "@/lib/utils";
+import { useRouter } from "expo-router";
 import { Skeleton } from 'moti/skeleton';
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function TranslationText({ translating = false, revertEnabled, language, children }: {
     translating?: boolean,
@@ -10,11 +11,16 @@ export default function TranslationText({ translating = false, revertEnabled, la
     language: Language,
     children: React.ReactNode
 }) {
+    const router = useRouter();
     const colorScheme = useColorScheme();
 
     return (
         <View className={"flex flex-col px-5 gap-5 h-36"}>
-            <Text className={"text-t-primary text-lg"}>{language.displayName}</Text>
+            <TouchableOpacity onPress={() => {
+                router.push("/languages");
+            }}>
+                <Text className={"text-t-primary text-lg"}>{language.displayName}</Text>
+            </TouchableOpacity>
             <Skeleton
                 width={"90%"}
                 colorMode={colorScheme === "dark" ? "dark" : "light"}
