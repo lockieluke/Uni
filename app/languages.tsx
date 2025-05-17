@@ -6,11 +6,13 @@ import { FlashList } from "@shopify/flash-list";
 import { useAtom } from "jotai";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Text, useColorScheme, View } from "react-native";
 import useAsyncEffect from "use-async-effect";
 import { mmkvStorage } from "@/lib/storage";
 
 export default function LanguagesScreen() {
+    const colorScheme = useColorScheme();
+
     const [languages, setLanguages] = useAtom(languagesAtom);
     const [supportedLangs, setSupportedLangs] = useState<{
         [key: string]: Language;
@@ -65,10 +67,10 @@ export default function LanguagesScreen() {
                             }}
                         >
                             <View className="flex flex-row w-full justify-between items-center h-10">
-                                <Text>{`${item[1].flag ? `${item[1].flag} ` : ""}${item[1].displayName}`}</Text>
+                                <Text className="text-t-primary">{`${item[1].flag ? `${item[1].flag} ` : ""}${item[1].displayName}`}</Text>
 
                                 {(languages.host?.code === languageCode || languages.guest?.code === languageCode) &&
-                                    <Ionicons name="checkmark-outline" size={24} color="black" />
+                                    <Ionicons name="checkmark-outline" size={24} color={colorScheme === "dark" ? "white" : "black"} />
                                 }
                             </View>
                         </ColumnTrigger>
