@@ -1,7 +1,7 @@
 import { Language } from "@/constants/Language";
 import { fetch } from "expo/fetch";
 import { getLocales } from "expo-localization";
-import * as _ from "lodash-es";
+import * as _ from "radashi";
 import qs from "qs";
 import * as z from "zod";
 import { zu } from "zod_utilz";

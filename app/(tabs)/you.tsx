@@ -7,7 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
-import * as _ from "lodash-es";
+import * as _ from "radashi";
 import { Alert, View, SafeAreaView, ScrollView, Switch, Text } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 
