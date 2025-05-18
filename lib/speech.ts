@@ -1,7 +1,9 @@
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
 import qs from "qs";
+import * as _ from "radashi";
 import { supabase } from "./supabase";
+import { decode } from "@msgpack/msgpack";
 
 export type TranscriptProvider = 'deepgram' | 'gladia' | 'openai';
 
@@ -165,17 +167,17 @@ export default async function transcript(uri: string, provider: TranscriptProvid
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${session?.access_token}`,
-                "Content-Type": "audio/m4a"
+                "Content-Type": "application/x-www-form-urlencoded"
             },
             body: formData
         });
-        const json = await response.json();
+        const json = decode(await response.arrayBuffer());
         if (!response.ok) {
             console.error("Error sending audio to Uni Transcription:", json);
             return null;
         }
 
-        const transcript: string = json.transcript;
+        const transcript: string = _.get(json, "transcript", "");
 
         return {
             language: "unknown",

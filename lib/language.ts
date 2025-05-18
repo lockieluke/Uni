@@ -5,6 +5,7 @@ import * as _ from "radashi";
 import qs from "qs";
 import * as z from "zod";
 import { zu } from "zod_utilz";
+import { decode, encode } from "@msgpack/msgpack";
 import { mmkvStorage } from "./storage";
 import { supabase } from "./supabase";
 
@@ -15,7 +16,7 @@ const TranslationResponseSchema = z.object({
     targetLanguage: z.string(),
     id: z.string(),
     modelId: z.string(),
-    timestamp: z.string()
+    timestamp: z.date()
 });
 
 export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: Language; }> {
@@ -39,12 +40,12 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
     if (!response.ok)
         throw new Error("Error getting languages");
 
-    const payload = await response.json();
-    const languages = payload.languages;
+    const payload = decode(await response.arrayBuffer());
+    const languages = _.get(payload, "languages", {});
 
     return {
         ..._.mapValues(languages, (language, key) => ({
-            ...language,
+            ..._.isPlainObject(language) ? language : {},
             displayName: _.get(language, `displayName.${hostLang}`, _.get(language, "displayName.en-GB")),
             code: key
         }))
@@ -61,11 +62,11 @@ export default async function translatePhrase(phrase: string, hints: string[], m
     })}`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/x-msgpack",
             "Authorization": `Bearer ${session?.access_token}`,
             "User-Agent": "Uni/1.0.0"
         },
-        body: JSON.stringify({
+        body: encode({
             phrase,
             hints
         })
@@ -73,10 +74,13 @@ export default async function translatePhrase(phrase: string, hints: string[], m
     if (!response.ok)
         throw new Error("Error translating phrase");
 
-    const payload = await response.json();
-    const {success, data} = zu.SPR(await TranslationResponseSchema.safeParseAsync(payload));
+    const payload = decode(await response.arrayBuffer());
+    if (!_.isPlainObject(payload))
+        throw new Error("Error decoding translation response");
+
+    const {success, error: validateError, data} = zu.SPR(await TranslationResponseSchema.safeParseAsync(payload));
     if (!success || !data)
-        throw new Error("Error parsing translation response");
+        throw new Error(`Error parsing translation response: ${validateError?.message}`);
 
     if (data.pretranslatedPhrase !== phrase)
         throw new Error("Pretranslated phrase does not match original phrase");
@@ -89,6 +93,6 @@ export default async function translatePhrase(phrase: string, hints: string[], m
 
     return {
         ...data,
-        timestamp: new Date(data.timestamp)
+        timestamp: data.timestamp
     };
 }
