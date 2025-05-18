@@ -3,7 +3,7 @@ import TranslationText from "@/components/TranslationText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import translatePhrase from "@/lib/language";
 import transcript, { TranscriptProvider } from "@/lib/speech";
-import { languagesAtom, userAtom } from "@/lib/states";
+import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -17,7 +17,7 @@ import {
 } from "expo-audio";
 import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useState } from "react";
 import { When } from "react-if";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -39,13 +39,7 @@ export default function HomeScreen() {
     const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
 
     const [translating, setTranslating] = useState(false);
-    const [speechText, setSpeechText] = useState<{
-        host: string;
-        guest: string;
-    }>({
-        host: "",
-        guest: ""
-    });
+    const [translations, setTranslations] = useAtom(translationsAtom);
 
     useAsyncEffect(async () => {
         const requestedPermission = await requestRecordingPermissionsAsync();
@@ -61,9 +55,9 @@ export default function HomeScreen() {
             <When condition={signedIn}>
                 <When condition={speechReady === 'granted'}>
                     <View className={"absolute top-0 py-10 w-full flex flex-col gap-10"}>
-                        <TranslationText translating={translating} language={languages.guest} revertEnabled={false}>{speechText.guest}</TranslationText>
+                        <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
                         <View className={"border-[0.05rem] border-gray-300 w-full"} />
-                        <TranslationText translating={translating} language={languages.host} revertEnabled={flipGuestLanguage}>{speechText.host}</TranslationText>
+                        <TranslationText translating={translating} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
                         <View className={"border-[0.05rem] border-gray-300 w-full"} />
                     </View>
 
@@ -109,10 +103,7 @@ export default function HomeScreen() {
                                 const uri = audioRecorder.uri;
                                 if (uri) {
                                     const translationTimer = performance.now();
-                                    setSpeechText({
-                                        host: "",
-                                        guest: ""
-                                    });
+                                    setTranslations({});
 
                                     const hostLanguageCode = languages.host.code;
                                     const guestLanguageCode = languages.guest.code;
@@ -131,7 +122,7 @@ export default function HomeScreen() {
                                         if (response) {
                                             const { translatedPhrase, sourceLanguage } = response;
 
-                                            setSpeechText({
+                                            setTranslations({
                                                 host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
                                                 guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
                                             });

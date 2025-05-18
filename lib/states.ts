@@ -26,3 +26,8 @@ export const languagesAtom = atom<{
         flag: "🇭🇰"
     }
 });
+
+export const translationsAtom = atom<{
+    host?: string;
+    guest?: string;
+}>();

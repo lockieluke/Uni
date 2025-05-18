@@ -9,6 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { userAtom } from '@/lib/states';
 import { useAtomValue } from 'jotai';
+import TranslateHeader from '@/components/TranslateHeader';
 
 export default function TabLayout() {
   const { signedIn } = useAtomValue(userAtom);
@@ -35,7 +36,7 @@ export default function TabLayout() {
         name="index"
         options={{
           headerTitle: ({children}) => (
-            <Text className='text-t-primary text-lg'><Text className='font-bold'>Uni</Text> {children}</Text>
+            <TranslateHeader>{children}</TranslateHeader>
           ),
           title: "Translate",
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="translate" color={color} />,
