@@ -4,6 +4,7 @@ import { GoogleSignin, isNoSavedCredentialFoundResponse } from "@react-native-go
 import { createClient } from '@supabase/supabase-js';
 import { CryptoDigestAlgorithm, digestStringAsync } from 'expo-crypto';
 import { getDefaultStore } from "jotai";
+import * as _ from "radashi";
 import 'react-native-url-polyfill/auto';
 import { getUrlSafeNonce } from './crypto';
 
@@ -21,21 +22,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 export async function checkSignedIn() {
     // From: https://react-native-google-signin.github.io/docs/original#signinsilently
-    try {
-        const response = await GoogleSignin.signInSilently();
+    const [err, response] = await _.tryit(GoogleSignin.signInSilently)();
+    if (err)
+        throw new Error(`Error signing in silently: ${err.message}`);
 
-        if (isNoSavedCredentialFoundResponse(response))
-            // user has not signed in yet, or they have revoked access
-            return false;
-        else if (response.type === "success") {
-            await supabase.auth.signInWithIdToken({
-                provider: "google",
-                token: response.data?.idToken!
-            });
-        }
-    } catch {
-        console.error("Error signing in silently");
+    if (isNoSavedCredentialFoundResponse(response))
+        // user has not signed in yet, or they have revoked access
         return false;
+    else if (response.type === "success") {
+        await supabase.auth.signInWithIdToken({
+            provider: "google",
+            token: response.data?.idToken!
+        });
     }
 
     const { data: { session }, error } = await supabase.auth.getSession();
@@ -45,7 +43,7 @@ export async function checkSignedIn() {
     }
 
     const user = session?.user;
-    const isSignedIn = !!user;
+    const isSignedIn = !_.isNullish(user);
 
     getDefaultStore().set(userAtom, prevUser => ({
         ...prevUser,
@@ -59,15 +57,12 @@ export async function checkSignedIn() {
 
 export async function signOut() {
     const {error} = await supabase.auth.signOut();
-    if (error) {
+    if (error)
         throw new Error(error.message);
-    }
 
-    try {
-        await GoogleSignin.signOut();
-    } catch (err) {
+    const [err] = await _.tryit(GoogleSignin.signOut)();
+    if (err)
         throw new Error(`Error signing out of Google: ${err}`);
-    }
 }
 
 // From: https://react-native-google-signin.github.io/docs/security#custom-nonce
