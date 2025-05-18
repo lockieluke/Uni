@@ -37,10 +37,10 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
             } : {}
         }
     });
-    if (!response.ok)
-        throw new Error("Error getting languages");
-
     const payload = decode(await response.arrayBuffer());
+    if (!response.ok)
+        throw new Error(`Error getting languages: ${_.get(payload, "error.message", "Unknown error")}`);
+
     const languages = _.get(payload, "languages", {});
 
     return {
@@ -71,10 +71,10 @@ export default async function translatePhrase(phrase: string, hints: string[], m
             hints
         })
     });
-    if (!response.ok)
-        throw new Error("Error translating phrase");
-
     const payload = decode(await response.arrayBuffer());
+    if (!response.ok)
+        throw new Error(`Error translating phrase: ${_.get(payload, "error.message", "Unknown error")}`);
+
     if (!_.isPlainObject(payload))
         throw new Error("Error decoding translation response");
 

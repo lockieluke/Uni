@@ -171,13 +171,13 @@ export default async function transcript(uri: string, provider: TranscriptProvid
             },
             body: formData
         });
-        const json = decode(await response.arrayBuffer());
+        const payload = decode(await response.arrayBuffer());
         if (!response.ok) {
-            console.error("Error sending audio to Uni Transcription:", json);
+            console.error("Error sending audio to Uni Transcription:", _.get(payload, "error.message", "Unknown error"));
             return null;
         }
 
-        const transcript: string = _.get(json, "transcript", "");
+        const transcript: string = _.get(payload, "transcript", "");
 
         return {
             language: "unknown",
