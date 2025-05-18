@@ -1,11 +1,12 @@
+import { Language } from "@/constants/Language";
 import { fetch } from "expo/fetch";
+import { getLocales } from "expo-localization";
+import * as _ from "lodash-es";
 import qs from "qs";
 import * as z from "zod";
-import * as _ from "lodash-es";
 import { zu } from "zod_utilz";
-import { supabase } from "./supabase";
-import { Language } from "@/constants/Language";
 import { mmkvStorage } from "./storage";
+import { supabase } from "./supabase";
 
 const TranslationResponseSchema = z.object({
     pretranslatedPhrase: z.string(),
@@ -17,7 +18,7 @@ const TranslationResponseSchema = z.object({
     timestamp: z.string()
 });
 
-export async function getLanguages(): Promise<{ [key: string]: Language; }> {
+export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: Language; }> {
     const disableCache = (await mmkvStorage.getBoolAsync("disableCache")) ?? false;
 
     const {data: {session}, error} = await supabase.auth.getSession();
@@ -44,6 +45,7 @@ export async function getLanguages(): Promise<{ [key: string]: Language; }> {
     return {
         ..._.mapValues(languages, (language, key) => ({
             ...language,
+            displayName: _.get(language, `displayName.${hostLang}`, _.get(language, "displayName.en-GB")),
             code: key
         }))
     };
