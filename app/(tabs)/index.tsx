@@ -6,9 +6,8 @@ import transcript, { TranscriptProvider } from "@/lib/speech";
 import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { to } from "await-to-js";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import {
     getRecordingPermissionsAsync,
     RecordingPresets,
@@ -18,6 +17,7 @@ import {
 import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
+import * as _ from "radashi";
 import { useState } from "react";
 import { When } from "react-if";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -113,7 +113,7 @@ export default function HomeScreen() {
                                     const transcripted = result?.transcript;
 
                                     if (transcripted) {
-                                        const [err, response] = await to(translatePhrase(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate"));
+                                        const [err, response] = await _.tryit(translatePhrase)(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate");
                                         if (err) {
                                             console.error("Error translating:", err);
                                             return;

@@ -2,7 +2,6 @@ import ColumnTrigger from "@/components/ColumnTrigger";
 import { userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
-import { to } from "await-to-js";
 import * as Clipboard from 'expo-clipboard';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -63,7 +62,7 @@ export default function YouScreen() {
                     await Clipboard.setStringAsync(accessToken);
             }}>Copy JWT</ColumnTrigger> }
             <ColumnTrigger onPress={async () => {
-                const [err] = await to(signOut());
+                const [err] = await _.tryit(signOut)();
                 if (err) {
                     Alert.alert("Error", "Failed to sign out. Please try again later.");
                     return;
