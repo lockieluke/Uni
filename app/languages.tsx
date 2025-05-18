@@ -1,19 +1,21 @@
 import ColumnTrigger from "@/components/ColumnTrigger";
 import { Language } from "@/constants/Language";
 import { getLanguages } from "@/lib/language";
-import { languagesAtom } from "@/lib/states";
-import { FlashList } from "@shopify/flash-list";
-import { useAtom } from "jotai";
+import { languagesAtom, translationsAtom } from "@/lib/states";
+import { mmkvStorage } from "@/lib/storage";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { FlashList } from "@shopify/flash-list";
+import { useFocusEffect } from "expo-router";
+import { useAtom, useSetAtom } from "jotai";
 import { useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import useAsyncEffect from "use-async-effect";
-import { mmkvStorage } from "@/lib/storage";
 
 export default function LanguagesScreen() {
     const colorScheme = useColorScheme();
 
     const [languages, setLanguages] = useAtom(languagesAtom);
+    const setTranslations = useSetAtom(translationsAtom);
     const [supportedLangs, setSupportedLangs] = useState<{
         [key: string]: Language;
     }>({});
@@ -24,16 +26,13 @@ export default function LanguagesScreen() {
         setSupportedLangs(languages);
     }, []);
 
-    return (<View className="flex-1 justify-start items-center">
-        {/* {Object.entries(supportedLangs).map(([key, value]) => (
-            <ColumnTrigger
-                key={key}
-                onPress={() => {
-                    console.log(key);
-                }}
-            >{`${value.flag ? `${value.flag} ` : ""}${value.displayName}`}</ColumnTrigger>
-        ))} */}
+    useFocusEffect(() => {
+        return () => {
+            setTranslations({});
+        }
+    });
 
+    return (<View className="flex-1 justify-start items-center">
         <View className="w-screen h-full">
             <FlashList
                 data={Object.entries(supportedLangs)}
