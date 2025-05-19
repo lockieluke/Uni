@@ -1,11 +1,10 @@
 import { Language } from "@/constants/Language";
-import { fetch } from "expo/fetch";
-import { getLocales } from "expo-localization";
-import * as _ from "radashi";
-import qs from "qs";
-import * as z from "zod";
-import { zu } from "zod_utilz";
 import { decode, encode } from "@msgpack/msgpack";
+import { getLocales } from "expo-localization";
+import { fetch } from "expo/fetch";
+import qs from "qs";
+import * as _ from "radashi";
+import * as z from "zod/v4";
 import { mmkvStorage } from "./storage";
 import { supabase } from "./supabase";
 
@@ -78,7 +77,7 @@ export default async function translatePhrase(phrase: string, hints: string[], m
     if (!_.isPlainObject(payload))
         throw new Error("Error decoding translation response");
 
-    const {success, error: validateError, data} = zu.SPR(await TranslationResponseSchema.safeParseAsync(payload));
+    const {success, error: validateError, data} = await TranslationResponseSchema.safeParseAsync(payload);
     if (!success || !data)
         throw new Error(`Error parsing translation response: ${validateError?.message}`);
 
