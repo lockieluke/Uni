@@ -17,6 +17,7 @@ export default function YouScreen() {
 
     const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation, setMoreAccurateTranslation] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
+    const [moreAccurateTranscription, setMoreAccurateTranscription] = useMMKVStorage("accurateTranscriptionModel", mmkvStorage, false);
     const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
 
     if (!user || !signedIn)
@@ -48,6 +49,15 @@ export default function YouScreen() {
                     <Text className="text-t-primary">More accurate translations may take more time but can often produce better and more localised results</Text>
                 </View>
                 <Switch value={moreAccurateTranslation} onValueChange={setMoreAccurateTranslation} />
+                </>
+            </ColumnTrigger>
+            <ColumnTrigger>
+                <>
+                <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                    <Text className="font-semibold text-md text-t-primary">More accurate transcriptions</Text>
+                    <Text className="text-t-primary">May take more time but can often produce better results</Text>
+                </View>
+                <Switch value={moreAccurateTranscription} onValueChange={setMoreAccurateTranscription} />
                 </>
             </ColumnTrigger>
             <ColumnTrigger>

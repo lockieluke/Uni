@@ -1,9 +1,10 @@
+import { decode } from "@msgpack/msgpack";
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
 import qs from "qs";
 import * as _ from "radashi";
+import { mmkvStorage } from "./storage";
 import { supabase } from "./supabase";
-import { decode } from "@msgpack/msgpack";
 
 export type TranscriptProvider = 'deepgram' | 'gladia' | 'openai';
 
@@ -55,7 +56,7 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     language: string,
     transcript: string;
 } | null> {
-    const {data: {session}, error} = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
     if (error) {
         console.error("Error getting session:", error);
         return null;
@@ -139,7 +140,7 @@ export default async function transcript(uri: string, provider: TranscriptProvid
         const id: string = data["id"];
         const resultUrl: string = data["result_url"];
 
-        const {transcript, language} = await pollGladiaTranscript(id, resultUrl);
+        const { transcript, language } = await pollGladiaTranscript(id, resultUrl);
         if (!transcript) {
             console.error("Error fetching Gladia transcript");
             return null;
@@ -156,6 +157,8 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     if (provider === "openai") {
         console.log("Sending audio to OpenAI:", uri);
 
+        const useMoreAccurateModel = (await mmkvStorage.getBoolAsync("accurateTranscriptionModel")) ?? false;
+
         const formData = new FormData();
         formData.append("file", {
             uri: uri,
@@ -163,7 +166,9 @@ export default async function transcript(uri: string, provider: TranscriptProvid
             type: "audio/m4a"
         } as any);
 
-        const response = await fetch("https://uni-api.lockie.dev/transcript", {
+        const response = await fetch(`https://uni-api.lockie.dev/transcript?${qs.stringify({
+            mode: useMoreAccurateModel ? "accurate" : "fast"
+        })}`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${session?.access_token}`,
