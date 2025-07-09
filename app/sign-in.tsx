@@ -55,7 +55,7 @@ export default function SignIn() {
                             accessToken: session.access_token
                         });
 
-                        console.log("User signed in", user);
+                        console.log("User signed in", user.email);
                         rootNavigation.reset({
                             routes: [{ name: "(tabs)" }],
                         });
