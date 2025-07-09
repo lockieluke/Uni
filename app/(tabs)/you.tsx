@@ -19,6 +19,7 @@ export default function YouScreen() {
     const [moreAccurateTranslation, setMoreAccurateTranslation] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
     const [moreAccurateTranscription, setMoreAccurateTranscription] = useMMKVStorage("accurateTranscriptionModel", mmkvStorage, false);
     const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
+    const [useDevServer, setUseDevServer] = useMMKVStorage("useDevServer", mmkvStorage, false);
 
     if (!user || !signedIn)
         return null;
@@ -35,42 +36,48 @@ export default function YouScreen() {
         <ScrollView contentContainerClassName="flex-center my-5 pb-20 gap-y-5">
             <ColumnTrigger>
                 <>
-                <View className={"flex-col flex items-start w-2/3 gap-2"}>
-                    <Text className="font-semibold texT-md text-t-primary">Flip Guest Language</Text>
-                    <Text className="text-t-primary">Guest transcription would be turned towards the top of the phone</Text>
-                </View>
-                <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
+                    <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                        <Text className="font-semibold texT-md text-t-primary">Flip Guest Language</Text>
+                        <Text className="text-t-primary">Guest transcription would be turned towards the top of the phone</Text>
+                    </View>
+                    <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
                 </>
             </ColumnTrigger>
             <ColumnTrigger>
                 <>
-                <View className={"flex-col flex items-start w-2/3 gap-2"}>
-                    <Text className="font-semibold text-md text-t-primary">Use a more accurate model for all translations</Text>
-                    <Text className="text-t-primary">More accurate translations may take more time but can often produce better and more localised results</Text>
-                </View>
-                <Switch value={moreAccurateTranslation} onValueChange={setMoreAccurateTranslation} />
+                    <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                        <Text className="font-semibold text-md text-t-primary">Use a more accurate model for all translations</Text>
+                        <Text className="text-t-primary">More accurate translations may take more time but can often produce better and more localised results</Text>
+                    </View>
+                    <Switch value={moreAccurateTranslation} onValueChange={setMoreAccurateTranslation} />
                 </>
             </ColumnTrigger>
             <ColumnTrigger>
                 <>
-                <View className={"flex-col flex items-start w-2/3 gap-2"}>
-                    <Text className="font-semibold text-md text-t-primary">More accurate transcriptions</Text>
-                    <Text className="text-t-primary">May take more time but can often produce better results</Text>
-                </View>
-                <Switch value={moreAccurateTranscription} onValueChange={setMoreAccurateTranscription} />
+                    <View className={"flex-col flex items-start w-2/3 gap-2"}>
+                        <Text className="font-semibold text-md text-t-primary">More accurate transcriptions</Text>
+                        <Text className="text-t-primary">May take more time but can often produce better results</Text>
+                    </View>
+                    <Switch value={moreAccurateTranscription} onValueChange={setMoreAccurateTranscription} />
                 </>
             </ColumnTrigger>
+            {__DEV__ && <ColumnTrigger>
+                <>
+                    <Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
+                    <Switch value={useDevServer} onValueChange={setUseDevServer} />
+                </>
+            </ColumnTrigger>}
             <ColumnTrigger>
                 <>
-                <Text className="text-t-primary font-semibold texT-md">Disable Cache</Text>
-                <Switch value={disableCache} onValueChange={setDisableCache} />
+                    <Text className="text-t-primary font-semibold text-md">Disable Cache</Text>
+                    <Switch value={disableCache} onValueChange={setDisableCache} />
                 </>
             </ColumnTrigger>
             <ColumnTrigger subpage>Licences</ColumnTrigger>
-            { __DEV__ && <ColumnTrigger onPress={async () => {
+            {__DEV__ && <ColumnTrigger onPress={async () => {
                 if (accessToken)
                     await Clipboard.setStringAsync(accessToken);
-            }}>Copy JWT</ColumnTrigger> }
+            }}>Copy JWT</ColumnTrigger>}
             <ColumnTrigger onPress={async () => {
                 const [err] = await _.tryit(signOut)();
                 if (err) {

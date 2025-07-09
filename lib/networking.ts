@@ -2,9 +2,10 @@ import { decode } from "@msgpack/msgpack";
 import axios from "axios";
 import * as _ from "radashi";
 import { supabase } from "./supabase";
+import { mmkvStorage } from "./storage";
 
 const uniApi = axios.create({
-    baseURL: "https://uni-api.lockie.dev",
+    baseURL: mmkvStorage.getBool("useDevServer") ? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev",
     headers: {
         "Content-Type": "application/x-msgpack",
         "User-Agent": "Uni/1.0.0"
