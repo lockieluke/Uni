@@ -45,7 +45,7 @@ export default function SignIn() {
                         });
 
                         if (error || !user) {
-                            console.error("Error signing in", error);
+                            console.error("Error signing in", error?.message);
                             return;
                         }
 
