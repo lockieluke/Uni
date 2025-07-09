@@ -1,10 +1,9 @@
-import { decode } from "@msgpack/msgpack";
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
 import qs from "qs";
 import * as _ from "radashi";
+import { uniApi } from "./networking";
 import { mmkvStorage } from "./storage";
-import { supabase } from "./supabase";
 
 export type TranscriptProvider = 'deepgram' | 'gladia' | 'openai';
 
@@ -56,12 +55,6 @@ export default async function transcript(uri: string, provider: TranscriptProvid
     language: string,
     transcript: string;
 } | null> {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    if (error) {
-        console.error("Error getting session:", error);
-        return null;
-    }
-
     const audioBufferString = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64
     });
@@ -166,21 +159,18 @@ export default async function transcript(uri: string, provider: TranscriptProvid
             type: "audio/m4a"
         } as any);
 
-        const response = await fetch(`https://uni-api.lockie.dev/transcript?${qs.stringify({
-            mode: useMoreAccurateModel ? "accurate" : "fast"
-        })}`, {
-            method: "POST",
+        const response = await uniApi.postForm("/transcript", {
+            params: {
+                mode: useMoreAccurateModel ? "accurate" : "fast"
+            },
             headers: {
-                "Authorization": `Bearer ${session?.access_token}`,
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: formData
+            data: formData,
         });
-        const payload = decode(await response.arrayBuffer());
-        if (!response.ok) {
-            console.error("Error sending audio to Uni Transcription:", _.get(payload, "error.message", "Unknown error"));
-            return null;
-        }
+        const payload = response.data;
+        if (payload.error)
+            throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 
         const transcript: string = _.get(payload, "transcript", "");
 

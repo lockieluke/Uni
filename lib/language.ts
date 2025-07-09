@@ -1,12 +1,10 @@
 import { Language } from "@/constants/Language";
-import { decode, encode } from "@msgpack/msgpack";
+import { encode } from "@msgpack/msgpack";
 import { getLocales } from "expo-localization";
-import { fetch } from "expo/fetch";
-import qs from "qs";
 import * as _ from "radashi";
 import * as z from "zod/v4";
+import { uniApi } from "./networking";
 import { mmkvStorage } from "./storage";
-import { supabase } from "./supabase";
 
 const TranslationResponseSchema = z.object({
     pretranslatedPhrase: z.string(),
@@ -21,25 +19,17 @@ const TranslationResponseSchema = z.object({
 export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: Language; }> {
     const disableCache = (await mmkvStorage.getBoolAsync("disableCache")) ?? false;
 
-    const {data: {session}, error} = await supabase.auth.getSession();
-    if (error)
-        throw new Error("Error getting session when translating");
-
-    const response = await fetch("https://uni-api.lockie.dev/languages", {
-        headers: {
-            "Authorization": `Bearer ${session?.access_token}`,
-            "User-Agent": "Uni/1.0.0",
-            ...disableCache ? {
+    const response = await uniApi.get("/languages", {
+        headers:
+            disableCache ? {
                 "Cache-Control": "no-cache",
                 "Pragma": "no-cache",
                 "Expires": "0"
             } : {}
-        }
     });
-    const payload = decode(await response.arrayBuffer());
-    if (!response.ok)
-        throw new Error(`Error getting languages: ${_.get(payload, "error.message", "Unknown error")}`);
-
+    const payload = response.data;
+    if (payload.error)
+        throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
     const languages = _.get(payload, "languages", {});
 
     return {
@@ -52,32 +42,20 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
 }
 
 export default async function translatePhrase(phrase: string, hints: string[], model: string = "accurate") {
-    const {data: {session}, error} = await supabase.auth.getSession();
-    if (error)
-        throw new Error("Error getting session when translating");
-
-    const response = await fetch(`https://uni-api.lockie.dev/translate?${qs.stringify({
-        mode: model
-    })}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-msgpack",
-            "Authorization": `Bearer ${session?.access_token}`,
-            "User-Agent": "Uni/1.0.0"
+    const response = await uniApi.post("/translate", {
+        params: {
+            mode: model
         },
-        body: encode({
+        data: encode({
             phrase,
             hints
         })
     });
-    const payload = decode(await response.arrayBuffer());
-    if (!response.ok)
-        throw new Error(`Error translating phrase: ${_.get(payload, "error.message", "Unknown error")}`);
+    const payload = response.data;
+    if (payload.error)
+        throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 
-    if (!_.isPlainObject(payload))
-        throw new Error("Error decoding translation response");
-
-    const {success, error: validateError, data} = await TranslationResponseSchema.safeParseAsync(payload);
+    const { success, error: validateError, data } = await TranslationResponseSchema.safeParseAsync(payload);
     if (!success || !data)
         throw new Error(`Error parsing translation response: ${validateError?.message}`);
 
