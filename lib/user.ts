@@ -2,13 +2,15 @@ import * as _ from "radashi";
 import { z } from "zod/v4";
 import { uniApi } from "./networking";
 
-const UserMetadataSchema = z.object({
+export const UserTierSchema = z.enum(["free", "basic", "max"]);
+
+export const UserMetadataSchema = z.object({
     id: z.string(),
     email: z.email(),
-    tier: z.enum(["free", "basic", "max"]),
+    tier: UserTierSchema
 });
 
-export async function getUserMetadata() {
+export async function getUserAdditionalData() {
     const response = await uniApi.get("/user");
     const payload = response.data;
     if (payload.error)

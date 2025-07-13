@@ -1,19 +1,36 @@
 import ColumnTrigger from "@/components/ColumnTrigger";
+import TierBadge from "@/components/TierBadge";
 import { userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
+import { getUserAdditionalData } from "@/lib/user";
 import * as Clipboard from 'expo-clipboard';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
+import { Unless } from "react-if";
 import { Alert, View, SafeAreaView, ScrollView, Switch, Text } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
+import useAsyncEffect from "use-async-effect";
 
 export default function YouScreen() {
     const router = useRouter();
 
-    const [{signedIn, user, accessToken}] = useAtom(userAtom);
+    const [{ signedIn, user, accessToken, tier }, setUser] = useAtom(userAtom);
+
+    useAsyncEffect(async () => {
+        const [err, additionalUserInfo] = await _.tryit(getUserAdditionalData)();
+        if (err) {
+            console.error("Error fetching user metadata:", err.message);
+            return;
+        }
+
+        setUser(prevUser => ({
+            ...prevUser,
+            tier: additionalUserInfo.tier
+        }));
+    }, []);
 
     const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation, setMoreAccurateTranslation] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
@@ -27,9 +44,15 @@ export default function YouScreen() {
     const userMetadata = user.user_metadata;
 
     return (<SafeAreaView className={"flex-1 py-10 items-center gap-y-3 bg-white dark:bg-black"}>
-        <Image className="my-5 w-36 aspect-square rounded-full" source={{
-            uri: _.get(userMetadata, "avatar_url")
-        }} />
+        <View>
+            <Image className="my-5 w-36 aspect-square rounded-full" source={{
+                uri: _.get(userMetadata, "avatar_url")
+            }} />
+
+            <Unless condition={tier === "free"}>
+                <TierBadge tier={tier} className="absolute bottom-0 right-0" />
+            </Unless>
+        </View>
         <Text className="text-t-primary text-3xl font-bold">{_.get(userMetadata, "full_name")}</Text>
         <Text className="text-t-primary">{user.email}</Text>
 

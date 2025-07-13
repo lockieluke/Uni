@@ -16,8 +16,10 @@ import { useMMKVStorage } from 'react-native-mmkv-storage';
 import 'react-native-reanimated';
 import useAsyncEffect from "use-async-effect";
 import "./global.css";
+import { LinearGradient } from 'expo-linear-gradient';
 
 cssInterop(Image, { className: "style" });
+cssInterop(LinearGradient, { className: "style" });
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
