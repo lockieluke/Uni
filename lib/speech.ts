@@ -159,14 +159,10 @@ export default async function transcript(uri: string, provider: TranscriptProvid
             type: "audio/m4a"
         } as any);
 
-        const response = await uniApi.postForm("/transcript", {
+        const response = await uniApi.postForm("/transcript", formData, {
             params: {
                 mode: useMoreAccurateModel ? "accurate" : "fast"
-            },
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            data: formData,
+            }
         });
         const payload = response.data;
         if (payload.error)
