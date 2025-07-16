@@ -13,6 +13,9 @@ const uniApi = axios.create({
     timeout: 3000,
     adapter: "fetch",
     responseType: "arraybuffer",
+    transformRequest: [data => {
+        return data;
+    }],
     transformResponse: [data => {
         if (data instanceof ArrayBuffer) {
             const [err, payload] = _.tryit(decode)(data);

@@ -2,16 +2,18 @@ import TranscriptButton from "@/components/TranscriptButton";
 import TranslationText from "@/components/TranslationText";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import translatePhrase from "@/lib/language";
-import transcript, { TranscriptProvider } from "@/lib/speech";
+import transcript from "@/lib/speech";
 import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { AxiosError } from "axios";
 import {
     getRecordingPermissionsAsync,
     RecordingPresets,
     requestRecordingPermissionsAsync,
+    setAudioModeAsync,
     useAudioRecorder
 } from "expo-audio";
 import * as FileSystem from "expo-file-system";
@@ -33,7 +35,6 @@ export default function HomeScreen() {
     const { signedIn } = useAtomValue(userAtom);
     const languages = useAtomValue(languagesAtom);
     const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
-    const [transcriptProvider,] = useState<TranscriptProvider>('openai');
 
     const [flipGuestLanguage,] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
     const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
@@ -46,6 +47,11 @@ export default function HomeScreen() {
         setSpeechReady(requestedPermission.granted ? 'granted' : 'denied');
 
         setSpeechReady((await getRecordingPermissionsAsync()).granted ? 'granted' : 'denied');
+
+        await setAudioModeAsync({
+            playsInSilentMode: true,
+            allowsRecording: true,
+        });
     }, []);
 
     return (
@@ -62,28 +68,6 @@ export default function HomeScreen() {
                     </View>
 
                     <View className={"flex-center absolute bottom-14"}>
-                        <When condition={__DEV__}>
-                            <>
-                                {/*<Picker*/}
-                                {/*    style={{*/}
-                                {/*        width: "80%",*/}
-                                {/*        height: "auto",*/}
-                                {/*        top: "10%"*/}
-                                {/*    }}*/}
-                                {/*    itemStyle={{*/}
-                                {/*        fontSize: 12*/}
-                                {/*    }}*/}
-                                {/*    mode={"dropdown"}*/}
-                                {/*    selectedValue={transcriptProvider}*/}
-                                {/*    onValueChange={(itemValue) => setTranscriptProvider(itemValue)}*/}
-                                {/*>*/}
-                                {/*    <Picker.Item label="Deepgram" value="deepgram" />*/}
-                                {/*    <Picker.Item label="Gladia" value="gladia" />*/}
-                                {/*    <Picker.Item label="OpenAI" value="openai" />*/}
-                                {/*</Picker>*/}
-                            </>
-                        </When>
-
                         <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
                             router.push("/languages");
                         }}>
@@ -93,11 +77,19 @@ export default function HomeScreen() {
                         </TouchableOpacity>
 
                         <TranscriptButton onPressIn={async () => {
-                            await audioRecorder.prepareToRecordAsync();
-                            audioRecorder.record();
+                            try {
+                                await audioRecorder.prepareToRecordAsync(RecordingPresets.HIGH_QUALITY);
+                                audioRecorder.record();
+                            } catch (error) {
+                                console.error("Error starting recording:", error);
+                            }
                         }} onPressOut={async () => {
                             setTranslating(true);
+                            const resetTranslatingTimeout = setTimeout(() => {
+                                setTranslating(false);
+                            }, 1000);
                             if (audioRecorder.isRecording) {
+                                clearTimeout(resetTranslatingTimeout);
                                 await audioRecorder.stop();
 
                                 const uri = audioRecorder.uri;
@@ -109,13 +101,26 @@ export default function HomeScreen() {
                                     const guestLanguageCode = languages.guest.code;
 
                                     const hints = [hostLanguageCode, guestLanguageCode];
-                                    const result = await transcript(uri, transcriptProvider, hints);
+                                    const [transcriptionErr, result] = await _.tryit(transcript)(uri, hints);
+                                    if (transcriptionErr) {
+                                        setTranslating(false);
+                                        if (transcriptionErr instanceof AxiosError) {
+                                            console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message"));
+                                            return;
+                                        }
+                                        console.error("Error transcribing:", transcriptionErr.message);
+                                        return;
+                                    }
                                     const transcripted = result?.transcript;
 
                                     if (transcripted) {
-                                        const [err, response] = await _.tryit(translatePhrase)(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate");
-                                        if (err) {
-                                            console.error("Error translating:", err);
+                                        const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate");
+                                        if (translationErr) {
+                                            if (translationErr instanceof AxiosError) {
+                                                console.error("Translation request failed", translationErr.response?.data);
+                                                return;
+                                            }
+                                            console.error("Error translating:", translationErr.message);
                                             return;
                                         }
 

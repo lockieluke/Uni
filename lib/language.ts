@@ -42,18 +42,15 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
 }
 
 export default async function translatePhrase(phrase: string, hints: string[], model: string = "accurate") {
-    const response = await uniApi.post("/translate", {
+    const response = await uniApi.post("/translate", encode({
+        phrase,
+        hints
+    }), {
         params: {
             mode: model
-        },
-        data: encode({
-            phrase,
-            hints
-        })
+        }
     });
     const payload = response.data;
-    if (payload.error)
-        throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 
     const { success, error: validateError, data } = await TranslationResponseSchema.safeParseAsync(payload);
     if (!success || !data)
