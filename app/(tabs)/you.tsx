@@ -5,12 +5,13 @@ import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
 import { getUserAdditionalData } from "@/lib/user";
 import * as Clipboard from 'expo-clipboard';
+import * as Device from 'expo-device';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
-import { Unless } from "react-if";
-import { Alert, View, SafeAreaView, ScrollView, Switch, Text } from "react-native";
+import { Unless, When } from "react-if";
+import { Alert, View, SafeAreaView, ScrollView, Switch, Text, TextInput } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import useAsyncEffect from "use-async-effect";
 
@@ -37,6 +38,7 @@ export default function YouScreen() {
     const [moreAccurateTranscription, setMoreAccurateTranscription] = useMMKVStorage("accurateTranscriptionModel", mmkvStorage, false);
     const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
     const [useDevServer, setUseDevServer] = useMMKVStorage("useDevServer", mmkvStorage, false);
+    const [devServerUrl, setDevServerUrl] = useMMKVStorage("devServerUrl", mmkvStorage, "http://127.0.0.1:8787");
 
     if (!user || !signedIn)
         return null;
@@ -85,10 +87,21 @@ export default function YouScreen() {
                 </>
             </ColumnTrigger>
             {__DEV__ && <ColumnTrigger>
-                <>
-                    <Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
-                    <Switch value={useDevServer} onValueChange={setUseDevServer} />
-                </>
+                <View className="flex-col w-full">
+                    <View className="flex w-full flex-row items-center justify-between">
+                        <Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
+                        <Switch value={useDevServer} onValueChange={setUseDevServer} />
+                    </View>
+                    <When condition={useDevServer && Device.isDevice}>
+                        <TextInput
+                            className="my-3 text-t-primary"
+                            onChange={e => setDevServerUrl(e.nativeEvent.text)}
+                            value={devServerUrl}
+                            enterKeyHint="done"
+                            placeholder="Dev Server URL"
+                        />
+                    </When>
+                </View>
             </ColumnTrigger>}
             <ColumnTrigger>
                 <>

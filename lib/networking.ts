@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 import { mmkvStorage } from "./storage";
 
 const uniApi = axios.create({
-    baseURL: mmkvStorage.getBool("useDevServer") ? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev",
+    baseURL: mmkvStorage.getBool("useDevServer") ? mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev",
     headers: {
         "Content-Type": "application/x-msgpack",
         "User-Agent": "Uni/1.0.0"
@@ -15,7 +15,12 @@ const uniApi = axios.create({
     responseType: "arraybuffer",
     transformResponse: [data => {
         if (data instanceof ArrayBuffer) {
-            const payload = decode(data);
+            const [err, payload] = _.tryit(decode)(data);
+            if (err) {
+                const text = new TextDecoder().decode(data);
+                throw new Error(`Error decoding response from Uni API with payload ${text}: ${err.message}`);
+            }
+
             if (!_.isPlainObject(payload))
                 throw new Error("Invalid response from Uni API: not a plain object");
 
@@ -23,8 +28,7 @@ const uniApi = axios.create({
         }
 
         return data;
-    }],
-    validateStatus: () => true
+    }]
 });
 
 uniApi.interceptors.request.use(async config => {
