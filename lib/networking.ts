@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 import { mmkvStorage } from "./storage";
 
 const uniApi = axios.create({
-    baseURL: mmkvStorage.getBool("useDevServer") ? mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev",
+    baseURL: mmkvStorage.getBool("useDevServer") && __DEV__ ? mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev",
     headers: {
         "Content-Type": "application/x-msgpack",
         "User-Agent": "Uni/1.0.0"
