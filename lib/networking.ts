@@ -10,7 +10,7 @@ const uniApi = axios.create({
         "Content-Type": "application/x-msgpack",
         "User-Agent": "Uni/1.0.0"
     },
-    timeout: 3000,
+    timeout: 10 * 1000,
     adapter: "fetch",
     responseType: "arraybuffer",
     transformRequest: [data => {
