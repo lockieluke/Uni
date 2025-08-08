@@ -6,8 +6,6 @@ export default async function transcript(uri: string, hints: string[]): Promise<
     language: string,
     transcript: string;
 } | null> {
-    console.log("Sending audio to OpenAI:", uri);
-
     const useMoreAccurateModel = (await mmkvStorage.getBoolAsync("accurateTranscriptionModel")) ?? false;
 
     const formData = new FormData();
@@ -19,7 +17,8 @@ export default async function transcript(uri: string, hints: string[]): Promise<
 
     const response = await uniApi.postForm("/transcript", formData, {
         params: {
-            mode: useMoreAccurateModel ? "accurate" : "fast"
+            mode: useMoreAccurateModel ? "accurate" : "fast",
+            provider: "openai"
         }
     });
     const payload = response.data;
