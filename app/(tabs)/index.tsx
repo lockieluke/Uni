@@ -37,7 +37,6 @@ export default function HomeScreen() {
     const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
 
     const [flipGuestLanguage,] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
-    const [moreAccurateTranslation,] = useMMKVStorage("accurateTranslationModel", mmkvStorage, false);
 
     const [translating, setTranslating] = useState(false);
     const [translations, setTranslations] = useAtom(translationsAtom);
@@ -94,30 +93,33 @@ export default function HomeScreen() {
 
                                 const uri = audioRecorder.uri;
                                 if (uri) {
-                                    const translationTimer = performance.now();
                                     setTranslations({});
 
                                     const hostLanguageCode = languages.host.code;
                                     const guestLanguageCode = languages.guest.code;
 
                                     const hints = [hostLanguageCode, guestLanguageCode];
+                                    const transcriptionTimer = performance.now();
                                     const [transcriptionErr, result] = await _.tryit(transcript)(uri, hints);
                                     if (transcriptionErr) {
                                         setTranslating(false);
                                         if (transcriptionErr instanceof AxiosError) {
-                                            console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message"));
+                                            console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message", "unknown error"));
                                             return;
                                         }
                                         console.error("Error transcribing:", transcriptionErr.message);
                                         return;
                                     }
                                     const transcripted = result?.transcript;
+                                    const transcriptionDuration = performance.now() - transcriptionTimer;
 
                                     if (transcripted) {
-                                        const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, moreAccurateTranslation ? "more-accurate" : "accurate");
+                                        const translationTimer = performance.now();
+                                        const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
                                         if (translationErr) {
                                             if (translationErr instanceof AxiosError) {
-                                                console.error("Translation request failed", translationErr.response?.data);
+                                                console.log(translationErr.message);
+                                                console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
                                                 return;
                                             }
                                             console.error("Error translating:", translationErr.message);
@@ -126,14 +128,16 @@ export default function HomeScreen() {
 
                                         if (response) {
                                             const { translatedPhrase, sourceLanguage } = response;
+                                            const translationDuration = performance.now() - translationTimer;
 
                                             setTranslations({
                                                 host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
                                                 guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
                                             });
 
+                                            console.log(`Transcription took ${transcriptionDuration}ms, Translation took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
+
                                             setTranslating(false);
-                                            console.log("Translation took", performance.now() - translationTimer, "ms");
                                         }
                                     }
 
