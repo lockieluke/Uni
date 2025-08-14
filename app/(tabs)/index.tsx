@@ -100,7 +100,7 @@ export default function HomeScreen() {
 
                                     const hints = [hostLanguageCode, guestLanguageCode];
                                     const transcriptionTimer = performance.now();
-                                    const [transcriptionErr, result] = await _.tryit(transcript)(uri, hints);
+                                    const [transcriptionErr, result] = await _.tryit(transcript)(uri);
                                     if (transcriptionErr) {
                                         setTranslating(false);
                                         if (transcriptionErr instanceof AxiosError) {

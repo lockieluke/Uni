@@ -2,7 +2,7 @@ import * as _ from "radashi";
 import { uniApi } from "./networking";
 import { mmkvStorage } from "./storage";
 
-export default async function transcript(uri: string, hints: string[]): Promise<{
+export default async function transcript(uri: string): Promise<{
     language: string,
     transcript: string;
 } | null> {
