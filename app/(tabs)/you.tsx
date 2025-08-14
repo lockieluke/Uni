@@ -34,7 +34,6 @@ export default function YouScreen() {
     }, []);
 
     const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
-    const [moreAccurateTranscription, setMoreAccurateTranscription] = useMMKVStorage("accurateTranscriptionModel", mmkvStorage, false);
     const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
     const [useDevServer, setUseDevServer] = useMMKVStorage("useDevServer", mmkvStorage, false);
     const [devServerUrl, setDevServerUrl] = useMMKVStorage("devServerUrl", mmkvStorage, "http://127.0.0.1:8787");
@@ -65,15 +64,6 @@ export default function YouScreen() {
                         <Text className="text-t-primary">Guest transcription would be turned towards the top of the phone</Text>
                     </View>
                     <Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
-                </>
-            </ColumnTrigger>
-            <ColumnTrigger>
-                <>
-                    <View className={"flex-col flex items-start w-2/3 gap-2"}>
-                        <Text className="font-semibold text-md text-t-primary">More accurate transcriptions</Text>
-                        <Text className="text-t-primary">May take more time but can often produce better results</Text>
-                    </View>
-                    <Switch value={moreAccurateTranscription} onValueChange={setMoreAccurateTranscription} />
                 </>
             </ColumnTrigger>
             {__DEV__ && <ColumnTrigger>

@@ -1,13 +1,10 @@
 import * as _ from "radashi";
 import { uniApi } from "./networking";
-import { mmkvStorage } from "./storage";
 
 export default async function transcript(uri: string): Promise<{
     language: string,
     transcript: string;
 } | null> {
-    const useMoreAccurateModel = (await mmkvStorage.getBoolAsync("accurateTranscriptionModel")) ?? false;
-
     const formData = new FormData();
     formData.append("file", {
         uri: uri,
@@ -17,7 +14,7 @@ export default async function transcript(uri: string): Promise<{
 
     const response = await uniApi.postForm("/transcript", formData, {
         params: {
-            mode: useMoreAccurateModel ? "accurate" : "fast",
+            mode: "accurate",
             provider: "openai"
         }
     });
