@@ -119,7 +119,6 @@ export default function HomeScreen() {
                                         const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
                                         if (translationErr) {
                                             if (translationErr instanceof AxiosError) {
-                                                console.log(translationErr.message);
                                                 console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
                                                 return;
                                             }
