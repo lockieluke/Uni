@@ -52,7 +52,8 @@ export default function SignIn() {
                         setUser({
                             signedIn: true,
                             user: user,
-                            accessToken: session.access_token
+                            accessToken: session.access_token,
+                            tier: "free"
                         });
 
                         console.log("User signed in", user.email);
