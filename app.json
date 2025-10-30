@@ -10,10 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "bundleIdentifier": "me.lockie.uni",
       "appleTeamId": "727YJTPFCL",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.applesignin": true
       }
     },
     "android": {
@@ -64,7 +68,8 @@
       "expo-localization",
       "expo-asset",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true

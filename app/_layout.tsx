@@ -17,9 +17,11 @@ import 'react-native-reanimated';
 import useAsyncEffect from "use-async-effect";
 import "./global.css";
 import { LinearGradient } from 'expo-linear-gradient';
+import { AppleAuthenticationButton } from 'expo-apple-authentication';
 
 cssInterop(Image, { className: "style" });
 cssInterop(LinearGradient, { className: "style" });
+cssInterop(AppleAuthenticationButton, { className: "style" });
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
