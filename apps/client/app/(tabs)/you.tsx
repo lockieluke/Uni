@@ -1,6 +1,7 @@
 import ColumnTrigger from "@/components/ColumnTrigger";
 import DevServerSetting from "@/components/DevServerSetting";
 import TierBadge from "@/components/TierBadge";
+import { useAsyncEffect } from "@/lib/hooks";
 import { userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
@@ -14,7 +15,6 @@ import * as _ from "radashi";
 import { Unless } from "react-if";
 import { Alert, SafeAreaView, ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
-import useAsyncEffect from "use-async-effect";
 
 export default function YouScreen() {
   const router = useRouter();

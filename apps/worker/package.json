@@ -1,0 +1,33 @@
+{
+  "name": "uni-api",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "supabase-typegen": "supabase gen types typescript --project-id \"tfxryudfyorrheoimbva\" --schema public > src/database.types.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/elevenlabs": "^1.0.1",
+    "@ai-sdk/google": "^2.0.3",
+    "@msgpack/msgpack": "^3.1.2",
+    "@openrouter/ai-sdk-provider": "^1.1.0",
+    "@supabase/supabase-js": "^2.54.0",
+    "ai": "^5.0.0",
+    "dayjs": "^1.11.13",
+    "groq-sdk": "^0.30.0",
+    "hono": "^4.8.12",
+    "http-status-codes": "^2.3.0",
+    "modern-async": "^2.0.4",
+    "openai": "^5.12.2",
+    "qs": "^6.14.0",
+    "radashi": "^12.6.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250807.0",
+    "@types/bun": "^1.2.19",
+    "@types/qs": "^6.14.0",
+    "supabase": "^2.33.9",
+    "wrangler": "^4.45.2"
+  }
+}

@@ -1,12 +1,11 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text } from 'react-native';
+import { Platform, Text, useColorScheme } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { userAtom } from '@/lib/states';
 import { useAtomValue } from 'jotai';
 import TranslateHeader from '@/components/TranslateHeader';
@@ -20,7 +19,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         // headerShown: false,
-        tabBarButton: signedIn ? HapticTab :  () => <></>,
+        tabBarButton: signedIn ? HapticTab : () => <></>,
         tabBarBackground: TabBarBackground,
         tabBarStyle: {
           ...Platform.select({
@@ -35,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          headerTitle: ({children}) => (
+          headerTitle: ({ children }) => (
             <TranslateHeader>{children}</TranslateHeader>
           ),
           title: "Translate",

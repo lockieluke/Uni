@@ -1,5 +1,4 @@
 import DevServerSetting from "@/components/DevServerSetting";
-import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { userAtom } from "@/lib/states";
 import { getSignInNonce, supabase } from "@/lib/supabase";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -11,7 +10,7 @@ import { Image } from "expo-image";
 import { Link, useNavigationContainerRef, useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
 
 export default function SignIn() {
   const rootNavigation = useNavigationContainerRef();
