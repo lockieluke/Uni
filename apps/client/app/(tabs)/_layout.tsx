@@ -2,11 +2,11 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
-import { HapticTab } from '@/components/HapticTab';
-import TranslateHeader from '@/components/TranslateHeader';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
+import { HapticTab } from '@/lib/components/HapticTab';
+import TranslateHeader from '@/lib/components/TranslateHeader';
+import { IconSymbol } from '@/lib/components/ui/IconSymbol';
+import TabBarBackground from '@/lib/components/ui/TabBarBackground';
+import { Colors } from '@/lib/constants/Colors';
 import { userAtom } from '@/lib/states';
 import { useAtomValue } from 'jotai';
 
