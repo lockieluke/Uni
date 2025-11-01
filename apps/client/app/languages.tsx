@@ -1,5 +1,5 @@
-import ColumnTrigger from "@/components/ColumnTrigger";
-import { Language } from "@/constants/Language";
+import ColumnTrigger from "@/lib/components/ColumnTrigger";
+import { Language } from "@/lib/constants/Language";
 import { useAsyncEffect } from "@/lib/hooks";
 import { getLanguages } from "@/lib/language";
 import { languagesAtom, translationsAtom } from "@/lib/states";

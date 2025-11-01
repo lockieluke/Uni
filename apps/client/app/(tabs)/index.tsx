@@ -1,5 +1,5 @@
-import TranscriptButton from "@/components/TranscriptButton";
-import TranslationText from "@/components/TranslationText";
+import TranscriptButton from "@/lib/components/TranscriptButton";
+import TranslationText from "@/lib/components/TranslationText";
 import { useAsyncEffect } from "@/lib/hooks";
 import translatePhrase from "@/lib/language";
 import transcript from "@/lib/speech";

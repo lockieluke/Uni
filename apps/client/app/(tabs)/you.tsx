@@ -1,6 +1,6 @@
-import ColumnTrigger from "@/components/ColumnTrigger";
-import DevServerSetting from "@/components/DevServerSetting";
-import TierBadge from "@/components/TierBadge";
+import ColumnTrigger from "@/lib/components/ColumnTrigger";
+import DevServerSetting from "@/lib/components/DevServerSetting";
+import TierBadge from "@/lib/components/TierBadge";
 import { useAsyncEffect } from "@/lib/hooks";
 import { userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";

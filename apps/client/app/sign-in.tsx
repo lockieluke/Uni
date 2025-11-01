@@ -1,4 +1,4 @@
-import DevServerSetting from "@/components/DevServerSetting";
+import DevServerSetting from "@/lib/components/DevServerSetting";
 import { userAtom } from "@/lib/states";
 import { getSignInNonce, supabase } from "@/lib/supabase";
 import AntDesign from '@expo/vector-icons/AntDesign';
