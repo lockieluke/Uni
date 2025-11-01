@@ -1,14 +1,14 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text, useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
+import TranslateHeader from '@/components/TranslateHeader';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { userAtom } from '@/lib/states';
 import { useAtomValue } from 'jotai';
-import TranslateHeader from '@/components/TranslateHeader';
 
 export default function TabLayout() {
   const { signedIn } = useAtomValue(userAtom);
