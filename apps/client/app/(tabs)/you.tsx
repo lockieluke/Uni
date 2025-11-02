@@ -45,7 +45,7 @@ export default function YouScreen() {
 
   const userMetadata = user.user_metadata;
 
-  return (<SafeAreaView className={"flex-1 py-10 items-center gap-y-3 bg-white dark:bg-black"}>
+  return (<SafeAreaView className={"flex-1 items-center gap-y-3 bg-white dark:bg-black"}>
     <View>
       <Image className="my-5 w-36 aspect-square rounded-full" source={{
         uri: _.get(userMetadata, "avatar_url")
