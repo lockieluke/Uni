@@ -130,6 +130,7 @@ export default function HomeScreen() {
                     if (translationErr) {
                       if (translationErr instanceof AxiosError) {
                         console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
+                        setTranslations({});
                         return;
                       }
                       console.error("Error translating:", translationErr.message);
