@@ -8,6 +8,7 @@ import { signOut } from "@/lib/supabase";
 import { getUserAdditionalData } from "@/lib/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
@@ -36,6 +37,7 @@ export default function YouScreen() {
 
   const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
   const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
+  const [liquidGlassEnabled, setLiquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
   if (!user || !signedIn)
     return null;
@@ -66,6 +68,12 @@ export default function YouScreen() {
         </>
       </ColumnTrigger>
       {__DEV__ && <DevServerSetting />}
+      {__DEV__ && isLiquidGlassAvailable() && <ColumnTrigger>
+        <>
+          <Text className="text-t-primary font-semibold text-md">Use Liquid Glass</Text>
+          <Switch value={liquidGlassEnabled} onValueChange={setLiquidGlassEnabled} />
+        </>
+      </ColumnTrigger>}
       <ColumnTrigger>
         <>
           <Text className="text-t-primary font-semibold text-md">Disable Cache</Text>

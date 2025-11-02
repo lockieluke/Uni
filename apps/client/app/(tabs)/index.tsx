@@ -7,7 +7,7 @@ import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 import { AxiosError } from "axios";
 import {
   getRecordingPermissionsAsync,
@@ -17,28 +17,33 @@ import {
   useAudioRecorder
 } from "expo-audio";
 import * as FileSystem from "expo-file-system";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import * as _ from "radashi";
-import { useState } from "react";
+import { use, useState } from "react";
 import { When } from "react-if";
-import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const router = useRouter();
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const bottomTabHeight = useBottomTabBarHeight();
   const colorScheme = useColorScheme();
+  const dimensions = useWindowDimensions();
 
   const { signedIn } = useAtomValue(userAtom);
   const languages = useAtomValue(languagesAtom);
   const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
 
-  const [flipGuestLanguage,] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
+  const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
+  const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
   const [translating, setTranslating] = useState(false);
   const [translations, setTranslations] = useAtom(translationsAtom);
+
+  const bottomTabHeight = liquidGlassEnabled ? dimensions.height * 0.1 : use(BottomTabBarHeightContext) ?? 0;
 
   useAsyncEffect(async () => {
     const requestedPermission = await requestRecordingPermissionsAsync();
@@ -53,12 +58,18 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View style={{
+    <SafeAreaView style={{
       marginBottom: bottomTabHeight
     }} className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
       <When condition={signedIn}>
         <When condition={speechReady === 'granted'}>
-          <View className={"absolute top-0 py-10 w-full flex flex-col gap-10"}>
+          <View className={cn("absolute py-10 w-full flex flex-col gap-10", {
+            "top-0": !liquidGlassEnabled,
+            "top-10": liquidGlassEnabled
+          })}>
+            <When condition={liquidGlassEnabled}>
+              <Text className="mx-5 font-bold text-3xl">Uni Translate</Text>
+            </When>
             <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
             <View className={"border-[0.05rem] border-gray-300 w-full"} />
             <TranslationText translating={translating} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
@@ -161,6 +172,6 @@ export default function HomeScreen() {
           <ActivityIndicator size={"large"} />
         </When>
       </When>
-    </View>
+    </SafeAreaView>
   );
 }
