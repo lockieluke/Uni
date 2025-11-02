@@ -7,6 +7,7 @@ import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
 import { getUserAdditionalData } from "@/lib/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAssets } from "expo-asset";
 import * as Clipboard from 'expo-clipboard';
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
@@ -21,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function YouScreen() {
   const router = useRouter();
 
+  const [assets, error] = useAssets([require("@/assets/images/user.jpg")]);
   const [{ signedIn, user, accessToken, tier }, setUser] = useAtom(userAtom);
 
   useAsyncEffect(async () => {
@@ -40,22 +42,26 @@ export default function YouScreen() {
   const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
   const [liquidGlassEnabled, setLiquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
+  if (error)
+    return null;
+
   if (!user || !signedIn)
     return null;
 
   const userMetadata = user.user_metadata;
+  const provider = user.app_metadata.provider;
 
   return (<SafeAreaView className={"flex-1 items-center gap-y-3 bg-white dark:bg-black"}>
     <View>
       <Image className="my-5 w-36 aspect-square rounded-full" source={{
-        uri: _.get(userMetadata, "avatar_url")
+        uri: _.get(userMetadata, "avatar_url", assets?.[0].localUri!)
       }} />
 
       <Unless condition={tier === "free"}>
         <TierBadge tier={tier} className="absolute bottom-0 right-0" />
       </Unless>
     </View>
-    <Text className="text-t-primary text-3xl font-bold">{_.get(userMetadata, "full_name")}</Text>
+    <Text className="text-t-primary text-3xl font-bold">{_.get(userMetadata, "full_name") ?? (provider === "apple" ? "Apple ID User" : "")}</Text>
     <Text className="text-t-primary">{user.email}</Text>
 
     <ScrollView contentContainerClassName="flex-center my-5 pb-20 gap-y-5">
