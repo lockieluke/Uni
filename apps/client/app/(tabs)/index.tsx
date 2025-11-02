@@ -16,7 +16,7 @@ import {
   setAudioModeAsync,
   useAudioRecorder
 } from "expo-audio";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
@@ -103,6 +103,7 @@ export default function HomeScreen() {
 
                 const uri = audioRecorder.uri;
                 if (uri) {
+                  const file = new File(uri);
                   setTranslations({});
 
                   const hostLanguageCode = languages.host.code;
@@ -149,12 +150,12 @@ export default function HomeScreen() {
 
                       setTranslating(false);
                     }
-                  }
 
-                  try {
-                    await FileSystem.deleteAsync(uri);
-                  } catch (error) {
-                    console.error("Error deleting file:", error);
+                    try {
+                      file.delete();
+                    } catch (error) {
+                      console.error("Error deleting file:", error);
+                    }
                   }
                 }
               }
