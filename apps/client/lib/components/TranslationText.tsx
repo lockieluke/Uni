@@ -1,4 +1,4 @@
-import { Language } from "@/constants/Language";
+import { Language } from "@/lib/constants/Language";
 import { cn } from "@/lib/utils";
 import { useRouter } from "expo-router";
 import { Skeleton } from 'moti/skeleton';

@@ -1,4 +1,4 @@
-import { Language } from "@/constants/Language";
+import { Language } from "@/lib/constants/Language";
 import { encode } from "@msgpack/msgpack";
 import { getLocales } from "expo-localization";
 import * as _ from "radashi";
