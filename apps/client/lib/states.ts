@@ -1,7 +1,7 @@
 import { Language } from "@/lib/constants/Language";
 import type { User } from "@supabase/auth-js";
 import { atom } from "jotai";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { UserTierSchema } from "./user";
 
 export const userAtom = atom<{
