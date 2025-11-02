@@ -58,9 +58,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{
-      marginBottom: bottomTabHeight
-    }} className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
+    <SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
       <When condition={signedIn}>
         <When condition={speechReady === 'granted'}>
           <View className={cn("absolute py-10 w-full flex flex-col gap-10", {
@@ -68,7 +66,7 @@ export default function HomeScreen() {
             "top-10": liquidGlassEnabled
           })}>
             <When condition={liquidGlassEnabled}>
-              <Text className="mx-5 font-bold text-3xl">Uni Translate</Text>
+              <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate</Text>
             </When>
             <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
             <View className={"border-[0.05rem] border-gray-300 w-full"} />
@@ -76,7 +74,9 @@ export default function HomeScreen() {
             <View className={"border-[0.05rem] border-gray-300 w-full"} />
           </View>
 
-          <View className={"flex-center absolute bottom-14"}>
+          <View style={{
+            bottom: bottomTabHeight + 30
+          }} className={"flex-center absolute bottom-14"}>
             <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
               router.push("/languages");
             }}>
