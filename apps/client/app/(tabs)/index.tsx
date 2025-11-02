@@ -7,7 +7,6 @@ import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { BottomTabBarHeightContext } from "@react-navigation/bottom-tabs";
 import { AxiosError } from "axios";
 import {
   getRecordingPermissionsAsync,
@@ -21,7 +20,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import * as _ from "radashi";
-import { use, useState } from "react";
+import { useState } from "react";
 import { When } from "react-if";
 import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
@@ -43,7 +42,7 @@ export default function HomeScreen() {
   const [translating, setTranslating] = useState(false);
   const [translations, setTranslations] = useAtom(translationsAtom);
 
-  const bottomTabHeight = liquidGlassEnabled ? dimensions.height * 0.1 : use(BottomTabBarHeightContext) ?? 0;
+  const bottomTabHeight = dimensions.height * 0.15;
 
   useAsyncEffect(async () => {
     const requestedPermission = await requestRecordingPermissionsAsync();
@@ -75,7 +74,7 @@ export default function HomeScreen() {
           </View>
 
           <View style={{
-            bottom: bottomTabHeight + 30
+            bottom: bottomTabHeight
           }} className={"flex-center absolute bottom-14"}>
             <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
               router.push("/languages");
