@@ -14,8 +14,9 @@ import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
 import { Unless } from "react-if";
-import { Alert, SafeAreaView, ScrollView, Switch, Text, View } from "react-native";
+import { Alert, ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function YouScreen() {
   const router = useRouter();
