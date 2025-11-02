@@ -49,8 +49,6 @@ export async function checkSignedIn() {
   const user = session?.user;
   const isSignedIn = !_.isNullish(user);
 
-  console.log(user);
-
   getDefaultStore().set(userAtom, prevUser => ({
     ...prevUser,
     signedIn: isSignedIn,
