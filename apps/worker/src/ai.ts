@@ -1,21 +1,16 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const useOpenRouter = createOpenRouter({
   baseURL: `${process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1"}`
 });
 
-export const useGoogle = createGoogleGenerativeAI({
-  baseURL: `${process.env.GOOGLE_GENERATIVE_AI_API_BASE}` || "https://generativelanguage.googleapis.com/v1beta"
-});
-
 export const openai = new OpenAI();
 
 export const OpenAITranscriptionModelSchema = z.enum(["fast", "accurate"]);
-export const TranscriptionProviderSchema = z.enum(['openai', 'groq', "gemini"]);
+export const TranscriptionProviderSchema = z.enum(['openai', 'groq']);
 export const TranslationLLMMPropertySchema = z.enum(['default', 'advanced']);
 
 export function determineTranslationLLM(property: z.infer<typeof TranslationLLMMPropertySchema>) {

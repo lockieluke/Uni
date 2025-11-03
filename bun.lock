@@ -83,7 +83,6 @@
       "name": "@uni/worker",
       "dependencies": {
         "@ai-sdk/elevenlabs": "^1.0.17",
-        "@ai-sdk/google": "^2.0.26",
         "@msgpack/msgpack": "^3.1.2",
         "@openrouter/ai-sdk-provider": "^1.1.0",
         "@supabase/supabase-js": "^2.54.0",
@@ -116,8 +115,6 @@
     "@ai-sdk/elevenlabs": ["@ai-sdk/elevenlabs@1.0.17", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.15" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-0up/FxGCh65bTFNbTuyXK3/P56WjYCrTbAtQcdZEk0Nl8w9D/VvECdeMtq6wTpfBw1s0beZaJrtnKAMHQM7F/A=="],
 
     "@ai-sdk/gateway": ["@ai-sdk/gateway@2.0.5", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.15", "@vercel/oidc": "3.0.3" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-5TTDSl0USWY6YGnb4QmJGplFZhk+p9OT7hZevAaER6OGiZ17LB1GypsGYDpNo/MiVMklk8kX4gk6p1/R/EiJ8Q=="],
-
-    "@ai-sdk/google": ["@ai-sdk/google@2.0.26", "", { "dependencies": { "@ai-sdk/provider": "2.0.0", "@ai-sdk/provider-utils": "3.0.15" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-LMCT8TDwj1ww4W34f1YJHfk2LggsMV4dqF8qSolJIopdERCclA+S+LzaIaiyeoYDD+slUrf3FXvi1t+yd21jxQ=="],
 
     "@ai-sdk/provider": ["@ai-sdk/provider@2.0.0", "", { "dependencies": { "json-schema": "^0.4.0" } }, "sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA=="],
 

@@ -13,7 +13,7 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod";
-import { determineTranscriptionModel, determineTranslationLLM, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, useGoogle, useOpenRouter } from "./ai";
+import { determineTranscriptionModel, determineTranslationLLM, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono, UniTiers } from './types';
 import { getUsage, incrementUsage, monthlyLimit } from './usage';
@@ -133,47 +133,6 @@ app.post("/transcript", async (c) => {
     });
 
   const transcriptStart = dayjs();
-
-  if (provider === "gemini") {
-    try {
-      const { object } = await generateObject({
-        model: useGoogle("gemini-2.5-flash"),
-        messages: [{
-          role: "user",
-          content: [{
-            type: "text",
-            text: "Transcribe the following audio file. When transcribing audio in Cantonese, please preserve the Cantonese dialect."
-          }, {
-            data: await file.arrayBuffer(),
-            type: "file",
-            mediaType: "audio/m4a",
-            filename: "audio.m4a"
-          }]
-        }],
-        schema: z.object({
-          transcript: z.string().describe("The transcribed text from the audio file")
-        }),
-        temperature: 0
-      });
-      const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
-      if (c.env.DEV)
-        console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
-
-      return withMsgpack({
-        transcript: object.transcript,
-        timing: transcriptTiming
-      }, c);
-    } catch (error) {
-      console.error(error);
-      throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-        res: withMsgpack({
-          error: {
-            message: error instanceof Error ? error.message : "An error occurred during transcription"
-          }
-        }, c)
-      });
-    }
-  }
 
   if (provider === "groq") {
     try {
