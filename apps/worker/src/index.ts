@@ -238,7 +238,7 @@ app.post("/translate", async (c) => {
       messages: [{
         role: "system",
         content: `
-You are given a phrase.  This phase could be in the languages represented by these language codes: ${hints.join(", ")}
+You are given a phrase.  This phrase could be in the languages represented by these language codes: ${hints.join(", ")}
 1. Detect the source language of the phrase.
 2. Identify the target language as the other code in the pair.
 3. Translate the phrase into the target language, when "zh-HK" is specified, please translate to Spoken Cantonese.  Please note that some English phrases may be used when Cantonese is the source language, presrve the original English phrases when translating.
