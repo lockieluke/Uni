@@ -1,7 +1,7 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
-import { z } from "zod/v4";
+import * as z from "zod";
 
 export const useOpenRouter = createOpenRouter({
   baseURL: `${process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1"}`

@@ -12,7 +12,7 @@ import { HTTPException } from 'hono/http-exception';
 import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
-import { z } from "zod";
+import * as z from "zod";
 import { determineTranscriptionModel, determineTranslationLLM, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono, UniTiers } from './types';

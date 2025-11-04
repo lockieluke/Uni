@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 export const translateSchema = z.object({
   phrase: z.string(),
