@@ -2,7 +2,7 @@ import { Language } from "@/lib/constants/Language";
 import { encode } from "@msgpack/msgpack";
 import { getLocales } from "expo-localization";
 import * as _ from "radashi";
-import * as z from "zod";
+import { z } from "zod/v4";
 import { uniApi } from "./networking";
 import { mmkvStorage } from "./storage";
 

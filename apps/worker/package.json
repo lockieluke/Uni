@@ -20,7 +20,7 @@
     "openai": "^6.7.0",
     "qs": "^6.14.0",
     "radashi": "^12.6.0",
-    "zod": "^4.1.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250807.0",
