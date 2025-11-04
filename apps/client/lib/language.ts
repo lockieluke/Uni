@@ -41,7 +41,7 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
   };
 }
 
-export default async function translatePhrase(phrase: string, hints: string[], model: string = "accurate") {
+export default async function translatePhrase(phrase: string, hints: string[], model: string = "default") {
   const response = await uniApi.post("/translate", encode({
     phrase,
     hints
