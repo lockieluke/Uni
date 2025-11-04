@@ -220,7 +220,7 @@ app.post("/translate", async (c) => {
   }
 
   const { phrase, hints } = reqBody.data;
-  const { data: mode, success } = await TranslationLLMMPropertySchema.safeParseAsync(c.req.query("mode") || "quick");
+  const { data: mode, success } = await TranslationLLMMPropertySchema.safeParseAsync(c.req.query("mode") || "default");
   if (!success)
     throw new HTTPException(StatusCodes.BAD_REQUEST, {
       res: withMsgpack({
@@ -261,7 +261,11 @@ Do not interpret the phrase, just translate it.
           provider: {
             only: ["google-ai-studio"]
           }
-        } : {}
+        } : (mode === "fast" ? {
+          provider: {
+            only: ["cerebras"]
+          }
+        } : {})
       }
     });
 

@@ -11,7 +11,7 @@ export const openai = new OpenAI();
 
 export const OpenAITranscriptionModelSchema = z.enum(["fast", "accurate"]);
 export const TranscriptionProviderSchema = z.enum(['openai', 'groq']);
-export const TranslationLLMMPropertySchema = z.enum(['default', 'advanced']);
+export const TranslationLLMMPropertySchema = z.enum(['default', 'advanced', 'fast']);
 
 export function determineTranslationLLM(property: z.infer<typeof TranslationLLMMPropertySchema>) {
   if (property === 'default')
@@ -19,6 +19,9 @@ export function determineTranslationLLM(property: z.infer<typeof TranslationLLMM
 
   if (property === "advanced")
     return "openai/gpt-5-mini";
+
+  if (property === "fast")
+    return "qwen/qwen3-235b-a22b-2507";
 
   return "google/gemini-2.5-flash";
 }
