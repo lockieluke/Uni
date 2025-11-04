@@ -12,8 +12,8 @@ import { HTTPException } from 'hono/http-exception';
 import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
-import * as z from "zod";
-import { determineTranscriptionModel, determineTranslationLLM, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, useOpenRouter } from "./ai";
+import { z } from "zod/v4";
+import { determineTranscriptionModel, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, translationModel, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono, UniTiers } from './types';
 import { getUsage, incrementUsage, monthlyLimit } from './usage';
@@ -234,7 +234,7 @@ app.post("/translate", async (c) => {
 
   try {
     const { object, finishReason, response } = await generateObject({
-      model: useOpenRouter(determineTranslationLLM(mode)),
+      model: useOpenRouter(translationModel[mode]),
       messages: [{
         role: "system",
         content: `
