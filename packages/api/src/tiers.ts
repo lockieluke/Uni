@@ -3,3 +3,13 @@ export const UniTiers = {
     basic: 1,
     max: 2
 };
+
+export const UniMonthlyLimits: {[key: string]: {
+    [K in keyof typeof UniTiers]: number;
+}} = {
+    "speech_translation": {
+        free: 25,
+        basic: 3000,
+        max: Number.MAX_SAFE_INTEGER,
+    }
+};

@@ -3,7 +3,7 @@
 
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
-import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniTiers } from "@uni/api";
+import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, UniTiers } from "@uni/api";
 import { generateObject } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -17,7 +17,7 @@ import { z } from "zod/v4";
 import { groq, openai, transcriptionModel, translationModel, translationProvider, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono } from './types';
-import { getUsage, incrementUsage, monthlyLimit } from './usage';
+import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
 
@@ -103,7 +103,7 @@ app.post("/transcript", async (c) => {
 
   const usage = await getUsage(c, "speech_translation");
   const tier = await getTier(c);
-  if (usage >= monthlyLimit["speech_translation"][_.invert(UniTiers)[tier]])
+  if (usage >= UniMonthlyLimits["speech_translation"][_.invert(UniTiers)[tier]])
     throw new HTTPException(StatusCodes.FORBIDDEN, {
       res: withMsgpack({
         error: {

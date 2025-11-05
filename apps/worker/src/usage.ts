@@ -1,18 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import { UniTiers } from "@uni/api";
 import { Context } from "hono";
 import { Database } from "./database.types";
 import { THono } from "./types";
-
-export const monthlyLimit: {[key: string]: {
-    [K in keyof typeof UniTiers]: number;
-}} = {
-    "speech_translation": {
-        free: 25,
-        basic: 3000,
-        max: Number.MAX_SAFE_INTEGER,
-    }
-};
 
 export async function incrementUsage(c: Context<THono>, usageName: string) {
     const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);

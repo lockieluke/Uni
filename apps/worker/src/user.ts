@@ -5,9 +5,9 @@ import { StatusCodes } from "http-status-codes";
 import * as _ from "radashi";
 import { Database } from "./database.types";
 import { THono } from "./types";
-import { getUsage, monthlyLimit } from "./usage";
+import { getUsage } from "./usage";
 import { withMsgpack } from "./utils";
-import { UniTiers } from "@uni/api";
+import { UniMonthlyLimits, UniTiers } from "@uni/api";
 
 const userRouter = new Hono<THono>();
 
@@ -143,7 +143,7 @@ userRouter.get("/", async (c) => {
 
   const tier = _.invert(UniTiers)[data.tier];
 
-  const speechTranslationLimit = monthlyLimit["speech_translation"][tier];
+  const speechTranslationLimit = UniMonthlyLimits["speech_translation"][tier];
   const speechTranslationUsage = await getUsage(c, "speech_translation");
 
   return withMsgpack({
