@@ -15,7 +15,6 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
-import { Unless } from "react-if";
 import { Alert, ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -60,9 +59,7 @@ export default function YouScreen() {
         uri: _.get(userMetadata, "avatar_url", assets?.[0].localUri!)
       }} />
 
-      <Unless condition={tier === "free"}>
-        <TierBadge tier={tier} className="absolute bottom-0 right-0" />
-      </Unless>
+      <TierBadge tier={tier} className="absolute bottom-0 right-0" />
     </View>
     <Text className="text-t-primary text-3xl font-bold">{_.get(userMetadata, "full_name") ?? (provider === "apple" ? "Apple ID User" : "")}</Text>
     <Text className="text-t-primary">{user.email}</Text>
