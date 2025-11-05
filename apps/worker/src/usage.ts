@@ -1,7 +1,8 @@
-import { Context } from "hono";
-import { THono, UniTiers } from "./types";
 import { createClient } from "@supabase/supabase-js";
+import { UniTiers } from "@uni/api";
+import { Context } from "hono";
 import { Database } from "./database.types";
+import { THono } from "./types";
 
 export const monthlyLimit: {[key: string]: {
     [K in keyof typeof UniTiers]: number;

@@ -1,13 +1,12 @@
 import * as _ from "radashi";
-import { z } from "zod";
+import { UniTiers } from "@uni/api";
+import { z } from "zod/v4";
 import { uniApi } from "./networking";
-
-export const UserTierSchema = z.enum(["free", "basic", "max"]);
 
 export const UserMetadataSchema = z.object({
   id: z.string(),
   email: z.email(),
-  tier: UserTierSchema
+  tier: z.enum(UniTiers)
 });
 
 export async function getUserAdditionalData() {

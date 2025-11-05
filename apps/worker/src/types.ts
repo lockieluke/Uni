@@ -31,9 +31,3 @@ export type SupabaseWebhookPayload<T = never> = {
     record: T;
     old_record?: T;
 };
-
-export const UniTiers = {
-    free: 0,
-    basic: 1,
-    max: 2
-};

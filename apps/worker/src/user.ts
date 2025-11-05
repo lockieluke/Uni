@@ -4,9 +4,10 @@ import { HTTPException } from "hono/http-exception";
 import { StatusCodes } from "http-status-codes";
 import * as _ from "radashi";
 import { Database } from "./database.types";
-import { THono, UniTiers } from "./types";
+import { THono } from "./types";
 import { getUsage, monthlyLimit } from "./usage";
 import { withMsgpack } from "./utils";
+import { UniTiers } from "@uni/api";
 
 const userRouter = new Hono<THono>();
 

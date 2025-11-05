@@ -22,6 +22,7 @@
     "@react-navigation/native": "^7.1.6",
     "@shopify/flash-list": "2.0.2",
     "@supabase/supabase-js": "^2.49.4",
+    "@uni/api": "workspace:*",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "expo": "^54.0.0",

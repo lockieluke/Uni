@@ -1,14 +1,13 @@
 import { Language } from "@/lib/constants/Language";
 import type { User } from "@supabase/auth-js";
 import { atom } from "jotai";
-import { z } from "zod";
-import { UserTierSchema } from "./user";
+import { UniTiers } from "@uni/api";
 
 export const userAtom = atom<{
   signedIn: boolean;
   user?: User,
   accessToken?: string,
-  tier: z.infer<typeof UserTierSchema>
+  tier: keyof typeof UniTiers
 }>({
   signedIn: false,
   tier: "free"

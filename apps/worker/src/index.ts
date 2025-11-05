@@ -3,7 +3,7 @@
 
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
-import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema } from "@uni/api";
+import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniTiers } from "@uni/api";
 import { generateObject } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -16,7 +16,7 @@ import * as _ from "radashi";
 import { z } from "zod/v4";
 import { groq, openai, transcriptionModel, translationModel, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
-import { THono, UniTiers } from './types';
+import { THono } from './types';
 import { getUsage, incrementUsage, monthlyLimit } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
