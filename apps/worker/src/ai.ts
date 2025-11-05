@@ -1,7 +1,8 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { OpenAITranscriptionModelSchema, TranslationLLMMPropertySchema } from "@uni/api";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
-import * as z from "zod";
+import { z } from "zod/v4";
 
 export const useOpenRouter = createOpenAICompatible({
   baseURL: `${process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1"}`,
@@ -11,24 +12,15 @@ export const useOpenRouter = createOpenAICompatible({
 
 export const openai = new OpenAI();
 
-export const OpenAITranscriptionModelSchema = z.enum(["fast", "accurate"]);
-export const TranscriptionProviderSchema = z.enum(['openai', 'groq']);
-export const TranslationLLMMPropertySchema = z.enum(['default', 'advanced', 'fast']);
-
 export const translationModel: Record<z.infer<typeof TranslationLLMMPropertySchema>, string> = {
   "default": "google/gemini-2.5-flash",
   "advanced": "openai/gpt-5-mini",
   "fast": "qwen/qwen3-235b-a22b-2507"
 };
 
-export function determineTranscriptionModel(property: z.infer<typeof OpenAITranscriptionModelSchema>) {
-  if (property === 'fast')
-    return "whisper-1";
-
-  if (property === 'accurate')
-    return "gpt-4o-mini-transcribe";
-
-  return "whisper-1";
-}
+export const transcriptionModel: Record<z.infer<typeof OpenAITranscriptionModelSchema>, string> = {
+  "fast": "whisper-1",
+  "accurate": "gpt-4o-mini-transcribe"
+};
 
 export const groq = new Groq();

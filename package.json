@@ -7,6 +7,9 @@
     "apps/*",
     "packages/*"
   ],
+  "scripts": {
+    "build:all": "bun run --filter ./packages/** build"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

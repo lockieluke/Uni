@@ -3,6 +3,7 @@
 
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
+import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema } from "@uni/api";
 import { generateObject } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -13,7 +14,7 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
-import { determineTranscriptionModel, groq, openai, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, translationModel, useOpenRouter } from "./ai";
+import { groq, openai, transcriptionModel, translationModel, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono, UniTiers } from './types';
 import { getUsage, incrementUsage, monthlyLimit } from './usage';
@@ -176,7 +177,7 @@ app.post("/transcript", async (c) => {
 
     const { text } = await openai.audio.transcriptions.create({
       file,
-      model: determineTranscriptionModel(mode),
+      model: transcriptionModel[mode],
       response_format: "json",
       temperature: 0
     });
