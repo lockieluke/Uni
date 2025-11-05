@@ -18,20 +18,24 @@ export const translationModel: Record<z.infer<typeof TranslationLLMMPropertySche
   "fast": "qwen/qwen3-235b-a22b-2507"
 };
 
-const openRouterProviderObj = (provider?: string) => {
-  return _.isString(provider) ? {
+const openRouterProviderObj = (opts?: unknown) => {
+  return _.isPlainObject(opts) ? {
     openrouter: {
       provider: {
-        only: [provider]
+        ...opts
       }
     }
   } : {};
 }
 
 export const translationProvider: Record<z.infer<typeof TranslationLLMMPropertySchema>, object> = {
-  "default": openRouterProviderObj("google-ai-studio"),
+  "default": openRouterProviderObj({
+    only: "google-ai-studio"
+  }),
   "advanced": openRouterProviderObj(),
-  "fast": openRouterProviderObj("cerebras")
+  "fast": openRouterProviderObj({
+    sort: "latency"
+  })
 }
 
 export const transcriptionModel: Record<z.infer<typeof OpenAITranscriptionModelSchema>, string> = {

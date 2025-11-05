@@ -126,7 +126,7 @@ export default function HomeScreen() {
 
                   if (transcripted) {
                     const translationTimer = performance.now();
-                    const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
+                    const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "fast");
                     if (translationErr) {
                       if (translationErr instanceof AxiosError) {
                         console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
@@ -138,7 +138,7 @@ export default function HomeScreen() {
                     }
 
                     if (response) {
-                      const { translatedPhrase, sourceLanguage } = response;
+                      const { translatedPhrase, sourceLanguage, modelId } = response;
                       const translationDuration = performance.now() - translationTimer;
 
                       setTranslations({
@@ -146,7 +146,7 @@ export default function HomeScreen() {
                         guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
                       });
 
-                      console.log(`Transcription took ${transcriptionDuration}ms, Translation took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
+                      console.log(`Transcription took ${transcriptionDuration}ms, Translation with ${modelId} took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
 
                       setTranslating(false);
                     }
