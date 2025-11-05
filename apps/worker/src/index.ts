@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
 /// <reference types="@cloudflare/workers-types" />
 
+import { cerebras } from '@ai-sdk/cerebras';
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
 import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, getTierById } from "@uni/api";
@@ -20,7 +21,6 @@ import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
-import { cerebras } from '@ai-sdk/cerebras';
 
 dayjs.extend(relativeTime);
 
@@ -211,6 +211,7 @@ app.post("/transcript", async (c) => {
 app.post("/translate", async (c) => {
   const payload = decode(await c.req.arrayBuffer());
   const reqBody = await translateSchema.safeParseAsync(payload);
+  const supabase = c.get("supabase");
   if (!reqBody.success) {
     throw new HTTPException(StatusCodes.BAD_REQUEST, {
       res: withMsgpack({
@@ -233,6 +234,18 @@ app.post("/translate", async (c) => {
     });
 
   const translateTiming = performance.now();
+  const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").in("lang", hints).limit(2);
+  if (languagePromptsError && !languagePromptsData) {
+    throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+      res: withMsgpack({
+        error: {
+          message: `Error fetching language prompts: ${languagePromptsError.message}`,
+        }
+      }, c)
+    });
+  }
+
+  const languageSpecificPrompts = languagePromptsData.flatMap(({custom_prompt}) => custom_prompt ?? []);
 
   try {
     const { object, finishReason, response } = await generateObject({
@@ -243,8 +256,9 @@ app.post("/translate", async (c) => {
 You are given a phrase.  This phrase could be in the languages represented by these language codes: ${hints.join(", ")}
 1. Detect the source language of the phrase.
 2. Identify the target language as the other code in the pair.
-3. Translate the phrase into the target language.  When "zh-HK"(Cantonese) is detected as the target language, translate explicitly to Spoken Cantonese NOT Written Chinese, use Cantonese words and elements that Hong Kong Cantonese speakers would use.  Please note that some English phrases may be used when Cantonese is the source language, presrve the original English phrases when translating.
+3. Translate the phrase into the target language.
 4. In your response, include the source language code, the target language code, and the translated phrase.
+${languageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${languageSpecificPrompts.join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
             `.trim()
       }, {
