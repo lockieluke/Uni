@@ -7,6 +7,7 @@
     "supabase-typegen": "supabase gen types typescript --project-id \"tfxryudfyorrheoimbva\" --schema public > src/database.types.ts"
   },
   "dependencies": {
+    "@ai-sdk/cerebras": "^1.0.29",
     "@ai-sdk/elevenlabs": "^1.0.17",
     "@msgpack/msgpack": "^3.1.2",
     "@openrouter/ai-sdk-provider": "^1.2.0",

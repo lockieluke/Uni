@@ -20,6 +20,7 @@ import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
+import { cerebras } from '@ai-sdk/cerebras';
 
 dayjs.extend(relativeTime);
 
@@ -235,7 +236,7 @@ app.post("/translate", async (c) => {
 
   try {
     const { object, finishReason, response } = await generateObject({
-      model: useOpenRouter(translationModel[mode]),
+      model: mode === "ultrafast" ? cerebras("qwen-3-235b-a22b-instruct-2507") : useOpenRouter(translationModel[mode]),
       messages: [{
         role: "system",
         content: `
