@@ -29,7 +29,10 @@
     "hide": "on_success",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
-    "cwd": "$ZED_WORKTREE_ROOT/apps/worker"
+    "cwd": "$ZED_WORKTREE_ROOT/apps/worker",
+    "env": {
+      "WRANGLER_SEND_METRICS": "false"
+    }
   },
   {
     "label": "Start cloudflared tunnel",
