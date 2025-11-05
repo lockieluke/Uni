@@ -1,6 +1,6 @@
 try {
   await Bun.build({
-    entrypoints: ["./src/*.ts"],
+    entrypoints: ["./src/index.ts"],
     outdir: "./dist",
     minify: true,
     target: "browser",
