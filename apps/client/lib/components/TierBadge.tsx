@@ -1,14 +1,13 @@
-import { UserTierSchema } from "@/lib/user";
 import { cn } from "@/lib/utils";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from "react-native";
-import { z } from "zod/v4";
+import { UniTiers } from "@uni/api";
 
 export default function TierBadge({
   tier,
   className
 }: {
-  tier: z.infer<typeof UserTierSchema>,
+  tier: keyof typeof UniTiers,
   className?: string
 }) {
   return (<LinearGradient
