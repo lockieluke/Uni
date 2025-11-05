@@ -149,7 +149,7 @@ userRouter.get("/", async (c) => {
   return withMsgpack({
     id: data.id,
     email: data.email,
-    tier,
+    tier: data.tier,
     limits: {
       speech_translation: {
         monthly_limit: speechTranslationLimit,
