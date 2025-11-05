@@ -7,7 +7,7 @@ import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
 import { getUserAdditionalData } from "@/lib/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UniTiers } from "@uni/api";
+import { getTierById } from "@uni/api";
 import { useAssets } from "expo-asset";
 import * as Clipboard from 'expo-clipboard';
 import { isLiquidGlassAvailable } from "expo-glass-effect";
@@ -37,7 +37,7 @@ export default function YouScreen() {
 
     setUser(prevUser => ({
       ...prevUser,
-      tier: _.invert(UniTiers)[additionalUserInfo.tier]
+      tier: getTierById(additionalUserInfo.tier)
     }));
   }, []);
 

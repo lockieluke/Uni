@@ -3,7 +3,7 @@
 
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
-import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, UniTiers } from "@uni/api";
+import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, getTierById } from "@uni/api";
 import { generateObject } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -103,7 +103,7 @@ app.post("/transcript", async (c) => {
 
   const usage = await getUsage(c, "speech_translation");
   const tier = await getTier(c);
-  if (usage >= UniMonthlyLimits["speech_translation"][_.invert(UniTiers)[tier]])
+  if (usage >= UniMonthlyLimits["speech_translation"][getTierById(tier)])
     throw new HTTPException(StatusCodes.FORBIDDEN, {
       res: withMsgpack({
         error: {

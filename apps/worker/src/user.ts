@@ -7,7 +7,7 @@ import { Database } from "./database.types";
 import { THono } from "./types";
 import { getUsage } from "./usage";
 import { withMsgpack } from "./utils";
-import { UniMonthlyLimits, UniTiers } from "@uni/api";
+import { UniMonthlyLimits, getTierById } from "@uni/api";
 
 const userRouter = new Hono<THono>();
 
@@ -141,7 +141,7 @@ userRouter.get("/", async (c) => {
     });
   }
 
-  const tier = _.invert(UniTiers)[data.tier];
+  const tier = getTierById(data.tier);
 
   const speechTranslationLimit = UniMonthlyLimits["speech_translation"][tier];
   const speechTranslationUsage = await getUsage(c, "speech_translation");
