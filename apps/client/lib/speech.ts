@@ -1,7 +1,9 @@
 import * as _ from "radashi";
+import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema } from "@uni/api";
+import { z } from "zod/v4";
 import { uniApi } from "./networking";
 
-export default async function transcript(uri: string): Promise<{
+export default async function transcript(uri: string, mode: z.infer<typeof OpenAITranscriptionModelSchema> = "accurate", provider: z.infer<typeof TranscriptionProviderSchema> = "openai"): Promise<{
     language: string,
     transcript: string;
 } | null> {
@@ -14,8 +16,8 @@ export default async function transcript(uri: string): Promise<{
 
     const response = await uniApi.postForm("/transcript", formData, {
         params: {
-            mode: "accurate",
-            provider: "openai"
+            mode,
+            provider
         }
     });
     const payload = response.data;
@@ -29,4 +31,3 @@ export default async function transcript(uri: string): Promise<{
         transcript
     };
 }
-

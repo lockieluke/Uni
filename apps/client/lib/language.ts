@@ -1,5 +1,6 @@
 import { Language } from "@/lib/constants/Language";
 import { encode } from "@msgpack/msgpack";
+import { TranslationLLMMPropertySchema } from "@uni/api";
 import { getLocales } from "expo-localization";
 import * as _ from "radashi";
 import { z } from "zod/v4";
@@ -41,7 +42,7 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
   };
 }
 
-export default async function translatePhrase(phrase: string, hints: string[], model: string = "default") {
+export default async function translatePhrase(phrase: string, hints: string[], model: z.infer<typeof TranslationLLMMPropertySchema> = "default") {
   const response = await uniApi.post("/translate", encode({
     phrase,
     hints
