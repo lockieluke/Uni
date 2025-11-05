@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@ai-sdk/elevenlabs": "^1.0.17",
-    "@ai-sdk/openai-compatible": "^1.0.26",
     "@msgpack/msgpack": "^3.1.2",
+    "@openrouter/ai-sdk-provider": "^1.2.0",
     "@supabase/supabase-js": "^2.54.0",
     "@uni/api": "workspace:*",
     "ai": "^5.0.86",

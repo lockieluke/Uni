@@ -1,13 +1,12 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { OpenAITranscriptionModelSchema, TranslationLLMMPropertySchema } from "@uni/api";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 import * as _ from 'radashi';
 import { z } from "zod/v4";
 
-export const useOpenRouter = createOpenAICompatible({
+export const useOpenRouter = createOpenRouter({
   baseURL: `${process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1"}`,
-  name: "openrouter",
   apiKey: `${process.env.OPENROUTER_API_KEY}`
 });
 
@@ -22,7 +21,9 @@ export const translationModel: Record<z.infer<typeof TranslationLLMMPropertySche
 const openRouterProviderObj = (provider?: string) => {
   return _.isString(provider) ? {
     openrouter: {
-      provider: [provider]
+      provider: {
+        only: [provider]
+      }
     }
   } : {};
 }
