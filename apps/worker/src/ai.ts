@@ -2,6 +2,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { OpenAITranscriptionModelSchema, TranslationLLMMPropertySchema } from "@uni/api";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
+import * as _ from 'radashi';
 import { z } from "zod/v4";
 
 export const useOpenRouter = createOpenAICompatible({
@@ -17,6 +18,20 @@ export const translationModel: Record<z.infer<typeof TranslationLLMMPropertySche
   "advanced": "openai/gpt-5-mini",
   "fast": "qwen/qwen3-235b-a22b-2507"
 };
+
+const openRouterProviderObj = (provider?: string) => {
+  return _.isString(provider) ? {
+    openrouter: {
+      provider: [provider]
+    }
+  } : {};
+}
+
+export const translationProvider: Record<z.infer<typeof TranslationLLMMPropertySchema>, object> = {
+  "default": openRouterProviderObj("google-ai-studio"),
+  "advanced": openRouterProviderObj(),
+  "fast": openRouterProviderObj("cerebras")
+}
 
 export const transcriptionModel: Record<z.infer<typeof OpenAITranscriptionModelSchema>, string> = {
   "fast": "whisper-1",

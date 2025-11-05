@@ -14,7 +14,7 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
-import { groq, openai, transcriptionModel, translationModel, useOpenRouter } from "./ai";
+import { groq, openai, transcriptionModel, translationModel, translationProvider, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono } from './types';
 import { getUsage, incrementUsage, monthlyLimit } from './usage';
@@ -258,15 +258,7 @@ Do not interpret the phrase, just translate it.
       }),
       temperature: 0,
       providerOptions: {
-        openrouter: mode === "default" ? {
-          provider: {
-            only: ["google-ai-studio"]
-          }
-        } : (mode === "fast" ? {
-          provider: {
-            only: ["cerebras"]
-          }
-        } : {})
+        ...translationProvider[mode]
       }
     });
 
