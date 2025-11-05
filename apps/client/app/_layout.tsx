@@ -1,3 +1,4 @@
+import { useAsyncEffect } from '@/lib/hooks';
 import { getLanguages } from '@/lib/language';
 import { languagesAtom } from '@/lib/states';
 import { mmkvStorage } from '@/lib/storage';
@@ -6,17 +7,17 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppleAuthenticationButton } from 'expo-apple-authentication';
+import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Image } from "expo-image";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSetAtom } from 'jotai';
 import { cssInterop } from "nativewind";
-import { TouchableOpacity, useColorScheme } from 'react-native';
+import { Pressable, TouchableOpacity, useColorScheme } from 'react-native';
 import { useMMKVStorage } from 'react-native-mmkv-storage';
 import 'react-native-reanimated';
 import "./global.css";
-import { useAsyncEffect } from '@/lib/hooks';
 
 cssInterop(Image, { className: "style" });
 cssInterop(LinearGradient, { className: "style" });
@@ -29,6 +30,7 @@ export default function RootLayout() {
   const setLanguages = useSetAtom(languagesAtom);
   const [hostLanguage, setHostLanguage] = useMMKVStorage("hostLanguage", mmkvStorage, "en-GB");
   const [guestLanguage, setGuestLanguage] = useMMKVStorage("guestLanguage", mmkvStorage, "zh-HK");
+  const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
   GoogleSignin.configure({
     scopes: [],
@@ -74,11 +76,12 @@ export default function RootLayout() {
               if (!canGoBack)
                 return null;
 
-              return (
-                <TouchableOpacity onPress={() => router.back()}>
-                  <Entypo name="chevron-down" size={24} color={colorScheme === "dark" ? "white" : "black"} />
-                </TouchableOpacity>
-              )
+              const Icon = () => (<Entypo name="chevron-down" className='text-center' size={24} color={colorScheme === "dark" ? "white" : "black"} />);
+
+              return liquidGlassEnabled ? <Pressable className="px-5" onPress={() => router.back()}><Icon /></Pressable>:
+              <TouchableOpacity onPress={() => router.back()}>
+                <Icon />
+              </TouchableOpacity>
             }
           }}
         />
