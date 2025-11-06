@@ -15,5 +15,14 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  }
+  },
+  "trustedDependencies": [
+    "bufferutil",
+    "core-js-pure",
+    "esbuild",
+    "sharp",
+    "supabase",
+    "utf-8-validate",
+    "workerd"
+  ]
 }
