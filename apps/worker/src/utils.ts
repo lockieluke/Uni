@@ -8,7 +8,9 @@ export function withMsgpack(json: any, c: Context) {
         throw new Error("Invalid JSON object");
 
     c.header("Content-Type", "application/msgpack");
-    return c.body(encode(json));
+
+    const msgpackPayload = encode(json);
+    return c.body(Buffer.from(msgpackPayload));
 }
 
 export async function toDataURL(file: File) {
