@@ -242,8 +242,10 @@ app.post("/translate", async (c) => {
       type: "json"
     });
     const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
-    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV)
+    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV) {
       languageSpecificPrompts.set(hint, langCache.value);
+      return;
+    }
 
     const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
     if (languagePromptsError && !languagePromptsData) {
