@@ -295,7 +295,7 @@ Do not interpret the phrase, just translate it.
       }),
       temperature: 0,
       providerOptions: {
-        ...translationProvider[mode]
+        ...(mode === "ultrafast" ? {} : translationProvider[mode])
       }
     });
 
