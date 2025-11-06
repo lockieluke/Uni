@@ -32,8 +32,6 @@ export default function YouScreen() {
       return;
     }
 
-    additionalUserInfo.tier
-
     setUser(prevUser => ({
       ...prevUser,
       tier: getTierById(additionalUserInfo.tier)
