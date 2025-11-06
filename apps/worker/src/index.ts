@@ -212,6 +212,7 @@ app.post("/translate", async (c) => {
   const payload = decode(await c.req.arrayBuffer());
   const reqBody = await translateSchema.safeParseAsync(payload);
   const supabase = c.get("supabase");
+  const LANG_CACHE = c.env.LANG_CACHE;
   if (!reqBody.success) {
     throw new HTTPException(StatusCodes.BAD_REQUEST, {
       res: withMsgpack({
@@ -234,18 +235,39 @@ app.post("/translate", async (c) => {
     });
 
   const translateTiming = performance.now();
-  const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").in("lang", hints).limit(2);
-  if (languagePromptsError && !languagePromptsData) {
-    throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-      res: withMsgpack({
-        error: {
-          message: `Error fetching language prompts: ${languagePromptsError.message}`,
-        }
-      }, c)
-    });
-  }
 
-  const languageSpecificPrompts = languagePromptsData.flatMap(({custom_prompt}) => custom_prompt ?? []);
+  let languageSpecificPrompts: Map<string, string | null> = new Map();
+  await async.asyncForEach(hints, async hint => {
+    const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
+      type: "json"
+    });
+    const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
+    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV)
+      languageSpecificPrompts.set(hint, langCache.value);
+
+    const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
+    if (languagePromptsError && !languagePromptsData) {
+      throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+        res: withMsgpack({
+          error: {
+            message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`,
+          }
+        }, c)
+      });
+    }
+
+    const customPrompt = languagePromptsData.custom_prompt;
+    if (customPrompt)
+      await LANG_CACHE.put(hint, customPrompt, {
+        metadata: {
+          fetchedAt: dayjs().toJSON()
+        }
+      })
+
+    languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
+  });
+
+  const flattenedLanguageSpecificPrompts = languageSpecificPrompts.values().toArray();
 
   try {
     const { object, finishReason, response } = await generateObject({
@@ -258,7 +280,7 @@ You are given a phrase.  This phrase could be in the languages represented by th
 2. Identify the target language as the other code in the pair.
 3. Translate the phrase into the target language.
 4. In your response, include the source language code, the target language code, and the translated phrase.
-${languageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${languageSpecificPrompts.join("\n\n")}\n` : ""}
+${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
             `.trim()
       }, {

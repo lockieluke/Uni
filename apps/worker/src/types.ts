@@ -9,8 +9,7 @@ type HonoBindings = {
     SUPABASE_ANON_KEY: string;
     SUPABASE_ADMIN_KEY: string;
     DEV: boolean;
-    TRANSLATION_DISCLAIMERS: KVNamespace;
-    TRANSLATION_LANGUAGES: KVNamespace;
+    LANG_CACHE: KVNamespace;
     BEFORE_USER_CREATED_HOOK_SECRET: string;
 };
 
