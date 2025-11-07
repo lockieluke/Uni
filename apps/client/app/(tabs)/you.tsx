@@ -26,6 +26,8 @@ export default function YouScreen() {
   const [{ signedIn, user, accessToken, tier }, setUser] = useAtom(userAtom);
 
   useAsyncEffect(async () => {
+    if (!signedIn) return;
+
     const [err, additionalUserInfo] = await _.tryit(getUserAdditionalData)();
     if (err) {
       console.error("Error fetching user metadata:", err.message);
