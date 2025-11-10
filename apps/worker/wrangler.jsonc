@@ -42,6 +42,11 @@
 			"binding": "LANG_CACHE",
 			"id": "f7ba407e969f4d63af1c5577f342a149",
 			"remote": true
+		},
+		{
+			"binding": "LANG_MO_CACHE",
+			"id": "ea4481e9532743fbb90807cc28719cea",
+			"remote": true
 		}
 	]
 }

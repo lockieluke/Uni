@@ -12,8 +12,7 @@ export const useOpenRouter = createOpenRouter({
 
 export const openai = new OpenAI();
 
-export const translationModel: Record<Exclude<z.infer<typeof TranslationLLMMPropertySchema>, "ultrafast">, string> = {
-  "default": "google/gemini-2.5-flash",
+export const translationModel: Record<Exclude<z.infer<typeof TranslationLLMMPropertySchema>, "ultrafast" | "default">, string> = {
   "advanced": "openai/gpt-5-mini",
   "fast": "qwen/qwen3-235b-a22b-2507"
 };
@@ -29,14 +28,18 @@ const openRouterProviderObj = (opts?: unknown) => {
 }
 
 export const translationProvider: Record<Exclude<z.infer<typeof TranslationLLMMPropertySchema>, "ultrafast">, object> = {
-  "default": openRouterProviderObj({
-    only: "google-ai-studio"
-  }),
+  "default": openRouterProviderObj(),
   "advanced": openRouterProviderObj(),
   "fast": openRouterProviderObj({
     sort: "latency"
   })
-}
+};
+
+export const specificModelOverrideProvider: Record<string, object> = {
+  "google/gemini-2.5-flash": openRouterProviderObj({
+    only: "google-ai-studio"
+  })
+};
 
 export const transcriptionModel: Record<z.infer<typeof OpenAITranscriptionModelSchema>, string> = {
   "fast": "whisper-1",

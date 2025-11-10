@@ -5,7 +5,7 @@ import { cerebras } from '@ai-sdk/cerebras';
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
 import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, getTierById } from "@uni/api";
-import { generateObject } from "ai";
+import { generateObject, LanguageModel } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Hono } from 'hono';
@@ -15,7 +15,7 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
-import { groq, openai, transcriptionModel, translationModel, translationProvider, useOpenRouter } from "./ai";
+import { groq, openai, specificModelOverrideProvider, transcriptionModel, translationModel, translationProvider, useOpenRouter } from "./ai";
 import { LanguageSchema, translateSchema } from "./schemas";
 import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
@@ -226,6 +226,7 @@ app.post("/translate", async (c) => {
   const reqBody = await translateSchema.safeParseAsync(payload);
   const supabase = c.get("supabase");
   const LANG_CACHE = c.env.LANG_CACHE;
+  const LANG_MO_CACHE = c.env.LANG_MO_CACHE;
   if (!reqBody.success) {
     throw new HTTPException(StatusCodes.BAD_REQUEST, {
       res: withMsgpack({
@@ -250,43 +251,100 @@ app.post("/translate", async (c) => {
   const translateTiming = performance.now();
 
   let languageSpecificPrompts: Map<string, string | null> = new Map();
+  let languageModelOverrides: Map<string, string> = new Map();
   await async.asyncForEach(hints, async hint => {
-    const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
-      type: "text"
-    });
-    const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
-    const value = langCache.value;
-    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
-      languageSpecificPrompts.set(hint, value);
-      return;
-    }
-
-    const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
-    if (languagePromptsError) {
-      throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-        res: withMsgpack({
-          error: {
-            message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`,
-          }
-        }, c)
+    let specificPromptCacheHit = false;
+    {
+      const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
+        type: "text"
       });
+      const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
+      const value = langCache.value;
+      if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
+        languageSpecificPrompts.set(hint, value === "null" ? null : value);
+        specificPromptCacheHit = true;
+      }
     }
 
-    const customPrompt = languagePromptsData.custom_prompt;
-    await LANG_CACHE.put(hint, customPrompt ?? "null", {
-      metadata: {
-        fetchedAt: dayjs().toJSON()
+    let modelOverrideCacheHit = false;
+    {
+      const langModelOverrideCache = await LANG_CACHE.getWithMetadata<string>(hint, {
+        type: "text"
+      });
+      const fetchedAt = dayjs(_.get(langModelOverrideCache.metadata, "fetchedAt"));
+      const value = langModelOverrideCache.value;
+      if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
+        languageSpecificPrompts.set(hint, value === "null" ? null : value);
+        modelOverrideCacheHit = true;
       }
-    })
+    }
 
-    languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
+    if (!specificPromptCacheHit) {
+      const { data: languagePromptsData, error: languagePromptsError } = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
+      if (languagePromptsError) {
+        throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+          res: withMsgpack({
+            error: {
+              message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`,
+            }
+          }, c)
+        });
+      }
+
+      const customPrompt = languagePromptsData.custom_prompt;
+      await LANG_CACHE.put(hint, customPrompt ?? "null", {
+        metadata: {
+          fetchedAt: dayjs().toJSON()
+        }
+      })
+
+      languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
+    }
+
+    if (!modelOverrideCacheHit) {
+      const { data: languageModelOverrideData, error: languageModelOverrideError } = await supabase.from("languages").select("model_override").eq("lang", hint).single();
+      if (languageModelOverrideError) {
+        throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+          res: withMsgpack({
+            error: {
+              message: `Error fetching language model override for ${hint}: ${languageModelOverrideError.message}`,
+            }
+          }, c)
+        });
+      }
+
+      const modelOverride = languageModelOverrideData.model_override;
+      await LANG_MO_CACHE.put(hint, modelOverride ?? "null", {
+        metadata: {
+          fetchedAt: dayjs().toJSON()
+        }
+      })
+
+      if (modelOverride)
+        languageModelOverrides.set(hint, modelOverride);
+    }
   });
 
   const flattenedLanguageSpecificPrompts = languageSpecificPrompts.values().toArray();
 
+  let autoModel: LanguageModel | undefined;
+  const languageModelOverrideArr = languageModelOverrides.values().toArray();
+  if (languageModelOverrideArr.some(override => !_.isNullish(override))) {
+    // TODO: Using last model override found for now
+    const modelOverride = languageModelOverrideArr.filter(override => !_.isNullish(override)).at(-1);
+    if (modelOverride) {
+      const prefix = modelOverride.split(":")[0];
+      const model = modelOverride.split(":")[1];
+      if (prefix === "cerebras")
+        autoModel = cerebras(model);
+      else if (prefix === "openrouter")
+        autoModel = useOpenRouter(model);
+    }
+  }
+
   try {
     const { object, finishReason, response } = await generateObject({
-      model: mode === "ultrafast" ? cerebras("qwen-3-235b-a22b-instruct-2507") : useOpenRouter(translationModel[mode]),
+      model: mode === "default" && !_.isNullish(autoModel) ? autoModel : (mode === "ultrafast" || mode === "default" ? cerebras("qwen-3-235b-a22b-instruct-2507") : useOpenRouter(translationModel[mode])),
       messages: [{
         role: "system",
         content: `
@@ -295,7 +353,7 @@ You are given a phrase.  This phrase could be in the languages represented by th
 2. Identify the target language as the other code in the pair.
 3. Translate the phrase into the target language.
 4. In your response, include the source language code, the target language code, and the translated phrase.
-${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.join("\n\n")}\n` : ""}
+${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter(prompt => !_.isNullish(prompt)).join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
             `.trim()
       }, {
@@ -310,7 +368,7 @@ Do not interpret the phrase, just translate it.
       }),
       temperature: 0,
       providerOptions: {
-        ...(mode === "ultrafast" ? {} : translationProvider[mode])
+        ...(mode === "ultrafast" ? {} : (mode === "default" && !_.isNullish(autoModel) ? specificModelOverrideProvider[autoModel.toString()] : translationProvider[mode]))
       }
     });
 

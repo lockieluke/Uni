@@ -126,7 +126,7 @@ export default function HomeScreen() {
 
                   if (transcripted) {
                     const translationTimer = performance.now();
-                    const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "ultrafast");
+                    const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
                     if (translationErr) {
                       if (translationErr instanceof AxiosError) {
                         console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
