@@ -70,13 +70,22 @@
         "expo-asset",
         {
           "assets": [
-            "./assets/images/user.jpg"
+            "./assets/images/user.jpg",
+            "./assets/images/uni_cover.png",
+            "./assets/images/uni_cover.mp4"
           ]
         }
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -7,11 +7,12 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { AppleAuthenticationButton } from 'expo-apple-authentication';
-import { isLiquidGlassAvailable } from 'expo-glass-effect';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Image } from "expo-image";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { VideoView } from 'expo-video';
 import { useSetAtom } from 'jotai';
 import { cssInterop } from "nativewind";
 import { Pressable, TouchableOpacity, useColorScheme } from 'react-native';
@@ -22,6 +23,8 @@ import "./global.css";
 cssInterop(Image, { className: "style" });
 cssInterop(LinearGradient, { className: "style" });
 cssInterop(AppleAuthenticationButton, { className: "style" });
+cssInterop(VideoView, { className: "style" });
+cssInterop(GlassView, { className: "style" });
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
