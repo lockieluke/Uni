@@ -21,10 +21,13 @@ import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
+import { endTime, setMetric, startTime, timing } from 'hono/timing';
 
 dayjs.extend(relativeTime);
 
 const app = new Hono<THono>();
+
+app.use(timing());
 
 app.onError(async (err, c) => {
   if (err instanceof HTTPException) {
@@ -102,6 +105,8 @@ app.post("/transcript", async (c) => {
     });
   }
 
+  startTime(c, "check-speech-usage");
+
   const usage = await getUsage(c, "speech_translation");
   const tier = await getTier(c);
   if (usage >= UniMonthlyLimits["speech_translation"][getTierById(tier)])
@@ -112,6 +117,8 @@ app.post("/transcript", async (c) => {
         }
       }, c)
     });
+
+  endTime(c, "check-speech-usage");
 
   const file = formData["file"];
   if (!file || !(file instanceof File)) {
@@ -133,6 +140,10 @@ app.post("/transcript", async (c) => {
         }
       }, c)
     });
+
+  setMetric(c, "provider", provider);
+
+  startTime(c, "transcription");
 
   const transcriptStart = dayjs();
 
@@ -186,6 +197,8 @@ app.post("/transcript", async (c) => {
     const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
     if (c.env.DEV)
       console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
+
+    endTime(c, "transcription");
 
     if (!text) {
       throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
@@ -242,7 +255,7 @@ app.post("/translate", async (c) => {
       type: "json"
     });
     const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
-    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV) {
+    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(langCache.value)) {
       languageSpecificPrompts.set(hint, langCache.value);
       return;
     }
