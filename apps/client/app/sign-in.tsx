@@ -126,7 +126,6 @@ export default function SignIn() {
               rootNavigation.reset({
                 routes: [{ name: "(tabs)" }],
               });
-              router.replace("/(tabs)");
             } else {
               console.error("No id token present");
             }
