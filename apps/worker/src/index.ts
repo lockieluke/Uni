@@ -252,16 +252,17 @@ app.post("/translate", async (c) => {
   let languageSpecificPrompts: Map<string, string | null> = new Map();
   await async.asyncForEach(hints, async hint => {
     const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
-      type: "json"
+      type: "text"
     });
     const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
-    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(langCache.value)) {
-      languageSpecificPrompts.set(hint, langCache.value);
+    const value = langCache.value;
+    if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
+      languageSpecificPrompts.set(hint, value);
       return;
     }
 
     const {data: languagePromptsData, error: languagePromptsError} = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
-    if (languagePromptsError && !languagePromptsData) {
+    if (languagePromptsError) {
       throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
         res: withMsgpack({
           error: {
@@ -272,12 +273,11 @@ app.post("/translate", async (c) => {
     }
 
     const customPrompt = languagePromptsData.custom_prompt;
-    if (customPrompt)
-      await LANG_CACHE.put(hint, customPrompt, {
-        metadata: {
-          fetchedAt: dayjs().toJSON()
-        }
-      })
+    await LANG_CACHE.put(hint, customPrompt ?? "null", {
+      metadata: {
+        fetchedAt: dayjs().toJSON()
+      }
+    })
 
     languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
   });
