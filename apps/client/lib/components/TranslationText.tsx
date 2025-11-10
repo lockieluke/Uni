@@ -1,11 +1,11 @@
 import { Language } from "@/lib/constants/Language";
 import { cn } from "@/lib/utils";
 import { MenuView } from '@react-native-menu/menu';
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Skeleton } from 'moti/skeleton';
 import { useState } from "react";
 import { Dimensions, Text, TouchableOpacity, useColorScheme, View } from "react-native";
-import { availableLanguagesAtom, languagesAtom } from "../states";
+import { availableLanguagesAtom, languagesAtom, translationsAtom } from "../states";
 
 export default function TranslationText({ translating = false, revertEnabled, language, children }: {
   translating?: boolean,
@@ -17,6 +17,8 @@ export default function TranslationText({ translating = false, revertEnabled, la
 
   const [languages, setLanguages] = useAtom(languagesAtom);
   const availableLanguages = useAtomValue(availableLanguagesAtom);
+  const setTranslations = useSetAtom(translationsAtom);
+
   const [menuSize, setMenuSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [inLangMenu, setInLangMenu] = useState(false);
 
@@ -66,6 +68,8 @@ export default function TranslationText({ translating = false, revertEnabled, la
               host: choosenLanguage
             }))
           }
+
+          setTranslations({});
         }} actions={Object.values(availableLanguages).filter(lang => role !== "guest" ? languages.guest.code !== lang.code : languages.host.code !== lang.code).map(lang => ({
           title: `${lang.flag} ${lang.displayName}`,
           id: lang.code,
