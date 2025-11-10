@@ -1,6 +1,6 @@
 import { useAsyncEffect } from '@/lib/hooks';
 import { getLanguages } from '@/lib/language';
-import { languagesAtom } from '@/lib/states';
+import { availableLanguagesAtom, languagesAtom } from '@/lib/states';
 import { mmkvStorage } from '@/lib/storage';
 import { checkSignedIn } from "@/lib/supabase";
 import Entypo from '@expo/vector-icons/Entypo';
@@ -31,6 +31,7 @@ export default function RootLayout() {
   const router = useRouter();
 
   const setLanguages = useSetAtom(languagesAtom);
+  const setAvailableLanguages = useSetAtom(availableLanguagesAtom);
   const [hostLanguage, setHostLanguage] = useMMKVStorage("hostLanguage", mmkvStorage, "en-GB");
   const [guestLanguage, setGuestLanguage] = useMMKVStorage("guestLanguage", mmkvStorage, "zh-HK");
   const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
@@ -44,6 +45,9 @@ export default function RootLayout() {
     const isSignedIn = await checkSignedIn();
 
     if (isSignedIn) {
+      const supportedLanguages = await getLanguages();
+      setAvailableLanguages(supportedLanguages);
+
       if (!hostLanguage)
         setHostLanguage("en-GB");
 
@@ -51,7 +55,6 @@ export default function RootLayout() {
         setGuestLanguage("zh-HK");
 
       if (hostLanguage && guestLanguage) {
-        const supportedLanguages = await getLanguages();
         setLanguages({
           host: supportedLanguages[hostLanguage],
           guest: supportedLanguages[guestLanguage]
@@ -81,10 +84,10 @@ export default function RootLayout() {
 
               const Icon = () => (<Entypo name="chevron-down" className='text-center' size={24} color={colorScheme === "dark" ? "white" : "black"} />);
 
-              return liquidGlassEnabled ? <Pressable className="px-5" onPress={() => router.back()}><Icon /></Pressable>:
-              <TouchableOpacity onPress={() => router.back()}>
-                <Icon />
-              </TouchableOpacity>
+              return liquidGlassEnabled ? <Pressable className="px-5" onPress={() => router.back()}><Icon /></Pressable> :
+                <TouchableOpacity onPress={() => router.back()}>
+                  <Icon />
+                </TouchableOpacity>
             }
           }}
         />

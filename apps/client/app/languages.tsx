@@ -1,13 +1,10 @@
 import ColumnTrigger from "@/lib/components/ColumnTrigger";
-import { Language } from "@/lib/constants/Language";
-import { useAsyncEffect } from "@/lib/hooks";
-import { getLanguages } from "@/lib/language";
-import { languagesAtom, translationsAtom } from "@/lib/states";
+import { availableLanguagesAtom, languagesAtom, translationsAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect } from "expo-router";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 
@@ -15,16 +12,9 @@ export default function LanguagesScreen() {
   const colorScheme = useColorScheme();
 
   const [languages, setLanguages] = useAtom(languagesAtom);
+  const availableLanguages = useAtomValue(availableLanguagesAtom);
   const setTranslations = useSetAtom(translationsAtom);
-  const [supportedLangs, setSupportedLangs] = useState<{
-    [key: string]: Language;
-  }>({});
   const [selectMode, setSelectMode] = useState<"host" | "guest">("host");
-
-  useAsyncEffect(async () => {
-    const languages = await getLanguages();
-    setSupportedLangs(languages);
-  }, []);
 
   useFocusEffect(() => {
     return () => {
@@ -35,8 +25,8 @@ export default function LanguagesScreen() {
   return (<View className="flex-1 justify-start items-center">
     <View className="w-screen h-full">
       <FlashList
-        data={Object.entries(supportedLangs)}
-        extraData={Object.entries(supportedLangs)}
+        data={Object.entries(availableLanguages)}
+        extraData={Object.entries(availableLanguages)}
         renderItem={({ item }) => {
           const languageCode = item[1].code;
           return (
@@ -75,7 +65,6 @@ export default function LanguagesScreen() {
             </ColumnTrigger>
           )
         }}
-        estimatedItemSize={50}
         keyExtractor={(item) => item[0]}
         contentContainerClassName="px-5 py-3"
         contentContainerStyle={{

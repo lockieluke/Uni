@@ -30,6 +30,10 @@ export const languagesAtom = atom<{
   }
 });
 
+export const availableLanguagesAtom = atom<{
+  [key: string]: Language;
+}>({});
+
 export const translationsAtom = atom<{
   host?: string;
   guest?: string;
