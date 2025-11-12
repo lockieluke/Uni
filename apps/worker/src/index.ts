@@ -353,7 +353,7 @@ You are given a phrase.  This phrase could be in the languages represented by th
 2. Identify the target language as the other code in the pair.
 3. Translate the phrase into the target language.
 4. In your response, include the source language code, the target language code, and the translated phrase.
-${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter(prompt => !_.isNullish(prompt)).join("\n\n")}\n` : ""}
+${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter(prompt => !_.isNullish(prompt) && prompt !== "null").join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
             `.trim()
       }, {
