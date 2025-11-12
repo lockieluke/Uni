@@ -108,7 +108,7 @@ export default function HomeScreen() {
                   duration: 300
                 }}>
                   <View className="flex flex-center my-52">
-                    <Text className="text-3xl text-t-primary font-semibold">{previewTranscription}</Text>
+                    <Text className="text-3xl w-full text-center text-t-primary font-semibold">{previewTranscription}</Text>
                   </View>
                 </MotiView>
               </When>
