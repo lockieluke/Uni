@@ -19,6 +19,7 @@ import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
+import { MotiView } from "moti";
 import * as _ from "radashi";
 import { useState } from "react";
 import { When } from "react-if";
@@ -60,107 +61,112 @@ export default function HomeScreen() {
     <SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
       <When condition={signedIn}>
         <When condition={speechReady === 'granted'}>
-          <View className={cn("absolute py-10 w-full flex flex-col gap-10", {
-            "top-0": !liquidGlassEnabled,
-            "top-10": liquidGlassEnabled
-          })}>
-            <When condition={liquidGlassEnabled}>
-              <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate</Text>
-            </When>
-            <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
-            <View className={"border-[0.05rem] border-gray-300 w-full"} />
-            <TranslationText translating={translating} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
-            <View className={"border-[0.05rem] border-gray-300 w-full"} />
-          </View>
+          <MotiView className={cn("absolute inset-0 flex items-center", {
+            "top-10": liquidGlassEnabled,
+            "top-0": !liquidGlassEnabled
+          })} transition={{
+            type: "spring",
+            duration: 300
+          }} from={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <View className={"absolute py-10 w-full flex flex-col gap-10"}>
+              <When condition={liquidGlassEnabled}>
+                <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate</Text>
+              </When>
+              <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
+              <View className={"border-[0.05rem] border-gray-300 w-full"} />
+              <TranslationText translating={translating} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
+              <View className={"border-[0.05rem] border-gray-300 w-full"} />
+            </View>
 
-          <View style={{
-            bottom: bottomTabHeight
-          }} className={"flex-center absolute bottom-14"}>
-            <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
-              router.push("/languages");
-            }}>
-              <Text className="text-t-primary text-lg font-semibold">{languages.host.displayName}</Text>
-              <MaterialIcons className="rotate-90" name="compare-arrows" size={28} color={colorScheme === "dark" ? "white" : "black"} />
-              <Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
-            </TouchableOpacity>
+            <View style={{
+              bottom: bottomTabHeight
+            }} className={"flex-center absolute bottom-14"}>
+              <TouchableOpacity className="flex-center flex-col gap-3 my-5" onPress={() => {
+                router.push("/languages");
+              }}>
+                <Text className="text-t-primary text-lg font-semibold">{languages.host.displayName}</Text>
+                <MaterialIcons className="rotate-90" name="compare-arrows" size={28} color={colorScheme === "dark" ? "white" : "black"} />
+                <Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
+              </TouchableOpacity>
 
-            <TranscriptButton onPressIn={async () => {
-              try {
-                await audioRecorder.prepareToRecordAsync(RecordingPresets.HIGH_QUALITY);
-                audioRecorder.record();
-              } catch (error) {
-                console.error("Error starting recording:", error);
-              }
-            }} onPressOut={async () => {
-              setTranslating(true);
-              const resetTranslatingTimeout = setTimeout(() => {
-                setTranslating(false);
-              }, 1000);
-              if (audioRecorder.isRecording) {
-                clearTimeout(resetTranslatingTimeout);
-                await audioRecorder.stop();
+              <TranscriptButton onPressIn={async () => {
+                try {
+                  await audioRecorder.prepareToRecordAsync(RecordingPresets.HIGH_QUALITY);
+                  audioRecorder.record();
+                } catch (error) {
+                  console.error("Error starting recording:", error);
+                }
+              }} onPressOut={async () => {
+                setTranslating(true);
+                const resetTranslatingTimeout = setTimeout(() => {
+                  setTranslating(false);
+                }, 1000);
+                if (audioRecorder.isRecording) {
+                  clearTimeout(resetTranslatingTimeout);
+                  await audioRecorder.stop();
 
-                const uri = audioRecorder.uri;
-                if (uri) {
-                  const file = new File(uri);
-                  setTranslations({});
-
-                  const hostLanguageCode = languages.host.code;
-                  const guestLanguageCode = languages.guest.code;
-
-                  const hints = [hostLanguageCode, guestLanguageCode];
-                  const transcriptionTimer = performance.now();
-                  const [transcriptionErr, result] = await _.tryit(transcript)(uri);
-                  if (transcriptionErr) {
-                    setTranslating(false);
+                  const uri = audioRecorder.uri;
+                  if (uri) {
+                    const file = new File(uri);
                     setTranslations({});
-                    if (transcriptionErr instanceof AxiosError) {
-                      console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message", "unknown error"));
-                      return;
-                    }
-                    console.error("Error transcribing:", transcriptionErr.message);
-                    return;
-                  }
-                  const transcripted = result?.transcript;
-                  const transcriptionDuration = performance.now() - transcriptionTimer;
 
-                  if (transcripted) {
-                    const translationTimer = performance.now();
-                    const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
-                    if (translationErr) {
-                      if (translationErr instanceof AxiosError) {
-                        console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
-                        setTranslations({});
+                    const hostLanguageCode = languages.host.code;
+                    const guestLanguageCode = languages.guest.code;
+
+                    const hints = [hostLanguageCode, guestLanguageCode];
+                    const transcriptionTimer = performance.now();
+                    const [transcriptionErr, result] = await _.tryit(transcript)(uri);
+                    if (transcriptionErr) {
+                      setTranslating(false);
+                      setTranslations({});
+                      if (transcriptionErr instanceof AxiosError) {
+                        console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message", "unknown error"));
                         return;
                       }
-                      console.error("Error translating:", translationErr.message);
+                      console.error("Error transcribing:", transcriptionErr.message);
                       return;
                     }
+                    const transcripted = result?.transcript;
+                    const transcriptionDuration = performance.now() - transcriptionTimer;
 
-                    if (response) {
-                      const { translatedPhrase, sourceLanguage, modelId } = response;
-                      const translationDuration = performance.now() - translationTimer;
+                    if (transcripted) {
+                      const translationTimer = performance.now();
+                      const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
+                      if (translationErr) {
+                        if (translationErr instanceof AxiosError) {
+                          console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
+                          setTranslations({});
+                          return;
+                        }
+                        console.error("Error translating:", translationErr.message);
+                        return;
+                      }
 
-                      setTranslations({
-                        host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
-                        guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
-                      });
+                      if (response) {
+                        const { translatedPhrase, sourceLanguage, modelId } = response;
+                        const translationDuration = performance.now() - translationTimer;
 
-                      console.log(`Transcription took ${transcriptionDuration}ms, Translation with ${modelId} took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
+                        setTranslations({
+                          host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
+                          guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
+                        });
 
-                      setTranslating(false);
-                    }
+                        console.log(`Transcription took ${transcriptionDuration}ms, Translation with ${modelId} took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
 
-                    try {
-                      file.delete();
-                    } catch (error) {
-                      console.error("Error deleting file:", error);
+                        setTranslating(false);
+                      }
+
+                      try {
+                        file.delete();
+                      } catch (error) {
+                        console.error("Error deleting file:", error);
+                      }
                     }
                   }
                 }
-              }
-            }} />
-          </View>
+              }} />
+            </View>
+          </MotiView>
         </When>
 
         <When condition={speechReady === 'denied'}>
