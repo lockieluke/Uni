@@ -4,13 +4,15 @@
 import { cerebras } from '@ai-sdk/cerebras';
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
-import { OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits, getTierById } from "@uni/api";
+import { getTierById, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits } from "@uni/api";
 import { generateObject, LanguageModel } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Hono } from 'hono';
 import { bearerAuth } from 'hono/bearer-auth';
 import { HTTPException } from 'hono/http-exception';
+import { streamSSE } from 'hono/streaming';
+import { endTime, setMetric, startTime, timing } from 'hono/timing';
 import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
@@ -21,7 +23,6 @@ import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
 import { withMsgpack } from './utils';
-import { endTime, setMetric, startTime, timing } from 'hono/timing';
 
 dayjs.extend(relativeTime);
 
@@ -147,6 +148,17 @@ app.post("/transcript", async (c) => {
 
   const transcriptStart = dayjs();
 
+  const { data: mode, error, success: modeSuccess } = await OpenAITranscriptionModelSchema.safeParseAsync(c.req.query("mode") ?? "fast");
+  if (!modeSuccess || !mode)
+    throw new HTTPException(StatusCodes.BAD_REQUEST, {
+      res: withMsgpack({
+        error: {
+          message: `Invalid mode "${mode}": ${error?.message}`,
+        }
+      }, c)
+    });
+
+
   if (provider === "groq") {
     try {
       const { text } = await groq.audio.transcriptions.create({
@@ -177,16 +189,6 @@ app.post("/transcript", async (c) => {
   }
 
   if (provider === "openai") {
-    const { data: mode, error, success } = await OpenAITranscriptionModelSchema.safeParseAsync(c.req.query("mode") ?? "fast");
-    if (!success || !mode)
-      throw new HTTPException(StatusCodes.BAD_REQUEST, {
-        res: withMsgpack({
-          error: {
-            message: `Invalid mode "${mode}": ${error?.message}`,
-          }
-        }, c)
-      });
-
     const { text } = await openai.audio.transcriptions.create({
       file,
       model: transcriptionModel[mode],
@@ -214,6 +216,35 @@ app.post("/transcript", async (c) => {
       transcript: text,
       timing: transcriptTiming
     }, c);
+  }
+
+  if (provider === "openai-realtime") {
+    const sstStream = await openai.audio.transcriptions.create({
+      file,
+      model: transcriptionModel[mode],
+      response_format: "json",
+      stream: true
+    });
+
+    return streamSSE(c, async stream => {
+      let id = 0;
+      for await (const event of sstStream) {
+        if (event.type === "transcript.text.delta") {
+          await stream.writeSSE({
+            event: "transcript",
+            data: event.delta,
+            id: String(id++)
+          });
+        }
+
+        if (event.type === "transcript.text.done")
+          await stream.writeSSE({
+            event: "done",
+            data: event.text,
+            id: String(id++)
+          });
+      }
+    });
   }
 
   return withMsgpack({

@@ -2,7 +2,7 @@ import TranscriptButton from "@/lib/components/TranscriptButton";
 import TranslationText from "@/lib/components/TranslationText";
 import { useAsyncEffect } from "@/lib/hooks";
 import translatePhrase from "@/lib/language";
-import transcript from "@/lib/speech";
+import { transcriptRealtime } from "@/lib/speech";
 import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
@@ -21,8 +21,8 @@ import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import { MotiView } from "moti";
 import * as _ from "radashi";
-import { useState } from "react";
-import { When } from "react-if";
+import { useEffect, useState } from "react";
+import { Unless, When } from "react-if";
 import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,7 +40,8 @@ export default function HomeScreen() {
   const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
   const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
-  const [translating, setTranslating] = useState(false);
+  const [translationState, setTranslationState] = useState<"idle" | "translating" | "transcripting">("idle");
+  const [previewTranscription, setPreviewTranscription] = useState<string>("");
   const [translations, setTranslations] = useAtom(translationsAtom);
 
   const bottomTabHeight = dimensions.height * 0.15;
@@ -57,6 +58,11 @@ export default function HomeScreen() {
     });
   }, []);
 
+  useEffect(() => {
+    if (translationState !== "transcripting")
+      setPreviewTranscription("");
+  }, [translationState]);
+
   return (
     <SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
       <When condition={signedIn}>
@@ -72,10 +78,40 @@ export default function HomeScreen() {
               <When condition={liquidGlassEnabled}>
                 <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate</Text>
               </When>
-              <TranslationText translating={translating} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
-              <View className={"border-[0.05rem] border-gray-300 w-full"} />
-              <TranslationText translating={translating} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
-              <View className={"border-[0.05rem] border-gray-300 w-full"} />
+              <Unless condition={translationState === "transcripting" || translationState === "translating"}>
+                <MotiView className="w-full flex flex-col gap-10" from={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} exit={{
+                  opacity: 0
+                }} transition={{
+                  type: "spring",
+                  duration: 300
+                }}>
+                  <TranslationText translating={translationState === "translating"} language={languages.guest} revertEnabled={flipGuestLanguage}>{translations?.guest}</TranslationText>
+                  <View className={"border-[0.05rem] border-gray-300 w-full"} />
+                  <TranslationText translating={translationState === "translating"} language={languages.host} revertEnabled={false}>{translations?.host}</TranslationText>
+                  <View className={"border-[0.05rem] border-gray-300 w-full"} />
+                </MotiView>
+              </Unless>
+
+              <When condition={translationState === "transcripting" || translationState === "translating"}>
+                <MotiView from={{
+                  opacity: 0
+                }} animate={{
+                  opacity: 1
+                }} exit={{
+                  opacity: 0
+                }} transition={{
+                  type: "spring",
+                  duration: 300
+                }}>
+                  <View className="flex flex-center my-52">
+                    <Text className="text-3xl text-t-primary font-semibold">{previewTranscription}</Text>
+                  </View>
+                </MotiView>
+              </When>
             </View>
 
             <View style={{
@@ -97,9 +133,9 @@ export default function HomeScreen() {
                   console.error("Error starting recording:", error);
                 }
               }} onPressOut={async () => {
-                setTranslating(true);
+                setTranslationState("transcripting");
                 const resetTranslatingTimeout = setTimeout(() => {
-                  setTranslating(false);
+                  setTranslationState("idle");
                 }, 1000);
                 if (audioRecorder.isRecording) {
                   clearTimeout(resetTranslatingTimeout);
@@ -115,21 +151,19 @@ export default function HomeScreen() {
 
                     const hints = [hostLanguageCode, guestLanguageCode];
                     const transcriptionTimer = performance.now();
-                    const [transcriptionErr, result] = await _.tryit(transcript)(uri);
+                    const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(uri, "accurate", transcription => {
+                      setPreviewTranscription(prevPreviewTranscription => prevPreviewTranscription + transcription);
+                    });
                     if (transcriptionErr) {
-                      setTranslating(false);
+                      console.error("Error transcribing in realtime:", transcriptionErr.message);
+                      setTranslationState("idle");
                       setTranslations({});
-                      if (transcriptionErr instanceof AxiosError) {
-                        console.error("Transcription request failed", _.get(transcriptionErr.response?.data, "error.message", "unknown error"));
-                        return;
-                      }
-                      console.error("Error transcribing:", transcriptionErr.message);
-                      return;
                     }
-                    const transcripted = result?.transcript;
                     const transcriptionDuration = performance.now() - transcriptionTimer;
 
                     if (transcripted) {
+                      setPreviewTranscription(transcripted);
+
                       const translationTimer = performance.now();
                       const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
                       if (translationErr) {
@@ -153,7 +187,7 @@ export default function HomeScreen() {
 
                         console.log(`Transcription took ${transcriptionDuration}ms, Translation with ${modelId} took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
 
-                        setTranslating(false);
+                        setTranslationState("idle");
                       }
 
                       try {
