@@ -38,7 +38,7 @@ export default function YouScreen() {
       ...prevUser,
       tier: getTierById(additionalUserInfo.tier)
     }));
-  }, []);
+  }, [signedIn, user]);
 
   const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
   const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
