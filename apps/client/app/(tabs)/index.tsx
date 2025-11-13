@@ -110,7 +110,7 @@ export default function HomeScreen() {
           }} from={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <View className={"absolute py-10 w-full flex flex-col gap-10"}>
               <When condition={liquidGlassEnabled}>
-                <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate</Text>
+                <Text className="mx-5 font-bold text-t-primary text-3xl">Uni Translate <Text className="text-lg text-purple-600">beta</Text></Text>
               </When>
               <Unless condition={translationState === "transcripting" || translationState === "translating"}>
                 <MotiView className="w-full flex flex-col gap-10" from={{
