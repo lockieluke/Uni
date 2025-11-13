@@ -57,6 +57,7 @@
         "expo-video": "~3.0.14",
         "expo-web-browser": "~15.0.8",
         "jotai": "^2.12.4",
+        "modern-async": "^2.0.4",
         "moti": "^0.30.0",
         "nativewind": "^4.2.1",
         "radashi": "^12.5.0",

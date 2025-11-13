@@ -4,9 +4,14 @@ import EventSource from "react-native-sse";
 import { z } from "zod/v4";
 import { UNI_API_BASE_URL, uniApi } from "./networking";
 import { supabase } from "./supabase";
+import { File } from "expo-file-system";
 
 export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenAITranscriptionModelSchema> = "accurate", callback?: (transcript: string) => void) {
   return new Promise<string>(async (resolve, reject) => {
+    const file = new File(uri);
+    if (!file.exists)
+      reject(new Error("File does not exist at provided URI"));
+
     const formData = new FormData();
     formData.append("file", {
       uri: uri,
@@ -31,7 +36,7 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
 
     eventSource.addEventListener("error", error => {
       console.error("Error in Uni API SSE:", error);
-    })
+    });
 
     eventSource.addEventListener("open", () => {
       // console.log("Connection to Uni API opened.");

@@ -388,6 +388,7 @@ You are given a phrase.  This phrase could be in the languages represented by th
 4. In your response, include the source language code, the target language code, and the translated phrase.
 ${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter(prompt => !_.isNullish(prompt) && prompt !== "null").join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
+Please also remove any garbage characters or transcription errors that might not contain any of the source langauges from the pretranslated phrase.
             `.trim()
       }, {
         role: "user",

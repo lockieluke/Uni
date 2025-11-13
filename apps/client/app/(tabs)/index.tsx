@@ -1,3 +1,4 @@
+import * as async from "modern-async";
 import TranscriptButton from "@/lib/components/TranscriptButton";
 import TranslationText from "@/lib/components/TranslationText";
 import { useAsyncEffect } from "@/lib/hooks";
@@ -10,10 +11,9 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { AudioDataEvent, RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
 import { requestRecordingPermissionsAsync } from "expo-audio";
-import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
-import * as SplashScreen from 'expo-splash-screen';
 import { useRouter } from "expo-router";
+import * as SplashScreen from 'expo-splash-screen';
 import { useAtom, useAtomValue } from "jotai";
 import { MotiView } from "moti";
 import * as _ from "radashi";
@@ -22,6 +22,7 @@ import { Unless, When } from "react-if";
 import { Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { File } from "expo-file-system";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -35,53 +36,51 @@ export default function HomeScreen() {
 
   const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
   const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
+  const [cachedAudioPaths, setCachedAudioPaths] = useMMKVStorage<string[]>("cachedAudioPaths", mmkvStorage, []);
 
   const [translationState, setTranslationState] = useState<"idle" | "translating" | "transcripting">("idle");
   const [transcriptionPreview, setTranscriptionPreview] = useState<string[]>([]);
+  const [processingChunks, setProcessingChunks] = useState<number[]>([]);
   const [translations, setTranslations] = useAtom(translationsAtom);
 
+  const allChunksProcessed = transcriptionPreview.length > 0 && processingChunks.length === 0;
   const bottomTabHeight = dimensions.height * 0.15;
 
   const recordingConfig: RecordingConfig = {
     sampleRate: 16000,
-    output: {
-      compressed: {
-        enabled: true,
-        format: "opus",
-        bitrate: 64000
-      }
-    },
-    channels: 1,
     keepAwake: true,
-    encoding: 'pcm_16bit',
     intervalAnalysis: 100,
+    interval: 200,
     onAudioStream: async event => {
-      _.throttle({
-        interval: 200,
-        trailing: true
-      }, async (event: AudioDataEvent) => {
-        const currentPreviewChunkIndex = transcriptionPreview.length;
-        const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", transcription => {
+      setCachedAudioPaths(prevPaths => prevPaths.some(path => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]);
+
+      const currentPreviewChunkIndex = transcriptionPreview.length;
+      setProcessingChunks(prev => [...prev, currentPreviewChunkIndex]);
+      const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", transcription => {
+        if (_.isNullish(transcripted)) {
+          setProcessingChunks(prev => _.isNullish(prev.at(currentPreviewChunkIndex)) ? [...prev, currentPreviewChunkIndex] : [...prev]);
           setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcription] : [...prevPreviews].map((preview, i) => {
-            if (i === currentPreviewChunkIndex) {
+            if (i === currentPreviewChunkIndex && !transcription.includes("�")) {
               let newPreview = preview;
               newPreview += transcription;
               return newPreview;
             }
             return preview;
           }));
-        });
-        if (transcriptionErr) {
-          console.error("Error transcribing in realtime:", transcriptionErr.message);
-          return;
         }
+      });
+      if (transcriptionErr) {
+        setProcessingChunks(prev => prev.filter(index => index !== currentPreviewChunkIndex));
+        console.error("Error transcribing in realtime:", transcriptionErr.message);
+        return;
+      }
 
-        setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcripted] : [...prevPreviews].map((preview, i) => {
-          if (i === currentPreviewChunkIndex)
-            return transcripted
-          return preview;
-        }));
-      })(event);
+      setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcripted.replaceAll("�", "")] : [...prevPreviews].map((preview, i) => {
+        if (i === currentPreviewChunkIndex)
+          return transcripted.replaceAll("�", "");
+        return preview;
+      }));
+      setProcessingChunks(prev => prev.filter(index => index !== currentPreviewChunkIndex));
     }
   };
 
@@ -161,7 +160,14 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               <TranscriptButton onPressIn={async () => {
+                await async.asyncForEach(cachedAudioPaths, path => {
+                  const file = new File(path);
+                  if (file.exists)
+                    file.delete();
+                }, 10);
+
                 setTranscriptionPreview([]);
+                setProcessingChunks([]);
                 setTranslationState("transcripting");
 
                 try {
@@ -170,56 +176,51 @@ export default function HomeScreen() {
                   console.error("Error starting recording:", _.get(error, "message", error));
                 }
               }} onPressOut={async () => {
-                if (audioRecorder.isRecording) {
-                  const result = await audioRecorder.stopRecording();
+                try {
+                  return await (async () => {
+                    if (audioRecorder.isRecording) {
+                      const result = await audioRecorder.stopRecording();
 
-                  const uri = result?.fileUri;
-                  if (uri) {
-                    const file = new File(uri);
-                    setTranslations({});
+                      const uri = result?.fileUri;
+                      if (uri) {
+                        setTranslations({});
 
-                    const hostLanguageCode = languages.host.code;
-                    const guestLanguageCode = languages.guest.code;
+                        const hostLanguageCode = languages.host.code;
+                        const guestLanguageCode = languages.guest.code;
 
-                    const hints = [hostLanguageCode, guestLanguageCode];
-                    const transcripted = transcriptionPreview.join("");
+                        const hints = [hostLanguageCode, guestLanguageCode];
+                        const transcripted = transcriptionPreview.join("");
 
-                    if (!_.isEmpty(transcripted)) {
-                      const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
-                      if (translationErr) {
-                        if (translationErr instanceof AxiosError) {
-                          console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
-                          setTranslations({});
-                          return;
+                        if (!_.isEmpty(transcripted)) {
+                          const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
+                          if (translationErr) {
+                            if (translationErr instanceof AxiosError) {
+                              console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
+                              setTranslations({});
+                              return;
+                            }
+                            console.error("Error translating:", translationErr.message);
+                            return;
+                          }
+
+                          if (response) {
+                            const { translatedPhrase, sourceLanguage, pretranslatedPhrase } = response;
+
+                            setTranslations({
+                              host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
+                              guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
+                            });
+                          }
                         }
-                        console.error("Error translating:", translationErr.message);
-                        return;
+
+                        setProcessingChunks([]);
+                        setTranscriptionPreview([]);
                       }
-
-                      if (response) {
-                        const { translatedPhrase, sourceLanguage } = response;
-
-                        setTranslations({
-                          host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
-                          guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
-                        });
-
-                        setTranslationState("idle");
-                      }
-
-                      try {
-                        file.delete();
-                      } catch (error) {
-                        console.error("Error deleting file:", error);
-                      }
-                    } else {
-                      setTranslationState("idle");
                     }
-                  } else {
-                    setTranslationState("idle");
-                  }
-                } else {
+                  })();
+                } finally {
                   setTranslationState("idle");
+                  await audioRecorder.prepareRecording(recordingConfig);
                 }
               }} />
             </View>
