@@ -57,7 +57,7 @@ export default function HomeScreen() {
     intervalAnalysis: 100,
     onAudioStream: async event => {
       _.throttle({
-        interval: 500,
+        interval: 200,
         trailing: true
       }, async (event: AudioDataEvent) => {
         const currentPreviewChunkIndex = transcriptionPreview.length;
