@@ -30,35 +30,37 @@ const app = new Hono<THono>();
 
 app.use(timing());
 
-app.onError(async (err, c) => {
-  if (err instanceof HTTPException) {
-    const contentType = err.res?.headers.get("Content-Type") ?? "text/plain;charset=UTF-8";
-    if (contentType === "text/plain;charset=UTF-8") {
-      const message = await err.res?.text() ?? "An unexpected error occurred";
+// if (!process.env.DEV) {
+//   app.onError(async (err, c) => {
+//     if (err instanceof HTTPException) {
+//       const contentType = err.res?.headers.get("Content-Type") ?? "text/plain;charset=UTF-8";
+//       if (contentType === "text/plain;charset=UTF-8") {
+//         const message = await err.res?.text() ?? "An unexpected error occurred";
 
-      c.status(err.status);
+//         c.status(err.status);
 
-      return withMsgpack({
-        error: {
-          message,
-          http_code: err.status,
-          stack: c.env.DEV ? err.stack || "No stack trace available" : undefined
-        }
-      }, c);
-    }
-    return err.getResponse();
-  }
+//         return withMsgpack({
+//           error: {
+//             message,
+//             http_code: err.status,
+//             stack: c.env.DEV ? err.stack || "No stack trace available" : undefined
+//           }
+//         }, c);
+//       }
+//       return err.getResponse();
+//     }
 
-  throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-    res: withMsgpack({
-      error: {
-        message: err.message || "An unexpected error occurred",
-        http_code: StatusCodes.INTERNAL_SERVER_ERROR,
-        stack: c.env.DEV ? err.stack || "No stack trace available" : undefined
-      }
-    }, c)
-  });
-});
+//     throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+//       res: withMsgpack({
+//         error: {
+//           message: err.message || "An unexpected error occurred",
+//           http_code: StatusCodes.INTERNAL_SERVER_ERROR,
+//           stack: c.env.DEV ? err.stack || "No stack trace available" : undefined
+//         }
+//       }, c)
+//     });
+//   });
+// }
 
 app.use("/transcript", async (c, next) => {
   await next();

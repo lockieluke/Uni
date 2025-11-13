@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "uni",
@@ -24,6 +25,7 @@
         "@react-navigation/elements": "^2.3.8",
         "@react-navigation/native": "^7.1.6",
         "@shopify/flash-list": "2.0.2",
+        "@siteed/expo-audio-studio": "^2.18.1",
         "@supabase/supabase-js": "^2.49.4",
         "@uni/api": "workspace:*",
         "axios": "^1.10.0",
@@ -702,6 +704,8 @@
     "@sinonjs/commons": ["@sinonjs/commons@3.0.1", "", { "dependencies": { "type-detect": "4.0.8" } }, "sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ=="],
 
     "@sinonjs/fake-timers": ["@sinonjs/fake-timers@10.3.0", "", { "dependencies": { "@sinonjs/commons": "^3.0.0" } }, "sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA=="],
+
+    "@siteed/expo-audio-studio": ["@siteed/expo-audio-studio@2.18.1", "", { "peerDependencies": { "expo": "*", "expo-modules-core": "~2.4.0", "react": "*", "react-native": "*" } }, "sha512-gyi02iaj/ZEpMOnFM7jlgXWhy4I6pvu7dK7f95nQgFkuSDogmM/pA/n+lS31ui5HzDbVRle426EpQ1hShVmqDA=="],
 
     "@speed-highlight/core": ["@speed-highlight/core@1.2.8", "", {}, "sha512-IGytNtnUnPIobIbOq5Y6LIlqiHNX+vnToQIS7lj6L5819C+rA8TXRDkkG8vePsiBOGcoW9R6i+dp2YBUKdB09Q=="],
 

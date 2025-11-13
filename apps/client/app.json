@@ -85,6 +85,25 @@
           "supportsBackgroundPlayback": false,
           "supportsPictureInPicture": false
         }
+      ],
+      [
+        "@siteed/expo-audio-studio",
+        {
+          "enableBackgroundAudio": false,
+          "enablePhoneStateHandling": false,
+          "enableNotifications": false,
+          "enableDeviceDetection": false,
+          "iosBackgroundModes": {
+            "useVoIP": false,
+            "useAudio": false,
+            "useProcessing": false,
+            "useLocation": false,
+            "useExternalAccessory": false
+          },
+          "iosConfig": {
+            "allowBackgroundAudioControls": false
+          }
+        }
       ]
     ],
     "experiments": {

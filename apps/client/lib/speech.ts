@@ -10,8 +10,8 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
     const formData = new FormData();
     formData.append("file", {
       uri: uri,
-      name: "audio.m4a",
-      type: "audio/m4a"
+      name: "audio.wav",
+      type: "audio/wav"
     } as any);
 
     const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -34,7 +34,7 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
     })
 
     eventSource.addEventListener("open", () => {
-      console.log("Connection to Uni API opened.");
+      // console.log("Connection to Uni API opened.");
       eventSource.addEventListener("transcript", ({ data }) => {
         if (data)
           callback?.(data.replaceAll("�", "∙"));

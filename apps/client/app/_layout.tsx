@@ -6,11 +6,13 @@ import { checkSignedIn } from "@/lib/supabase";
 import Entypo from '@expo/vector-icons/Entypo';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { AudioRecorderProvider } from '@siteed/expo-audio-studio';
 import { AppleAuthenticationButton } from 'expo-apple-authentication';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { Image } from "expo-image";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { VideoView } from 'expo-video';
 import { useSetAtom } from 'jotai';
@@ -25,6 +27,8 @@ cssInterop(LinearGradient, { className: "style" });
 cssInterop(AppleAuthenticationButton, { className: "style" });
 cssInterop(VideoView, { className: "style" });
 cssInterop(GlassView, { className: "style" });
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -60,44 +64,48 @@ export default function RootLayout() {
           guest: supportedLanguages[guestLanguage]
         });
       }
-    }
-
-    if (!isSignedIn)
+    } else {
+      SplashScreen.hide();
       router.replace("/sign-in");
+    }
   }, []);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName="(tabs)">
-        <Stack.Screen name="(tabs)" options={{
-          headerShown: false,
-          animation: "none"
-        }} />
-        <Stack.Screen
-          name="languages"
-          options={{
-            presentation: "modal",
-            title: "Languages",
-            headerLeft: ({ canGoBack }) => {
-              if (!canGoBack)
-                return null;
+      <AudioRecorderProvider config={{
+        // logger: console
+      }}>
+        <Stack initialRouteName="(tabs)">
+          <Stack.Screen name="(tabs)" options={{
+            headerShown: false,
+            animation: "none"
+          }} />
+          <Stack.Screen
+            name="languages"
+            options={{
+              presentation: "modal",
+              title: "Languages",
+              headerLeft: ({ canGoBack }) => {
+                if (!canGoBack)
+                  return null;
 
-              const Icon = () => (<Entypo name="chevron-down" className='text-center' size={24} color={colorScheme === "dark" ? "white" : "black"} />);
+                const Icon = () => (<Entypo name="chevron-down" className='text-center' size={24} color={colorScheme === "dark" ? "white" : "black"} />);
 
-              return liquidGlassEnabled ? <Pressable className="px-5" onPress={() => router.back()}><Icon /></Pressable> :
-                <TouchableOpacity onPress={() => router.back()}>
-                  <Icon />
-                </TouchableOpacity>
-            }
-          }}
-        />
-        <Stack.Screen name="sign-in" options={{
-          headerShown: false,
-          gestureEnabled: false,
-          animation: "none"
-        }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+                return liquidGlassEnabled ? <Pressable className="px-5" onPress={() => router.back()}><Icon /></Pressable> :
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Icon />
+                  </TouchableOpacity>
+              }
+            }}
+          />
+          <Stack.Screen name="sign-in" options={{
+            headerShown: false,
+            gestureEnabled: false,
+            animation: "none"
+          }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </AudioRecorderProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

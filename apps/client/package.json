@@ -22,6 +22,7 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@shopify/flash-list": "2.0.2",
+    "@siteed/expo-audio-studio": "^2.18.1",
     "@supabase/supabase-js": "^2.49.4",
     "@uni/api": "workspace:*",
     "axios": "^1.10.0",

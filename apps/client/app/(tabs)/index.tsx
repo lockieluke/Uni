@@ -7,29 +7,25 @@ import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { AudioDataEvent, RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
-import {
-  getRecordingPermissionsAsync,
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  useAudioRecorder
-} from "expo-audio";
+import { requestRecordingPermissionsAsync } from "expo-audio";
 import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
+import * as SplashScreen from 'expo-splash-screen';
 import { useRouter } from "expo-router";
 import { useAtom, useAtomValue } from "jotai";
 import { MotiView } from "moti";
 import * as _ from "radashi";
 import { useEffect, useState } from "react";
 import { Unless, When } from "react-if";
-import { ActivityIndicator, Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
+import { Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioRecorder = useSharedAudioRecorder()
   const colorScheme = useColorScheme();
   const dimensions = useWindowDimensions();
 
@@ -41,27 +37,66 @@ export default function HomeScreen() {
   const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
   const [translationState, setTranslationState] = useState<"idle" | "translating" | "transcripting">("idle");
-  const [previewTranscription, setPreviewTranscription] = useState<string>("");
+  const [transcriptionPreview, setTranscriptionPreview] = useState<string[]>([]);
   const [translations, setTranslations] = useAtom(translationsAtom);
 
   const bottomTabHeight = dimensions.height * 0.15;
 
+  const recordingConfig: RecordingConfig = {
+    sampleRate: 16000,
+    output: {
+      compressed: {
+        enabled: true,
+        format: "opus",
+        bitrate: 64000
+      }
+    },
+    channels: 1,
+    keepAwake: true,
+    encoding: 'pcm_16bit',
+    intervalAnalysis: 100,
+    onAudioStream: async event => {
+      _.throttle({
+        interval: 500,
+        trailing: true
+      }, async (event: AudioDataEvent) => {
+        const currentPreviewChunkIndex = transcriptionPreview.length;
+        const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", transcription => {
+          setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcription] : [...prevPreviews].map((preview, i) => {
+            if (i === currentPreviewChunkIndex) {
+              let newPreview = preview;
+              newPreview += transcription;
+              return newPreview;
+            }
+            return preview;
+          }));
+        });
+        if (transcriptionErr) {
+          console.error("Error transcribing in realtime:", transcriptionErr.message);
+          return;
+        }
+
+        setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcripted] : [...prevPreviews].map((preview, i) => {
+          if (i === currentPreviewChunkIndex)
+            return transcripted
+          return preview;
+        }));
+      })(event);
+    }
+  };
+
   useAsyncEffect(async () => {
+    await audioRecorder.prepareRecording(recordingConfig);
+    SplashScreen.hide();
+
     const requestedPermission = await requestRecordingPermissionsAsync();
     setSpeechReady(requestedPermission.granted ? 'granted' : 'denied');
-
-    setSpeechReady((await getRecordingPermissionsAsync()).granted ? 'granted' : 'denied');
-
-    await setAudioModeAsync({
-      playsInSilentMode: true,
-      allowsRecording: true,
-    });
   }, []);
 
   useEffect(() => {
     if (translationState !== "transcripting")
-      setPreviewTranscription("");
-  }, [translationState]);
+      setTranscriptionPreview([]);
+  }, [translationState, audioRecorder]);
 
   return (
     <SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
@@ -107,8 +142,8 @@ export default function HomeScreen() {
                   type: "spring",
                   duration: 300
                 }}>
-                  <View className="flex flex-center my-52">
-                    <Text className="text-3xl w-full text-center text-t-primary font-semibold">{previewTranscription}</Text>
+                  <View className="flex flex-center px-5 my-52">
+                    <Text className="text-4xl w-full text-center text-t-primary font-semibold">{transcriptionPreview.join("")}</Text>
                   </View>
                 </MotiView>
               </When>
@@ -126,22 +161,19 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               <TranscriptButton onPressIn={async () => {
+                setTranscriptionPreview([]);
+                setTranslationState("transcripting");
+
                 try {
-                  await audioRecorder.prepareToRecordAsync(RecordingPresets.HIGH_QUALITY);
-                  audioRecorder.record();
+                  await audioRecorder.startRecording(recordingConfig);
                 } catch (error) {
-                  console.error("Error starting recording:", error);
+                  console.error("Error starting recording:", _.get(error, "message", error));
                 }
               }} onPressOut={async () => {
-                setTranslationState("transcripting");
-                const resetTranslatingTimeout = setTimeout(() => {
-                  setTranslationState("idle");
-                }, 1000);
                 if (audioRecorder.isRecording) {
-                  clearTimeout(resetTranslatingTimeout);
-                  await audioRecorder.stop();
+                  const result = await audioRecorder.stopRecording();
 
-                  const uri = audioRecorder.uri;
+                  const uri = result?.fileUri;
                   if (uri) {
                     const file = new File(uri);
                     setTranslations({});
@@ -150,21 +182,9 @@ export default function HomeScreen() {
                     const guestLanguageCode = languages.guest.code;
 
                     const hints = [hostLanguageCode, guestLanguageCode];
-                    const transcriptionTimer = performance.now();
-                    const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(uri, "accurate", transcription => {
-                      setPreviewTranscription(prevPreviewTranscription => prevPreviewTranscription + transcription);
-                    });
-                    if (transcriptionErr) {
-                      console.error("Error transcribing in realtime:", transcriptionErr.message);
-                      setTranslationState("idle");
-                      setTranslations({});
-                    }
-                    const transcriptionDuration = performance.now() - transcriptionTimer;
+                    const transcripted = transcriptionPreview.join("");
 
-                    if (transcripted) {
-                      setPreviewTranscription(transcripted);
-
-                      const translationTimer = performance.now();
+                    if (!_.isEmpty(transcripted)) {
                       const [translationErr, response] = await _.tryit(translatePhrase)(transcripted, hints, "default");
                       if (translationErr) {
                         if (translationErr instanceof AxiosError) {
@@ -177,15 +197,12 @@ export default function HomeScreen() {
                       }
 
                       if (response) {
-                        const { translatedPhrase, sourceLanguage, modelId } = response;
-                        const translationDuration = performance.now() - translationTimer;
+                        const { translatedPhrase, sourceLanguage } = response;
 
                         setTranslations({
                           host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
                           guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
                         });
-
-                        console.log(`Transcription took ${transcriptionDuration}ms, Translation with ${modelId} took ${translationDuration}ms, Total: ${transcriptionDuration + translationDuration}ms`);
 
                         setTranslationState("idle");
                       }
@@ -195,8 +212,14 @@ export default function HomeScreen() {
                       } catch (error) {
                         console.error("Error deleting file:", error);
                       }
+                    } else {
+                      setTranslationState("idle");
                     }
+                  } else {
+                    setTranslationState("idle");
                   }
+                } else {
+                  setTranslationState("idle");
                 }
               }} />
             </View>
@@ -210,7 +233,6 @@ export default function HomeScreen() {
         </When>
 
         <When condition={speechReady === 'unknown'}>
-          <ActivityIndicator size={"large"} />
         </When>
       </When>
     </SafeAreaView>
