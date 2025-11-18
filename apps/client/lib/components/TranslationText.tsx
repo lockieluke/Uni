@@ -4,7 +4,7 @@ import { MenuView } from '@react-native-menu/menu';
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Skeleton } from 'moti/skeleton';
 import { useState } from "react";
-import { Dimensions, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { Dimensions, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { availableLanguagesAtom, languagesAtom, translationsAtom } from "../states";
 
 export default function TranslationText({ translating = false, revertEnabled, language, children }: {
@@ -76,17 +76,19 @@ export default function TranslationText({ translating = false, revertEnabled, la
           state: lang.code === language.code ? "on" : "off"
         }))} />
       </TouchableOpacity>
-      <Skeleton
-        width={"90%"}
-        colorMode={colorScheme === "dark" ? "dark" : "light"}
-        transition={{
-          type: "spring"
-        }}
-      >
-        {translating ? null : <Text className={cn("text-t-primary font-semibold text-5xl text-left", {
-          "rotate-180": revertEnabled,
-        })}>{children}</Text>}
-      </Skeleton>
+      <ScrollView>
+        <Skeleton
+          width={"90%"}
+          colorMode={colorScheme === "dark" ? "dark" : "light"}
+          transition={{
+            type: "spring"
+          }}
+        >
+          {translating ? null : <Text className={cn("text-t-primary font-semibold text-5xl text-left", {
+            "rotate-180": revertEnabled,
+          })}>{children}</Text>}
+        </Skeleton>
+      </ScrollView>
     </View>
   );
 }
