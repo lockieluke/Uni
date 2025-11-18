@@ -45,6 +45,7 @@ export default function HomeScreen() {
   const blockingNewAudioStream = useRef(false);
 
   const bottomTabHeight = dimensions.height * 0.15;
+  const recordingDelay = 80;
 
   const recordingConfig: RecordingConfig = {
     sampleRate: 16000,
@@ -55,7 +56,7 @@ export default function HomeScreen() {
       if (event.data.length === 0 || blockingNewAudioStream.current)
         return;
 
-      await _.sleep(50);
+      await _.sleep(recordingDelay);
 
       blockingNewAudioStream.current = true;
 
