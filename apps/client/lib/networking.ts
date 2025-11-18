@@ -1,7 +1,8 @@
 import { decode } from "@msgpack/msgpack";
 import axios from "axios";
+import { getDefaultStore } from "jotai";
 import * as _ from "radashi";
-import { supabase } from "./supabase";
+import { userAtom } from "./states";
 import { mmkvStorage } from "./storage";
 
 export const UNI_API_BASE_URL = mmkvStorage.getBool("useDevServer") && __DEV__ ? mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787" : "https://uni-api.lockie.dev";
@@ -37,11 +38,8 @@ const uniApi = axios.create({
 });
 
 uniApi.interceptors.request.use(async config => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error)
-    throw new Error("Error getting session when fetching from Uni API");
-
-  config.headers["Authorization"] = `Bearer ${session?.access_token}`;
+  const accessToken = getDefaultStore().get(userAtom).accessToken;
+  config.headers["Authorization"] = `Bearer ${accessToken}`;
 
   return config;
 });

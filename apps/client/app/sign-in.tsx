@@ -43,7 +43,7 @@ export default function SignIn() {
     opacity.value = 1;
   });
 
-  useEventListener(player, "timeUpdate", async ({currentTime}) => {
+  useEventListener(player, "timeUpdate", async ({ currentTime }) => {
     if (currentTime === 0 && opacity.value === 0) {
       player.play();
       opacity.value = 1;
@@ -70,10 +70,10 @@ export default function SignIn() {
   return (<View className="flex-1 bg-black">
     <Animated.View className="flex-1" style={videoAnimatedStyle}>
       <VideoView
-          contentFit="fill"
-          nativeControls={false}
-          player={player}
-          className="flex-1 scale-x-[2.3]"
+        contentFit="fill"
+        nativeControls={false}
+        player={player}
+        className="flex-1 scale-x-[2.3]"
       />
     </Animated.View>
     <View className="absolute flex-1 size-full items-center justify-end py-10 gap-5">
@@ -115,7 +115,7 @@ export default function SignIn() {
 
               setUser({
                 signedIn: true,
-                user: user,
+                user,
                 accessToken: session.access_token,
                 tier: "free"
               });

@@ -5,6 +5,8 @@ import { z } from "zod/v4";
 import { UNI_API_BASE_URL, uniApi } from "./networking";
 import { supabase } from "./supabase";
 import { File } from "expo-file-system";
+import { getDefaultStore } from "jotai";
+import { userAtom } from "./states";
 
 export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenAITranscriptionModelSchema> = "accurate", callback?: (transcript: string) => void) {
   return new Promise<string>(async (resolve, reject) => {
@@ -19,9 +21,7 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
       type: "audio/wav"
     } as any);
 
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
-    if (authError)
-      throw new Error("Error getting session when fetching from Uni API");
+    const accessToken = getDefaultStore().get(userAtom).accessToken;
 
     const eventSource = new EventSource<"transcript" | "done">(`${UNI_API_BASE_URL}/transcript?mode=${mode}&provider=openai-realtime`, {
       method: "POST",
@@ -29,7 +29,7 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
       headers: {
         "Content-Type": "application/x-msgpack",
         "User-Agent": "Uni/1.0.0",
-        "Authorization": `Bearer ${session?.access_token}`
+        "Authorization": `Bearer ${accessToken}`
       },
       pollingInterval: 0
     });
