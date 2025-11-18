@@ -34,10 +34,6 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
       pollingInterval: 0
     });
 
-    eventSource.addEventListener("error", error => {
-      console.error("Error in Uni API SSE:", error);
-    });
-
     eventSource.addEventListener("open", () => {
       // console.log("Connection to Uni API opened.");
       eventSource.addEventListener("transcript", ({ data }) => {
