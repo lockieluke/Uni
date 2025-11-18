@@ -110,8 +110,10 @@ app.post("/transcript", async (c) => {
 
   startTime(c, "check-speech-usage");
 
-  const usage = await getUsage(c, "speech_translation");
-  const tier = await getTier(c);
+  const [usage, tier] = await Promise.all([
+    getUsage(c, "speech_translation"),
+    getTier(c)
+  ]);
   if (usage >= UniMonthlyLimits["speech_translation"][getTierById(tier)])
     throw new HTTPException(StatusCodes.FORBIDDEN, {
       res: withMsgpack({
