@@ -50,7 +50,7 @@ export default function HomeScreen() {
     sampleRate: 16000,
     keepAwake: true,
     intervalAnalysis: 100,
-    interval: 50,
+    interval: 10,
     onAudioStream: async event => {
       if (event.data.length === 0 || blockingNewAudioStream.current)
         return;
