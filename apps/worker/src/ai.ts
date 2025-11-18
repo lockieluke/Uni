@@ -43,7 +43,7 @@ export const specificModelOverrideProvider: Record<string, object> = {
 
 export const transcriptionModel: Record<z.infer<typeof OpenAITranscriptionModelSchema>, string> = {
   "fast": "whisper-1",
-  "accurate": "gpt-4o-mini-transcribe"
+  "accurate": "gpt-4o-transcribe"
 };
 
 export const groq = new Groq();
