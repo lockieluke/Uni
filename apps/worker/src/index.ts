@@ -281,36 +281,42 @@ app.post("/translate", async (c) => {
       }, c)
     });
 
-  const translateTiming = performance.now();
+  const totalTiming = performance.now();
 
   let languageSpecificPrompts: Map<string, string | null> = new Map();
   let languageModelOverrides: Map<string, string> = new Map();
+  const KV_CACHE_ENABLED = !c.env.DEV || process.env.KV_CACHE_ENABLED;
   await async.asyncForEach(hints, async hint => {
     let specificPromptCacheHit = false;
-    {
+    const retrieveLanguagePromptCache = async () => {
       const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
         type: "text"
       });
       const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
       const value = langCache.value;
-      if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
+      if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value)) {
         languageSpecificPrompts.set(hint, value === "null" ? null : value);
         specificPromptCacheHit = true;
       }
-    }
+    };
 
     let modelOverrideCacheHit = false;
-    {
+    const retrieveLanguageModelOverrideCache = async () => {
       const langModelOverrideCache = await LANG_CACHE.getWithMetadata<string>(hint, {
         type: "text"
       });
       const fetchedAt = dayjs(_.get(langModelOverrideCache.metadata, "fetchedAt"));
       const value = langModelOverrideCache.value;
-      if (dayjs().diff(fetchedAt, "hour") < 12 && !c.env.DEV && !_.isNullish(value)) {
+      if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value)) {
         languageSpecificPrompts.set(hint, value === "null" ? null : value);
         modelOverrideCacheHit = true;
       }
     }
+
+    await Promise.all([
+      retrieveLanguagePromptCache(),
+      retrieveLanguageModelOverrideCache()
+    ]);
 
     if (!specificPromptCacheHit) {
       const { data: languagePromptsData, error: languagePromptsError } = await supabase.from("languages").select("custom_prompt").eq("lang", hint).single();
@@ -358,6 +364,9 @@ app.post("/translate", async (c) => {
     }
   });
 
+  if (c.env.DEV)
+    console.log(`Configured translation engine for phrase ${phrase} in ${performance.now() - totalTiming}ms`);
+
   const flattenedLanguageSpecificPrompts = languageSpecificPrompts.values().toArray();
 
   let autoModel: LanguageModel | undefined;
@@ -366,14 +375,15 @@ app.post("/translate", async (c) => {
     // TODO: Using last model override found for now
     const modelOverride = languageModelOverrideArr.filter(override => !_.isNullish(override)).at(-1);
     if (modelOverride) {
-      const prefix = modelOverride.split(":")[0];
-      const model = modelOverride.split(":")[1];
+      const [prefix, model] = modelOverride.split(":");
       if (prefix === "cerebras")
         autoModel = cerebras(model);
       else if (prefix === "openrouter")
         autoModel = useOpenRouter(model);
     }
   }
+
+  const translationTiming = performance.now();
 
   try {
     const { object, finishReason, response } = await generateObject({
@@ -407,7 +417,7 @@ Please also remove any garbage characters or transcription errors that might not
     });
 
     if (c.env.DEV)
-      console.log(`Translating phrase ${phrase} to ${object.targetLanguage} took ${performance.now() - translateTiming}ms`);
+      console.log(`Complete translation of phrase ${phrase} to ${object.targetLanguage} took ${performance.now() - totalTiming}ms, ${response.modelId} took ${performance.now() - translationTiming}ms for inference`);
 
     const additionalData = {
       ..._.pick(response, ["id", "modelId", "timestamp"]),
