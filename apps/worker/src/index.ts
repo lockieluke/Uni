@@ -304,13 +304,13 @@ app.post("/translate", async (c) => {
 
     let modelOverrideCacheHit = false;
     const retrieveLanguageModelOverrideCache = async () => {
-      const langModelOverrideCache = await LANG_CACHE.getWithMetadata<string>(hint, {
+      const langModelOverrideCache = await LANG_MO_CACHE.getWithMetadata<string>(hint, {
         type: "text"
       });
       const fetchedAt = dayjs(_.get(langModelOverrideCache.metadata, "fetchedAt"));
       const value = langModelOverrideCache.value;
-      if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value)) {
-        languageSpecificPrompts.set(hint, value === "null" ? null : value);
+      if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value) && value !== "null") {
+        languageModelOverrides.set(hint, value);
         modelOverrideCacheHit = true;
       }
     }
@@ -373,16 +373,14 @@ app.post("/translate", async (c) => {
 
   let autoModel: LanguageModel | undefined;
   const languageModelOverrideArr = languageModelOverrides.values().toArray();
-  if (languageModelOverrideArr.some(override => !_.isNullish(override))) {
-    // TODO: Using last model override found for now
-    const modelOverride = languageModelOverrideArr.filter(override => !_.isNullish(override)).at(-1);
-    if (modelOverride) {
-      const [prefix, model] = modelOverride.split(":");
-      if (prefix === "cerebras")
-        autoModel = cerebras(model);
-      else if (prefix === "openrouter")
-        autoModel = useOpenRouter(model);
-    }
+  // TODO: Using last model override found for now
+  const modelOverride = languageModelOverrideArr.filter(override => !_.isNullish(override)).at(-1);
+  if (modelOverride) {
+    const [prefix, model] = modelOverride.split(":");
+    if (prefix === "cerebras")
+      autoModel = cerebras(model);
+    else if (prefix === "openrouter")
+      autoModel = useOpenRouter(model);
   }
 
   const translationTiming = performance.now();
