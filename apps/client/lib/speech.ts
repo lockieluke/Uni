@@ -42,7 +42,7 @@ export async function transcriptRealtime(uri: string, mode: z.infer<typeof OpenA
       // console.log("Connection to Uni API opened.");
       eventSource.addEventListener("transcript", ({ data }) => {
         if (data)
-          callback?.(data.replaceAll("�", "∙"));
+          callback?.(data.replaceAll("�", ""));
       });
 
       const cleanup = () => {

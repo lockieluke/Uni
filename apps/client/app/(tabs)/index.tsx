@@ -1,4 +1,3 @@
-import * as async from "modern-async";
 import TranscriptButton from "@/lib/components/TranscriptButton";
 import TranslationText from "@/lib/components/TranslationText";
 import { useAsyncEffect } from "@/lib/hooks";
@@ -8,21 +7,22 @@ import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { AudioDataEvent, RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
+import { type RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
 import { requestRecordingPermissionsAsync } from "expo-audio";
+import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useAtom, useAtomValue } from "jotai";
+import * as async from "modern-async";
 import { MotiView } from "moti";
 import * as _ from "radashi";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Unless, When } from "react-if";
 import { Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { File } from "expo-file-system";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function HomeScreen() {
 
   const { signedIn } = useAtomValue(userAtom);
   const languages = useAtomValue(languagesAtom);
-  const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
+  const [translations, setTranslations] = useAtom(translationsAtom);
 
   const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
   const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
@@ -40,10 +40,10 @@ export default function HomeScreen() {
 
   const [translationState, setTranslationState] = useState<"idle" | "translating" | "transcripting">("idle");
   const [transcriptionPreview, setTranscriptionPreview] = useState<string[]>([]);
-  const [processingChunks, setProcessingChunks] = useState<number[]>([]);
-  const [translations, setTranslations] = useAtom(translationsAtom);
+  const [speechReady, setSpeechReady] = useState<'unknown' | 'denied' | 'granted'>('unknown');
 
-  const allChunksProcessed = transcriptionPreview.length > 0 && processingChunks.length === 0;
+  const blockingNewAudioStream = useRef(false);
+
   const bottomTabHeight = dimensions.height * 0.15;
 
   const recordingConfig: RecordingConfig = {
@@ -52,13 +52,18 @@ export default function HomeScreen() {
     intervalAnalysis: 100,
     interval: 200,
     onAudioStream: async event => {
+      if (event.data.length === 0 || blockingNewAudioStream.current)
+        return;
+
+      await _.sleep(200);
+
+      blockingNewAudioStream.current = true;
+
       setCachedAudioPaths(prevPaths => prevPaths.some(path => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]);
 
       const currentPreviewChunkIndex = transcriptionPreview.length;
-      setProcessingChunks(prev => [...prev, currentPreviewChunkIndex]);
       const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", transcription => {
         if (_.isNullish(transcripted)) {
-          setProcessingChunks(prev => _.isNullish(prev.at(currentPreviewChunkIndex)) ? [...prev, currentPreviewChunkIndex] : [...prev]);
           setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcription] : [...prevPreviews].map((preview, i) => {
             if (i === currentPreviewChunkIndex && !transcription.includes("�")) {
               let newPreview = preview;
@@ -70,17 +75,19 @@ export default function HomeScreen() {
         }
       });
       if (transcriptionErr) {
-        setProcessingChunks(prev => prev.filter(index => index !== currentPreviewChunkIndex));
         console.error("Error transcribing in realtime:", transcriptionErr.message);
         return;
       }
+
+      console.log("Received full transcript", transcripted);
 
       setTranscriptionPreview(prevPreviews => _.isNullish(prevPreviews.at(currentPreviewChunkIndex)) ? [...prevPreviews, transcripted.replaceAll("�", "")] : [...prevPreviews].map((preview, i) => {
         if (i === currentPreviewChunkIndex)
           return transcripted.replaceAll("�", "");
         return preview;
       }));
-      setProcessingChunks(prev => prev.filter(index => index !== currentPreviewChunkIndex));
+
+      blockingNewAudioStream.current = false;
     }
   };
 
@@ -95,7 +102,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (translationState !== "transcripting")
       setTranscriptionPreview([]);
-  }, [translationState, audioRecorder]);
+  }, [translationState]);
 
   return (
     <SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
@@ -162,12 +169,17 @@ export default function HomeScreen() {
               <TranscriptButton onPressIn={async () => {
                 await async.asyncForEach(cachedAudioPaths, path => {
                   const file = new File(path);
-                  if (file.exists)
-                    file.delete();
+                  if (file.exists) {
+                    try {
+                      file.delete();
+                    } catch (error) {
+                      console.error("Error deleting cached audio file:", _.get(error, "message"));
+                    }
+                  }
                 }, 10);
+                setCachedAudioPaths([]);
 
                 setTranscriptionPreview([]);
-                setProcessingChunks([]);
                 setTranslationState("transcripting");
 
                 try {
@@ -181,8 +193,7 @@ export default function HomeScreen() {
                     if (audioRecorder.isRecording) {
                       const result = await audioRecorder.stopRecording();
 
-                      const uri = result?.fileUri;
-                      if (uri) {
+                      if (result) {
                         setTranslations({});
 
                         const hostLanguageCode = languages.host.code;
@@ -207,20 +218,17 @@ export default function HomeScreen() {
                             const { translatedPhrase, sourceLanguage, pretranslatedPhrase } = response;
 
                             setTranslations({
-                              host: languages.host.code === sourceLanguage ? transcripted : translatedPhrase,
-                              guest: languages.guest.code === sourceLanguage ? transcripted : translatedPhrase
+                              host: languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
+                              guest: languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase
                             });
                           }
                         }
-
-                        setProcessingChunks([]);
-                        setTranscriptionPreview([]);
                       }
                     }
                   })();
                 } finally {
+                  setTranscriptionPreview([]);
                   setTranslationState("idle");
-                  await audioRecorder.prepareRecording(recordingConfig);
                 }
               }} />
             </View>
