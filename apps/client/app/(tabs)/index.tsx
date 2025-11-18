@@ -50,12 +50,12 @@ export default function HomeScreen() {
     sampleRate: 16000,
     keepAwake: true,
     intervalAnalysis: 100,
-    interval: 200,
+    interval: 50,
     onAudioStream: async event => {
       if (event.data.length === 0 || blockingNewAudioStream.current)
         return;
 
-      await _.sleep(200);
+      await _.sleep(50);
 
       blockingNewAudioStream.current = true;
 
@@ -191,6 +191,9 @@ export default function HomeScreen() {
                 try {
                   return await (async () => {
                     if (audioRecorder.isRecording) {
+                      // Artificial delay to ensure the user has finished speaking
+                      await _.sleep(100);
+
                       const result = await audioRecorder.stopRecording();
 
                       if (result) {
