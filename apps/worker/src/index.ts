@@ -7,6 +7,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
 import { timing } from "hono/timing";
+import contextRouter from "./routes/context";
 import languagesRouter from "./routes/languages";
 import translateRouter from "./routes/translate";
 import userRouter from "./routes/user";
@@ -52,6 +53,7 @@ app.use("/*", async (c, next) => {
 	})(c, next);
 });
 
+app.route("/context", contextRouter);
 app.route("/languages", languagesRouter);
 app.route("/translate", translateRouter);
 app.route("/user", userRouter);
