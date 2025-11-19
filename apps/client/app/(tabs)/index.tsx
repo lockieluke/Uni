@@ -101,11 +101,10 @@ export default function HomeScreen() {
 	};
 
 	useAsyncEffect(async () => {
-		await audioRecorder.prepareRecording(recordingConfig);
-		SplashScreen.hide();
-
-		const requestedPermission = await requestRecordingPermissionsAsync();
+		const [, requestedPermission] = await Promise.all([audioRecorder.prepareRecording(recordingConfig), requestRecordingPermissionsAsync()]);
 		setSpeechReady(requestedPermission.granted ? "granted" : "denied");
+
+		SplashScreen.hide();
 	}, []);
 
 	useEffect(() => {

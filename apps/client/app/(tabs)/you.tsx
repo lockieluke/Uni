@@ -7,7 +7,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
-import { Alert, ScrollView, Switch, Text, View } from "react-native";
+import { ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ColumnTrigger from "@/lib/components/ColumnTrigger";
@@ -98,13 +98,7 @@ export default function YouScreen() {
 				)}
 				<ColumnTrigger
 					onPress={async () => {
-						const [err] = await _.tryit(signOut)();
-						if (err) {
-							Alert.alert("Error", "Failed to sign out. Please try again later.");
-							return;
-						}
-
-						await AsyncStorage.removeItem("lastSignInProvider");
+						await Promise.all([AsyncStorage.removeItem("lastSignInProvider"), signOut()]);
 
 						router.push("/sign-in");
 					}}
