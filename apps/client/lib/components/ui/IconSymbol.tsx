@@ -20,7 +20,7 @@ const MAPPING = {
 	"house.fill": "home",
 	"paperplane.fill": "send",
 	"chevron.left.forwardslash.chevron.right": "code",
-	"chevron.right": "chevron-right",
+	"chevron.right": "chevron-right"
 } as IconMapping;
 
 /**
@@ -32,7 +32,7 @@ export function IconSymbol({
 	name,
 	size = 24,
 	color,
-	style,
+	style
 }: {
 	name: IconSymbolName;
 	size?: number;

@@ -10,7 +10,7 @@ import {
 	OpenAITranscriptionModelSchema,
 	TranscriptionProviderSchema,
 	TranslationLLMMPropertySchema,
-	UniMonthlyLimits,
+	UniMonthlyLimits
 } from "@uni/api";
 import { generateObject, type LanguageModel } from "ai";
 import dayjs from "dayjs";
@@ -31,7 +31,7 @@ import {
 	transcriptionModel,
 	translationModel,
 	translationProvider,
-	useOpenRouter,
+	useOpenRouter
 } from "./ai";
 import { TranslationSchema } from "./schemas";
 import type { THono } from "./types";
@@ -93,14 +93,14 @@ app.use("/*", async (c, next) => {
 				{
 					global: {
 						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					},
-				},
+							Authorization: `Bearer ${token}`
+						}
+					}
+				}
 			);
 			const {
 				data: { user },
-				error,
+				error
 			} = await supabase.auth.getUser();
 			if (error) {
 				console.error("Error verifying token:", error.message);
@@ -112,7 +112,7 @@ app.use("/*", async (c, next) => {
 			if (user) c.set("user", user);
 
 			return !!user && !error;
-		},
+		}
 	})(c, next);
 });
 
@@ -123,11 +123,11 @@ app.post("/transcript", async (c) => {
 			res: withMsgpack(
 				{
 					error: {
-						message: "No form data found",
-					},
+						message: "No form data found"
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
@@ -135,18 +135,18 @@ app.post("/transcript", async (c) => {
 
 	const [usage, tier] = await Promise.all([
 		getUsage(c, "speech_translation"),
-		getTier(c),
+		getTier(c)
 	]);
 	if (usage >= UniMonthlyLimits["speech_translation"][getTierById(tier)])
 		throw new HTTPException(StatusCodes.FORBIDDEN, {
 			res: withMsgpack(
 				{
 					error: {
-						message: `Monthly limit reached for speech translation on tier ${tier}`,
-					},
+						message: `Monthly limit reached for speech translation on tier ${tier}`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 
 	endTime(c, "check-speech-usage");
@@ -157,28 +157,28 @@ app.post("/transcript", async (c) => {
 			res: withMsgpack(
 				{
 					error: {
-						message: "No file found",
-					},
+						message: "No file found"
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
 	const { data: provider, success } =
 		await TranscriptionProviderSchema.safeParseAsync(
-			c.req.query("provider") || "openai",
+			c.req.query("provider") || "openai"
 		);
 	if (!success)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
 				{
 					error: {
-						message: `Invalid provider "${provider}"`,
-					},
+						message: `Invalid provider "${provider}"`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 
 	setMetric(c, "provider", provider);
@@ -190,20 +190,20 @@ app.post("/transcript", async (c) => {
 	const {
 		data: mode,
 		error,
-		success: modeSuccess,
+		success: modeSuccess
 	} = await OpenAITranscriptionModelSchema.safeParseAsync(
-		c.req.query("mode") ?? "fast",
+		c.req.query("mode") ?? "fast"
 	);
 	if (!modeSuccess || !mode)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
 				{
 					error: {
-						message: `Invalid mode "${mode}": ${error?.message}`,
-					},
+						message: `Invalid mode "${mode}": ${error?.message}`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 
 	if (provider === "groq") {
@@ -214,20 +214,20 @@ app.post("/transcript", async (c) => {
 				prompt:
 					"When transcribing audio in Cantonese, please use the Cantonese dialect",
 				response_format: "json",
-				temperature: 0,
+				temperature: 0
 			});
 			const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
 			if (c.env.DEV)
 				console.log(
-					`Transcribing file ${file.name} took ${transcriptTiming}ms`,
+					`Transcribing file ${file.name} took ${transcriptTiming}ms`
 				);
 
 			return withMsgpack(
 				{
 					transcript: text,
-					timing: transcriptTiming,
+					timing: transcriptTiming
 				},
-				c,
+				c
 			);
 		} catch (error) {
 			console.error("Error during transcription:", error);
@@ -238,11 +238,11 @@ app.post("/transcript", async (c) => {
 							message:
 								error instanceof Error
 									? error.message
-									: "An error occurred during transcription",
-						},
+									: "An error occurred during transcription"
+						}
 					},
-					c,
-				),
+					c
+				)
 			});
 		}
 	}
@@ -252,7 +252,7 @@ app.post("/transcript", async (c) => {
 			file,
 			model: transcriptionModel[mode],
 			response_format: "json",
-			temperature: 0,
+			temperature: 0
 		});
 
 		const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
@@ -266,20 +266,20 @@ app.post("/transcript", async (c) => {
 				res: withMsgpack(
 					{
 						error: {
-							message: "No text found in response",
-						},
+							message: "No text found in response"
+						}
 					},
-					c,
-				),
+					c
+				)
 			});
 		}
 
 		return withMsgpack(
 			{
 				transcript: text,
-				timing: transcriptTiming,
+				timing: transcriptTiming
 			},
-			c,
+			c
 		);
 	}
 
@@ -288,7 +288,7 @@ app.post("/transcript", async (c) => {
 			file,
 			model: transcriptionModel[mode],
 			response_format: "json",
-			stream: true,
+			stream: true
 		});
 
 		return streamSSE(c, async (stream) => {
@@ -298,7 +298,7 @@ app.post("/transcript", async (c) => {
 					await stream.writeSSE({
 						event: "transcript",
 						data: event.delta,
-						id: String(id++),
+						id: String(id++)
 					});
 				}
 
@@ -306,7 +306,7 @@ app.post("/transcript", async (c) => {
 					await stream.writeSSE({
 						event: "done",
 						data: event.text,
-						id: String(id++),
+						id: String(id++)
 					});
 			}
 		});
@@ -326,29 +326,29 @@ app.post("/translate", async (c) => {
 			res: withMsgpack(
 				{
 					error: {
-						message: reqBody.error.message,
-					},
+						message: reqBody.error.message
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
 	const { phrase, hints } = reqBody.data;
 	const { data: mode, success } =
 		await TranslationLLMMPropertySchema.safeParseAsync(
-			c.req.query("mode") || "default",
+			c.req.query("mode") || "default"
 		);
 	if (!success)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
 				{
 					error: {
-						message: `Invalid mode "${mode}"`,
-					},
+						message: `Invalid mode "${mode}"`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 
 	const totalTiming = performance.now();
@@ -360,7 +360,7 @@ app.post("/translate", async (c) => {
 		let specificPromptCacheHit = false;
 		const retrieveLanguagePromptCache = async () => {
 			const langCache = await LANG_CACHE.getWithMetadata<string>(hint, {
-				type: "text",
+				type: "text"
 			});
 			const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
 			const value = langCache.value;
@@ -378,10 +378,10 @@ app.post("/translate", async (c) => {
 		const retrieveLanguageModelOverrideCache = async () => {
 			const langModelOverrideCache =
 				await LANG_MO_CACHE.getWithMetadata<string>(hint, {
-					type: "text",
+					type: "text"
 				});
 			const fetchedAt = dayjs(
-				_.get(langModelOverrideCache.metadata, "fetchedAt"),
+				_.get(langModelOverrideCache.metadata, "fetchedAt")
 			);
 			const value = langModelOverrideCache.value;
 			if (
@@ -397,7 +397,7 @@ app.post("/translate", async (c) => {
 
 		await Promise.all([
 			retrieveLanguagePromptCache(),
-			retrieveLanguageModelOverrideCache(),
+			retrieveLanguageModelOverrideCache()
 		]);
 
 		if (!specificPromptCacheHit) {
@@ -412,19 +412,19 @@ app.post("/translate", async (c) => {
 					res: withMsgpack(
 						{
 							error: {
-								message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`,
-							},
+								message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`
+							}
 						},
-						c,
-					),
+						c
+					)
 				});
 			}
 
 			const customPrompt = languagePromptsData.custom_prompt;
 			await LANG_CACHE.put(hint, customPrompt ?? "null", {
 				metadata: {
-					fetchedAt: dayjs().toJSON(),
-				},
+					fetchedAt: dayjs().toJSON()
+				}
 			});
 
 			languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
@@ -433,7 +433,7 @@ app.post("/translate", async (c) => {
 		if (!modelOverrideCacheHit) {
 			const {
 				data: languageModelOverrideData,
-				error: languageModelOverrideError,
+				error: languageModelOverrideError
 			} = await supabase
 				.from("languages")
 				.select("model_override")
@@ -444,19 +444,19 @@ app.post("/translate", async (c) => {
 					res: withMsgpack(
 						{
 							error: {
-								message: `Error fetching language model override for ${hint}: ${languageModelOverrideError.message}`,
-							},
+								message: `Error fetching language model override for ${hint}: ${languageModelOverrideError.message}`
+							}
 						},
-						c,
-					),
+						c
+					)
 				});
 			}
 
 			const modelOverride = languageModelOverrideData.model_override;
 			await LANG_MO_CACHE.put(hint, modelOverride ?? "null", {
 				metadata: {
-					fetchedAt: dayjs().toJSON(),
-				},
+					fetchedAt: dayjs().toJSON()
+				}
 			});
 
 			if (modelOverride) languageModelOverrides.set(hint, modelOverride);
@@ -465,7 +465,7 @@ app.post("/translate", async (c) => {
 
 	if (c.env.DEV)
 		console.log(
-			`Configured translation engine for phrase ${phrase} in ${performance.now() - totalTiming}ms`,
+			`Configured translation engine for phrase ${phrase} in ${performance.now() - totalTiming}ms`
 		);
 
 	const flattenedLanguageSpecificPrompts = languageSpecificPrompts
@@ -506,12 +506,12 @@ You are given a phrase.  This phrase could be in the languages represented by th
 ${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter((prompt) => !_.isNullish(prompt) && prompt !== "null").join("\n\n")}\n` : ""}
 Do not interpret the phrase, just translate it.
 Please also remove any garbage characters or transcription errors that might not contain any of the source langauges from the pretranslated phrase.
-            `.trim(),
+            `.trim()
 				},
 				{
 					role: "user",
-					content: `Phrase is "${phrase}"`,
-				},
+					content: `Phrase is "${phrase}"`
+				}
 			],
 			schema: z.object({
 				pretranslatedPhrase: z
@@ -519,7 +519,7 @@ Please also remove any garbage characters or transcription errors that might not
 					.describe("The phrase before translation"),
 				translatedPhrase: z.string().describe("The phrase after translation"),
 				sourceLanguage: z.string(),
-				targetLanguage: z.string(),
+				targetLanguage: z.string()
 			}),
 			temperature: 0,
 			providerOptions: {
@@ -527,17 +527,17 @@ Please also remove any garbage characters or transcription errors that might not
 					? {}
 					: mode === "default" && !_.isNullish(autoModel)
 						? specificModelOverrideProvider[autoModel.toString()]
-						: translationProvider[mode]),
-			},
+						: translationProvider[mode])
+			}
 		});
 
 		if (c.env.DEV)
 			console.log(
-				`Complete translation of phrase ${phrase} to ${object.targetLanguage} took ${performance.now() - totalTiming}ms, ${response.modelId} took ${performance.now() - translationTiming}ms for inference`,
+				`Complete translation of phrase ${phrase} to ${object.targetLanguage} took ${performance.now() - totalTiming}ms, ${response.modelId} took ${performance.now() - translationTiming}ms for inference`
 			);
 
 		const additionalData = {
-			..._.pick(response, ["id", "modelId", "timestamp"]),
+			..._.pick(response, ["id", "modelId", "timestamp"])
 		};
 
 		if (finishReason === "error") {
@@ -545,11 +545,11 @@ Please also remove any garbage characters or transcription errors that might not
 				res: withMsgpack(
 					{
 						error: {
-							message: "Error in translation",
-						},
+							message: "Error in translation"
+						}
 					},
-					c,
-				),
+					c
+				)
 			});
 		}
 
@@ -563,20 +563,20 @@ Please also remove any garbage characters or transcription errors that might not
 				res: withMsgpack(
 					{
 						error: {
-							message: `Failed to translate, model returned "${object.sourceLanguage}" and "${object.targetLanguage}" but hints were "${hints.join(", ")}"`,
-						},
+							message: `Failed to translate, model returned "${object.sourceLanguage}" and "${object.targetLanguage}" but hints were "${hints.join(", ")}"`
+						}
 					},
-					c,
-				),
+					c
+				)
 			});
 		}
 
 		return withMsgpack(
 			{
 				...object,
-				...additionalData,
+				...additionalData
 			},
-			c,
+			c
 		);
 	} catch (error) {
 		console.error("Translation error:", error);
@@ -587,11 +587,11 @@ Please also remove any garbage characters or transcription errors that might not
 						message:
 							error instanceof Error
 								? error.message
-								: "An error occurred during translation",
-					},
+								: "An error occurred during translation"
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 });
@@ -608,11 +608,11 @@ app.get("/languages", async (c) => {
 			res: withMsgpack(
 				{
 					error: {
-						message: `Error fetching languages: ${error.message}`,
-					},
+						message: `Error fetching languages: ${error.message}`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 
 	if (!data) {
@@ -620,11 +620,11 @@ app.get("/languages", async (c) => {
 			res: withMsgpack(
 				{
 					error: {
-						message: "No languages found",
-					},
+						message: "No languages found"
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
@@ -632,23 +632,23 @@ app.get("/languages", async (c) => {
 		const {
 			success,
 			data: parsedLang,
-			error,
+			error
 		} = await LanguageSchema.safeParseAsync(
 			_.mapKeys(
 				_.shake(lang, (v) => _.isNullish(v)),
-				(key: string) => _.camel(key),
-			),
+				(key: string) => _.camel(key)
+			)
 		);
 		if (!success) {
 			throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 				res: withMsgpack(
 					{
 						error: {
-							message: `Error parsing language "${lang.lang}": ${error?.message}`,
-						},
+							message: `Error parsing language "${lang.lang}": ${error?.message}`
+						}
 					},
-					c,
-				),
+					c
+				)
 			});
 		}
 
@@ -657,9 +657,9 @@ app.get("/languages", async (c) => {
 
 	return withMsgpack(
 		{
-			languages,
+			languages
 		},
-		c,
+		c
 	);
 });
 

@@ -36,24 +36,24 @@ export default function YouScreen() {
 
 		setUser((prevUser) => ({
 			...prevUser,
-			tier: getTierById(additionalUserInfo.tier),
+			tier: getTierById(additionalUserInfo.tier)
 		}));
 	}, [signedIn, user]);
 
 	const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage(
 		"flipGuestLang",
 		mmkvStorage,
-		false,
+		false
 	);
 	const [disableCache, setDisableCache] = useMMKVStorage(
 		"disableCache",
 		mmkvStorage,
-		false,
+		false
 	);
 	const [liquidGlassEnabled, setLiquidGlassEnabled] = useMMKVStorage(
 		"liquidGlassEnabled",
 		mmkvStorage,
-		isLiquidGlassAvailable(),
+		isLiquidGlassAvailable()
 	);
 
 	if (error || !assets || !user || !signedIn) return null;
@@ -72,7 +72,7 @@ export default function YouScreen() {
 				<Image
 					className="my-5 w-36 aspect-square rounded-full"
 					source={{
-						uri: _.get(userMetadata, "avatar_url", defaultProfilePicture),
+						uri: _.get(userMetadata, "avatar_url", defaultProfilePicture)
 					}}
 				/>
 
@@ -133,7 +133,7 @@ export default function YouScreen() {
 						if (err) {
 							Alert.alert(
 								"Error",
-								"Failed to sign out. Please try again later.",
+								"Failed to sign out. Please try again later."
 							);
 							return;
 						}

@@ -2,7 +2,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
 	useAnimatedStyle,
 	useSharedValue,
-	withSpring,
+	withSpring
 } from "react-native-reanimated";
 import { cn } from "@/lib/utils";
 import AnimatedTouchable from "./AnimatedTouchable";
@@ -10,7 +10,7 @@ import AnimatedTouchable from "./AnimatedTouchable";
 export default function TranscriptButton({
 	className,
 	onPressIn,
-	onPressOut,
+	onPressOut
 }: {
 	className?: string;
 	onPressIn?: () => void;
@@ -20,7 +20,7 @@ export default function TranscriptButton({
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
-			transform: [{ scale: withSpring(scale.value) }],
+			transform: [{ scale: withSpring(scale.value) }]
 		};
 	});
 
@@ -38,7 +38,7 @@ export default function TranscriptButton({
 			style={animatedStyle}
 			className={cn(
 				"bg-purple-600 flex w-28 h-28 items-center justify-center rounded-full",
-				className,
+				className
 			)}
 		>
 			<FontAwesome

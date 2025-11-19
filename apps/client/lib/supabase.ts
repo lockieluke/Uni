@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
 	GoogleSignin,
-	isNoSavedCredentialFoundResponse,
+	isNoSavedCredentialFoundResponse
 } from "@react-native-google-signin/google-signin";
 import { createClient } from "@supabase/supabase-js";
 import { CryptoDigestAlgorithm, digestStringAsync } from "expo-crypto";
@@ -19,8 +19,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 		storage: AsyncStorage,
 		autoRefreshToken: true,
 		persistSession: true,
-		detectSessionInUrl: false,
-	},
+		detectSessionInUrl: false
+	}
 });
 
 export async function checkSignedIn() {
@@ -37,7 +37,7 @@ export async function checkSignedIn() {
 		if (response.type === "success" && token) {
 			await supabase.auth.signInWithIdToken({
 				provider: "google",
-				token,
+				token
 			});
 		} else if (isNoSavedCredentialFoundResponse(response))
 			// user has not signed in yet, or they have revoked access
@@ -46,7 +46,7 @@ export async function checkSignedIn() {
 
 	const {
 		data: { session },
-		error,
+		error
 	} = await supabase.auth.getSession();
 	if (error) {
 		console.error("Error getting user:", error);
@@ -60,7 +60,7 @@ export async function checkSignedIn() {
 		...prevUser,
 		signedIn: isSignedIn,
 		user,
-		accessToken: session?.access_token,
+		accessToken: session?.access_token
 	}));
 
 	return isSignedIn;
@@ -83,7 +83,7 @@ export async function getSignInNonce() {
 	// `nonceDigest` goes to the `nonce` parameter in RN-google-signin APIs
 	const nonceDigest = await digestStringAsync(
 		CryptoDigestAlgorithm.SHA256,
-		rawNonce,
+		rawNonce
 	);
 	return { rawNonce, nonceDigest };
 }

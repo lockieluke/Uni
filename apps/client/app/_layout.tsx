@@ -3,7 +3,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import {
 	DarkTheme,
 	DefaultTheme,
-	ThemeProvider,
+	ThemeProvider
 } from "@react-navigation/native";
 import { AudioRecorderProvider } from "@siteed/expo-audio-studio";
 import { AppleAuthenticationButton } from "expo-apple-authentication";
@@ -43,22 +43,22 @@ export default function RootLayout() {
 	const [hostLanguage, setHostLanguage] = useMMKVStorage(
 		"hostLanguage",
 		mmkvStorage,
-		"en-GB",
+		"en-GB"
 	);
 	const [guestLanguage, setGuestLanguage] = useMMKVStorage(
 		"guestLanguage",
 		mmkvStorage,
-		"zh-HK",
+		"zh-HK"
 	);
 	const [liquidGlassEnabled] = useMMKVStorage(
 		"liquidGlassEnabled",
 		mmkvStorage,
-		isLiquidGlassAvailable(),
+		isLiquidGlassAvailable()
 	);
 
 	GoogleSignin.configure({
 		scopes: [],
-		iosClientId: `${process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID}`,
+		iosClientId: `${process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID}`
 	});
 
 	useAsyncEffect(async () => {
@@ -75,7 +75,7 @@ export default function RootLayout() {
 			if (hostLanguage && guestLanguage) {
 				setLanguages({
 					host: supportedLanguages[hostLanguage],
-					guest: supportedLanguages[guestLanguage],
+					guest: supportedLanguages[guestLanguage]
 				});
 			}
 		} else {
@@ -98,7 +98,7 @@ export default function RootLayout() {
 						name="(tabs)"
 						options={{
 							headerShown: false,
-							animation: "none",
+							animation: "none"
 						}}
 					/>
 					<Stack.Screen
@@ -127,7 +127,7 @@ export default function RootLayout() {
 										<Icon />
 									</TouchableOpacity>
 								);
-							},
+							}
 						}}
 					/>
 					<Stack.Screen
@@ -135,7 +135,7 @@ export default function RootLayout() {
 						options={{
 							headerShown: false,
 							gestureEnabled: false,
-							animation: "none",
+							animation: "none"
 						}}
 					/>
 					<Stack.Screen name="+not-found" />

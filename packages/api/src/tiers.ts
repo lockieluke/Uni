@@ -3,7 +3,7 @@ import * as _ from "radashi";
 export const UniTiers = {
 	free: 0,
 	basic: 1,
-	max: 2,
+	max: 2
 } as const;
 
 export const getTierById = (id: (typeof UniTiers)[keyof typeof UniTiers]) =>
@@ -17,6 +17,6 @@ export const UniMonthlyLimits: {
 	speech_translation: {
 		free: 25,
 		basic: 3000,
-		max: Number.MAX_SAFE_INTEGER,
-	},
+		max: Number.MAX_SAFE_INTEGER
+	}
 };

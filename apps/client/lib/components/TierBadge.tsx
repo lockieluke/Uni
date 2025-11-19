@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export default function TierBadge({
 	tier,
-	className,
+	className
 }: {
 	tier: keyof typeof UniTiers;
 	className?: string;

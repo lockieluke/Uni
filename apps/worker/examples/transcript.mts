@@ -13,7 +13,7 @@ if (!JWT && !IS_DEVELOPMENT)
 const audioFilePath = Bun.argv[2];
 if (!audioFilePath) {
 	throw new Error(
-		"Please provide an audio file path as an argument: bun transcript.mts /path/to/audio/file.mp3",
+		"Please provide an audio file path as an argument: bun transcript.mts /path/to/audio/file.mp3"
 	);
 }
 
@@ -29,16 +29,16 @@ const response = await fetch(
 	{
 		method: "POST",
 		headers: {
-			Authorization: `Bearer ${JWT}`,
+			Authorization: `Bearer ${JWT}`
 		},
-		body: formData,
-	},
+		body: formData
+	}
 );
 
 const json: unknown = decode(await response.arrayBuffer());
 if (!response.ok)
 	throw new Error(
-		`Error: ${_.get(json, "error.message", "Unknown error occured")}`,
+		`Error: ${_.get(json, "error.message", "Unknown error occured")}`
 	);
 
 console.log("Transcript received from API:", _.get(json, "transcript"));

@@ -14,11 +14,11 @@ const TranslationResponseSchema = z.object({
 	targetLanguage: z.string(),
 	id: z.string(),
 	modelId: z.string(),
-	timestamp: z.date(),
+	timestamp: z.date()
 });
 
 export async function getLanguages(
-	hostLang: string = getLocales()[0].languageCode ?? "en-GB",
+	hostLang: string = getLocales()[0].languageCode ?? "en-GB"
 ): Promise<{ [key: string]: TClientLanguage }> {
 	const disableCache =
 		(await mmkvStorage.getBoolAsync("disableCache")) ?? false;
@@ -28,9 +28,9 @@ export async function getLanguages(
 			? {
 					"Cache-Control": "no-cache",
 					Pragma: "no-cache",
-					Expires: "0",
+					Expires: "0"
 				}
-			: {},
+			: {}
 	});
 	const payload = response.data;
 	if (payload.error)
@@ -43,40 +43,40 @@ export async function getLanguages(
 			displayName: _.get(
 				language,
 				`displayName.${hostLang}`,
-				_.get(language, "displayName.en-GB"),
+				_.get(language, "displayName.en-GB")
 			),
-			code: key,
-		})),
+			code: key
+		}))
 	};
 }
 
 export default async function translatePhrase(
 	phrase: string,
 	hints: string[],
-	model: z.infer<typeof TranslationLLMMPropertySchema> = "default",
+	model: z.infer<typeof TranslationLLMMPropertySchema> = "default"
 ) {
 	const response = await uniApi.post(
 		"/translate",
 		encode({
 			phrase,
-			hints,
+			hints
 		}),
 		{
 			params: {
-				mode: model,
-			},
-		},
+				mode: model
+			}
+		}
 	);
 	const payload = response.data;
 
 	const {
 		success,
 		error: validateError,
-		data,
+		data
 	} = await TranslationResponseSchema.safeParseAsync(payload);
 	if (!success || !data)
 		throw new Error(
-			`Error parsing translation response: ${validateError?.message}`,
+			`Error parsing translation response: ${validateError?.message}`
 		);
 
 	if (data.pretranslatedPhrase !== phrase)
@@ -93,6 +93,6 @@ export default async function translatePhrase(
 
 	return {
 		...data,
-		timestamp: data.timestamp,
+		timestamp: data.timestamp
 	};
 }

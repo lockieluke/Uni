@@ -20,7 +20,7 @@ export default function TabLayout() {
 	const [liquidGlassEnabled] = useMMKVStorage(
 		"liquidGlassEnabled",
 		mmkvStorage,
-		isLiquidGlassAvailable(),
+		isLiquidGlassAvailable()
 	);
 
 	return (
@@ -31,30 +31,30 @@ export default function TabLayout() {
 					labelStyle={{
 						color: DynamicColorIOS({
 							dark: "white",
-							light: "black",
-						}),
+							light: "black"
+						})
 					}}
 				>
 					<NativeTabs.Trigger
 						name="index"
 						options={{
-							title: "Translate",
+							title: "Translate"
 						}}
 					>
 						{Platform.select({
 							ios: <Icon sf="globe" selectedColor={"purple"} />,
-							android: <VectorIcon family={MaterialIcons} name="translate" />,
+							android: <VectorIcon family={MaterialIcons} name="translate" />
 						})}
 					</NativeTabs.Trigger>
 					<NativeTabs.Trigger
 						name="you"
 						options={{
-							title: "You",
+							title: "You"
 						}}
 					>
 						{Platform.select({
 							ios: <Icon sf="person.fill" selectedColor={"purple"} />,
-							android: <VectorIcon family={MaterialIcons} name="person" />,
+							android: <VectorIcon family={MaterialIcons} name="person" />
 						})}
 					</NativeTabs.Trigger>
 				</NativeTabs>
@@ -70,11 +70,11 @@ export default function TabLayout() {
 							...Platform.select({
 								ios: {
 									// Use a transparent background on iOS to show the blur effect
-									position: "absolute",
+									position: "absolute"
 								},
-								default: {},
-							}),
-						},
+								default: {}
+							})
+						}
 					}}
 				>
 					<Tabs.Screen
@@ -86,7 +86,7 @@ export default function TabLayout() {
 							title: "Translate",
 							tabBarIcon: ({ color }) => (
 								<IconSymbol size={28} name="translate" color={color} />
-							),
+							)
 						}}
 					/>
 					<Tabs.Screen
@@ -96,7 +96,7 @@ export default function TabLayout() {
 							tabBarIcon: ({ color }) => (
 								<IconSymbol size={28} name="person.fill" color={color} />
 							),
-							headerShown: false,
+							headerShown: false
 						}}
 					/>
 				</Tabs>

@@ -15,17 +15,17 @@ export default function DevServerSetting() {
 	const [useDevServer, setUseDevServer] = useMMKVStorage(
 		"useDevServer",
 		mmkvStorage,
-		false,
+		false
 	);
 	const [devServerUrl, setDevServerUrl] = useMMKVStorage(
 		"devServerUrl",
 		mmkvStorage,
-		"http://127.0.0.1:8787",
+		"http://127.0.0.1:8787"
 	);
 	const [liquidGlassEnabled] = useMMKVStorage(
 		"liquidGlassEnabled",
 		mmkvStorage,
-		isLiquidGlassAvailable(),
+		isLiquidGlassAvailable()
 	);
 
 	if (!navigationState) return null;
@@ -40,7 +40,7 @@ export default function DevServerSetting() {
 		<AdaptiveColumnTrigger
 			glassEffectStyle="clear"
 			className={cn({
-				"p-5 mx-5 rounded-xl": liquidGlassEnabled,
+				"p-5 mx-5 rounded-xl": liquidGlassEnabled
 			})}
 		>
 			<View className="flex-col w-full">

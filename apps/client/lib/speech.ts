@@ -1,6 +1,6 @@
 import type {
 	OpenAITranscriptionModelSchema,
-	TranscriptionProviderSchema,
+	TranscriptionProviderSchema
 } from "@uni/api";
 import { File } from "expo-file-system";
 import { getDefaultStore } from "jotai";
@@ -13,7 +13,7 @@ import { userAtom } from "./states";
 export async function transcriptRealtime(
 	uri: string,
 	mode: z.infer<typeof OpenAITranscriptionModelSchema> = "accurate",
-	callback?: (transcript: string) => void,
+	callback?: (transcript: string) => void
 ) {
 	return new Promise<string>((resolve, reject) => {
 		const file = new File(uri);
@@ -23,7 +23,7 @@ export async function transcriptRealtime(
 		formData.append("file", {
 			uri: uri,
 			name: "audio.wav",
-			type: "audio/wav",
+			type: "audio/wav"
 		} as never);
 
 		const accessToken = getDefaultStore().get(userAtom).accessToken;
@@ -36,10 +36,10 @@ export async function transcriptRealtime(
 				headers: {
 					"Content-Type": "application/x-msgpack",
 					"User-Agent": "Uni/1.0.0",
-					Authorization: `Bearer ${accessToken}`,
+					Authorization: `Bearer ${accessToken}`
 				},
-				pollingInterval: 0,
-			},
+				pollingInterval: 0
+			}
 		);
 
 		eventSource.addEventListener("open", () => {
@@ -73,7 +73,7 @@ export async function transcript(
 	provider: Exclude<
 		z.infer<typeof TranscriptionProviderSchema>,
 		"openai-realtime"
-	> = "openai",
+	> = "openai"
 ): Promise<{
 	language: string;
 	transcript: string;
@@ -82,14 +82,14 @@ export async function transcript(
 	formData.append("file", {
 		uri: uri,
 		name: "audio.m4a",
-		type: "audio/m4a",
+		type: "audio/m4a"
 	} as never);
 
 	const response = await uniApi.postForm("/transcript", formData, {
 		params: {
 			mode,
-			provider,
-		},
+			provider
+		}
 	});
 	const payload = response.data;
 	if (payload.error)
@@ -99,6 +99,6 @@ export async function transcript(
 
 	return {
 		language: "unknown",
-		transcript,
+		transcript
 	};
 }

@@ -7,25 +7,25 @@ import Animated, {
 	runOnJS,
 	useAnimatedStyle,
 	useSharedValue,
-	withTiming,
+	withTiming
 } from "react-native-reanimated";
 import { languagesAtom, translationsAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 
 export default function TranslateHeader({
-	children,
+	children
 }: {
 	children: React.ReactNode;
 }) {
 	const [flipGuestLanguage] = useMMKVStorage(
 		"flipGuestLang",
 		mmkvStorage,
-		false,
+		false
 	);
 	const translations = useAtomValue(translationsAtom);
 	const languages = useAtomValue(languagesAtom);
 	const [disclaimerState, setDisclaimerState] = useState<"host" | "guest">(
-		"host",
+		"host"
 	);
 
 	const showDisclaimers = translations?.host && translations?.guest;
@@ -37,16 +37,16 @@ export default function TranslateHeader({
 					opacity.value,
 					{
 						duration: 1000,
-						easing: Easing.inOut(Easing.ease),
+						easing: Easing.inOut(Easing.ease)
 					},
 					(finished) => {
 						if (finished && opacity.value === 0)
 							runOnJS(setDisclaimerState)(
-								disclaimerState === "host" ? "guest" : "host",
+								disclaimerState === "host" ? "guest" : "host"
 							);
-					},
+					}
 				)
-			: 1,
+			: 1
 	}));
 
 	useEffect(() => {
@@ -61,7 +61,7 @@ export default function TranslateHeader({
 
 	const disclaimer = languages[disclaimerState].disclaimer?.replace(
 		"{{PRODUCT_NAME}}",
-		"Uni Translate",
+		"Uni Translate"
 	);
 
 	return (
@@ -71,10 +71,10 @@ export default function TranslateHeader({
 				{
 					transform: [
 						{
-							rotate: `${disclaimerState === "guest" && flipGuestLanguage ? 180 : 0}deg`,
-						},
-					],
-				},
+							rotate: `${disclaimerState === "guest" && flipGuestLanguage ? 180 : 0}deg`
+						}
+					]
+				}
 			]}
 		>
 			<Text className="text-t-primary text-lg">

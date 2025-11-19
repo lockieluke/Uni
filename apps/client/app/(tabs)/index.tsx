@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
 	type RecordingConfig,
-	useSharedAudioRecorder,
+	useSharedAudioRecorder
 } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
 import { requestRecordingPermissionsAsync } from "expo-audio";
@@ -20,7 +20,7 @@ import {
 	TouchableOpacity,
 	useColorScheme,
 	useWindowDimensions,
-	View,
+	View
 } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -46,24 +46,24 @@ export default function HomeScreen() {
 	const [flipGuestLanguage] = useMMKVStorage(
 		"flipGuestLang",
 		mmkvStorage,
-		false,
+		false
 	);
 	const [liquidGlassEnabled] = useMMKVStorage(
 		"liquidGlassEnabled",
 		mmkvStorage,
-		isLiquidGlassAvailable(),
+		isLiquidGlassAvailable()
 	);
 	const [cachedAudioPaths, setCachedAudioPaths] = useMMKVStorage<string[]>(
 		"cachedAudioPaths",
 		mmkvStorage,
-		[],
+		[]
 	);
 
 	const [translationState, setTranslationState] = useState<
 		"idle" | "translating" | "transcripting"
 	>("idle");
 	const [transcriptionPreview, setTranscriptionPreview] = useState<string[]>(
-		[],
+		[]
 	);
 	const [speechReady, setSpeechReady] = useState<
 		"unknown" | "denied" | "granted"
@@ -89,12 +89,12 @@ export default function HomeScreen() {
 			setCachedAudioPaths((prevPaths) =>
 				prevPaths.some((path) => path === event.fileUri)
 					? [...prevPaths]
-					: [...prevPaths, event.fileUri],
+					: [...prevPaths, event.fileUri]
 			);
 
 			const currentPreviewChunkIndex = transcriptionPreview.length;
 			const [transcriptionErr, transcripted] = await _.tryit(
-				transcriptRealtime,
+				transcriptRealtime
 			)(event.fileUri, "accurate", (transcription) => {
 				if (_.isNullish(transcripted)) {
 					setTranscriptionPreview((prevPreviews) =>
@@ -110,14 +110,14 @@ export default function HomeScreen() {
 										return newPreview;
 									}
 									return preview;
-								}),
+								})
 					);
 				}
 			});
 			if (transcriptionErr) {
 				console.error(
 					"Error transcribing in realtime:",
-					transcriptionErr.message,
+					transcriptionErr.message
 				);
 				return;
 			}
@@ -131,11 +131,11 @@ export default function HomeScreen() {
 							if (i === currentPreviewChunkIndex)
 								return transcripted.replaceAll("�", "");
 							return preview;
-						}),
+						})
 			);
 
 			blockingNewAudioStream.current = false;
-		},
+		}
 	};
 
 	useAsyncEffect(async () => {
@@ -153,7 +153,7 @@ export default function HomeScreen() {
 	return (
 		<SafeAreaView
 			className={cn(
-				"flex-1 justify-center items-center bg-white dark:bg-black",
+				"flex-1 justify-center items-center bg-white dark:bg-black"
 			)}
 		>
 			<When condition={signedIn}>
@@ -161,11 +161,11 @@ export default function HomeScreen() {
 					<MotiView
 						className={cn("absolute inset-0 flex items-center", {
 							"top-10": liquidGlassEnabled,
-							"top-0": !liquidGlassEnabled,
+							"top-0": !liquidGlassEnabled
 						})}
 						transition={{
 							type: "spring",
-							duration: 300,
+							duration: 300
 						}}
 						from={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
@@ -186,17 +186,17 @@ export default function HomeScreen() {
 								<MotiView
 									className="w-full flex flex-col gap-10"
 									from={{
-										opacity: 0,
+										opacity: 0
 									}}
 									animate={{
-										opacity: 1,
+										opacity: 1
 									}}
 									exit={{
-										opacity: 0,
+										opacity: 0
 									}}
 									transition={{
 										type: "spring",
-										duration: 300,
+										duration: 300
 									}}
 								>
 									<TranslationText
@@ -226,17 +226,17 @@ export default function HomeScreen() {
 							>
 								<MotiView
 									from={{
-										opacity: 0,
+										opacity: 0
 									}}
 									animate={{
-										opacity: 1,
+										opacity: 1
 									}}
 									exit={{
-										opacity: 0,
+										opacity: 0
 									}}
 									transition={{
 										type: "spring",
-										duration: 300,
+										duration: 300
 									}}
 								>
 									<View className="flex flex-center px-5 my-52">
@@ -250,7 +250,7 @@ export default function HomeScreen() {
 
 						<View
 							style={{
-								bottom: bottomTabHeight,
+								bottom: bottomTabHeight
 							}}
 							className={"flex-center absolute bottom-14"}
 						>
@@ -286,12 +286,12 @@ export default function HomeScreen() {
 												} catch (error) {
 													console.error(
 														"Error deleting cached audio file:",
-														_.get(error, "message"),
+														_.get(error, "message")
 													);
 												}
 											}
 										},
-										10,
+										10
 									);
 									setCachedAudioPaths([]);
 
@@ -303,7 +303,7 @@ export default function HomeScreen() {
 									} catch (error) {
 										console.error(
 											"Error starting recording:",
-											_.get(error, "message", error),
+											_.get(error, "message", error)
 										);
 									}
 								}}
@@ -327,7 +327,7 @@ export default function HomeScreen() {
 
 													if (!_.isEmpty(transcripted)) {
 														const [translationErr, response] = await _.tryit(
-															translatePhrase,
+															translatePhrase
 														)(transcripted, hints, "default");
 														if (translationErr) {
 															if (translationErr instanceof AxiosError) {
@@ -336,15 +336,15 @@ export default function HomeScreen() {
 																	_.get(
 																		translationErr.response?.data,
 																		"error.message",
-																		"unknown error",
-																	),
+																		"unknown error"
+																	)
 																);
 																setTranslations({});
 																return;
 															}
 															console.error(
 																"Error translating:",
-																translationErr.message,
+																translationErr.message
 															);
 															return;
 														}
@@ -353,7 +353,7 @@ export default function HomeScreen() {
 															const {
 																translatedPhrase,
 																sourceLanguage,
-																pretranslatedPhrase,
+																pretranslatedPhrase
 															} = response;
 
 															setTranslations({
@@ -364,7 +364,7 @@ export default function HomeScreen() {
 																guest:
 																	languages.guest.code === sourceLanguage
 																		? pretranslatedPhrase
-																		: translatedPhrase,
+																		: translatedPhrase
 															});
 														}
 													}

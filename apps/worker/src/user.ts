@@ -1,6 +1,6 @@
 import {
 	createClient,
-	type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT,
+	type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT
 } from "@supabase/supabase-js";
 import { getTierById, UniMonthlyLimits, UniTiers } from "@uni/api";
 import { type Context, Hono } from "hono";
@@ -15,13 +15,13 @@ import { withMsgpack } from "./utils";
 const userRouter = new Hono<THono>();
 
 export async function getTier(
-	c: Context<THono>,
+	c: Context<THono>
 ): Promise<(typeof UniTiers)[keyof typeof UniTiers]> {
 	const user = c.get("user");
 	const supabase = c.get("supabase");
 
 	const { data: tier, error } = await supabase.rpc("get_tier", {
-		user_id: user.id,
+		user_id: user.id
 	});
 
 	if (error) throw new Error(`Failed to get user tier: ${error.message}`);
@@ -40,7 +40,7 @@ userRouter.post("/create", async (c) => {
 	const payload = await c.req.json();
 	const adminSupabase = createClient<Database>(
 		c.env.SUPABASE_URL,
-		c.env.SUPABASE_ADMIN_KEY,
+		c.env.SUPABASE_ADMIN_KEY
 	);
 
 	const type: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT = _.get(payload, "type");
@@ -53,9 +53,9 @@ userRouter.post("/create", async (c) => {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.BAD_REQUEST,
-					message: "Invalid sign up webhook payload",
-				},
-			}),
+					message: "Invalid sign up webhook payload"
+				}
+			})
 		});
 	}
 
@@ -64,9 +64,9 @@ userRouter.post("/create", async (c) => {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.INTERNAL_SERVER_ERROR,
-					message: "User ID or email is missing",
-				},
-			}),
+					message: "User ID or email is missing"
+				}
+			})
 		});
 	}
 	const id: string = _.get(record, "id");
@@ -82,9 +82,9 @@ userRouter.post("/create", async (c) => {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.BAD_REQUEST,
-					message: "User full name is missing",
-				},
-			}),
+					message: "User full name is missing"
+				}
+			})
 		});
 
 	if (!nameFromEmail && provider === "apple")
@@ -92,38 +92,38 @@ userRouter.post("/create", async (c) => {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.BAD_REQUEST,
-					message: "User name from email is missing when using Apple provider",
-				},
-			}),
+					message: "User name from email is missing when using Apple provider"
+				}
+			})
 		});
 
 	const { error: userError } = await adminSupabase.from("users").insert({
 		id,
 		name: provider === "apple" ? nameFromEmail : name,
 		email,
-		tier: 0,
+		tier: 0
 	});
 	if (userError)
 		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.INTERNAL_SERVER_ERROR,
-					message: `Failed to create user: ${userError.message}`,
-				},
-			}),
+					message: `Failed to create user: ${userError.message}`
+				}
+			})
 		});
 
 	const { error: usageError } = await adminSupabase.from("usage").insert({
-		id,
+		id
 	});
 	if (usageError)
 		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 			res: c.json({
 				error: {
 					http_code: StatusCodes.INTERNAL_SERVER_ERROR,
-					message: `Failed to create usage record: ${usageError.message}`,
-				},
-			}),
+					message: `Failed to create usage record: ${usageError.message}`
+				}
+			})
 		});
 
 	return c.json({});
@@ -139,11 +139,11 @@ userRouter.get("/", async (c) => {
 				{
 					error: {
 						http_code: StatusCodes.UNAUTHORIZED,
-						message: "Unauthorized",
-					},
+						message: "Unauthorized"
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
@@ -158,11 +158,11 @@ userRouter.get("/", async (c) => {
 				{
 					error: {
 						http_code: StatusCodes.NOT_FOUND,
-						message: `${error.message}`,
-					},
+						message: `${error.message}`
+					}
 				},
-				c,
-			),
+				c
+			)
 		});
 	}
 
@@ -179,11 +179,11 @@ userRouter.get("/", async (c) => {
 			limits: {
 				speech_translation: {
 					monthly_limit: speechTranslationLimit,
-					usage: speechTranslationUsage,
-				},
-			},
+					usage: speechTranslationUsage
+				}
+			}
 		},
-		c,
+		c
 	);
 });
 

@@ -4,7 +4,7 @@ try {
 		outdir: "./dist",
 		minify: true,
 		target: "browser",
-		packages: "external",
+		packages: "external"
 	});
 } catch (e) {
 	const error = e as AggregateError;

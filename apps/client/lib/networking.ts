@@ -14,7 +14,7 @@ const uniApi = axios.create({
 	baseURL: UNI_API_BASE_URL,
 	headers: {
 		"Content-Type": "application/x-msgpack",
-		"User-Agent": "Uni/1.0.0",
+		"User-Agent": "Uni/1.0.0"
 	},
 	timeout: 10 * 1000,
 	adapter: "fetch",
@@ -22,7 +22,7 @@ const uniApi = axios.create({
 	transformRequest: [
 		(data) => {
 			return data;
-		},
+		}
 	],
 	transformResponse: [
 		(data) => {
@@ -31,7 +31,7 @@ const uniApi = axios.create({
 				if (err) {
 					const text = new TextDecoder().decode(data);
 					throw new Error(
-						`Error decoding response from Uni API with payload ${text}: ${err.message}`,
+						`Error decoding response from Uni API with payload ${text}: ${err.message}`
 					);
 				}
 
@@ -42,8 +42,8 @@ const uniApi = axios.create({
 			}
 
 			return data;
-		},
-	],
+		}
+	]
 });
 
 uniApi.interceptors.request.use(async (config) => {

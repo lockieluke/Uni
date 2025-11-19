@@ -6,7 +6,7 @@ import { uniApi } from "./networking";
 export const UserMetadataSchema = z.object({
 	id: z.string(),
 	email: z.email(),
-	tier: z.enum(UniTiers),
+	tier: z.enum(UniTiers)
 });
 
 export async function getUserAdditionalData() {
@@ -18,11 +18,11 @@ export async function getUserAdditionalData() {
 	const {
 		success,
 		error: validateError,
-		data,
+		data
 	} = await UserMetadataSchema.safeParseAsync(payload);
 	if (!success || !data)
 		throw new Error(
-			`Error parsing user metadata response: ${validateError?.message}`,
+			`Error parsing user metadata response: ${validateError?.message}`
 		);
 
 	return data;

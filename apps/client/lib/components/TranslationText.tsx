@@ -8,21 +8,21 @@ import {
 	Text,
 	TouchableOpacity,
 	useColorScheme,
-	View,
+	View
 } from "react-native";
 import { cn } from "@/lib/utils";
 import {
 	availableLanguagesAtom,
 	languagesAtom,
 	type TClientLanguage,
-	translationsAtom,
+	translationsAtom
 } from "../states";
 
 export default function TranslationText({
 	translating = false,
 	revertEnabled,
 	language,
-	children,
+	children
 }: {
 	translating?: boolean;
 	revertEnabled: boolean;
@@ -37,7 +37,7 @@ export default function TranslationText({
 
 	const [menuSize, setMenuSize] = useState<{ width: number; height: number }>({
 		width: 0,
-		height: 0,
+		height: 0
 	});
 	const [inLangMenu, setInLangMenu] = useState(false);
 
@@ -56,7 +56,7 @@ export default function TranslationText({
 						});
 					}}
 					className={cn("text-t-primary text-lg", {
-						"pointer-events-none text-transparent": inLangMenu,
+						"pointer-events-none text-transparent": inLangMenu
 					})}
 				>
 					{language.displayName}
@@ -66,7 +66,7 @@ export default function TranslationText({
 						top: 0,
 						bottom: 0,
 						left: 30,
-						right: Dimensions.get("window").width,
+						right: Dimensions.get("window").width
 					}}
 					style={{
 						position: "absolute",
@@ -74,7 +74,7 @@ export default function TranslationText({
 						justifyContent: "center",
 						alignItems: "flex-start",
 						width: menuSize.width,
-						height: menuSize.height,
+						height: menuSize.height
 					}}
 					onOpenMenu={() => {
 						setInLangMenu(true);
@@ -89,14 +89,14 @@ export default function TranslationText({
 						if (role === "guest") {
 							setLanguages((prevLanguages) => ({
 								...prevLanguages,
-								guest: choosenLanguage,
+								guest: choosenLanguage
 							}));
 						}
 
 						if (role === "host") {
 							setLanguages((prevLanguages) => ({
 								...prevLanguages,
-								host: choosenLanguage,
+								host: choosenLanguage
 							}));
 						}
 
@@ -106,12 +106,12 @@ export default function TranslationText({
 						.filter((lang) =>
 							role !== "guest"
 								? languages.guest.code !== lang.code
-								: languages.host.code !== lang.code,
+								: languages.host.code !== lang.code
 						)
 						.map((lang) => ({
 							title: `${lang.flag} ${lang.displayName}`,
 							id: lang.code,
-							state: lang.code === language.code ? "on" : "off",
+							state: lang.code === language.code ? "on" : "off"
 						}))}
 				/>
 			</TouchableOpacity>
@@ -120,13 +120,13 @@ export default function TranslationText({
 					width={"90%"}
 					colorMode={colorScheme === "dark" ? "dark" : "light"}
 					transition={{
-						type: "spring",
+						type: "spring"
 					}}
 				>
 					{translating ? null : (
 						<Text
 							className={cn("text-t-primary font-semibold text-5xl text-left", {
-								"rotate-180": revertEnabled,
+								"rotate-180": revertEnabled
 							})}
 						>
 							{children}

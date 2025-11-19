@@ -2,7 +2,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
 	GoogleSignin,
-	isSuccessResponse,
+	isSuccessResponse
 } from "@react-native-google-signin/google-signin";
 import { useIsFocused, usePreventRemove } from "@react-navigation/core";
 import { useEventListener } from "expo";
@@ -18,12 +18,12 @@ import {
 	Text,
 	TouchableOpacity,
 	useColorScheme,
-	View,
+	View
 } from "react-native";
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
-	withTiming,
+	withTiming
 } from "react-native-reanimated";
 import DevServerSetting from "@/lib/components/DevServerSetting";
 import { userAtom } from "@/lib/states";
@@ -41,8 +41,8 @@ export default function SignIn() {
 	const opacity = useSharedValue(0);
 	const videoAnimatedStyle = useAnimatedStyle(() => ({
 		opacity: withTiming(opacity.value, {
-			duration: 1000,
-		}),
+			duration: 1000
+		})
 	}));
 
 	usePreventRemove(!user.signedIn, () => {});
@@ -54,7 +54,7 @@ export default function SignIn() {
 			player.timeUpdateEventInterval = 1;
 			player.play();
 			opacity.value = 1;
-		},
+		}
 	);
 
 	useEventListener(player, "timeUpdate", async ({ currentTime }) => {
@@ -117,7 +117,7 @@ export default function SignIn() {
 							const { nonceDigest, rawNonce } = await getSignInNonce();
 
 							const response = await GoogleSignin.signIn({
-								nonce: nonceDigest,
+								nonce: nonceDigest
 							} as never);
 
 							const token = response.data?.idToken;
@@ -125,11 +125,11 @@ export default function SignIn() {
 							if (isSuccessResponse(response) && token) {
 								const {
 									data: { session, user },
-									error,
+									error
 								} = await supabase.auth.signInWithIdToken({
 									provider: "google",
 									token,
-									nonce: rawNonce,
+									nonce: rawNonce
 								});
 
 								if (error || !user) {
@@ -141,14 +141,14 @@ export default function SignIn() {
 									signedIn: true,
 									user,
 									accessToken: session.access_token,
-									tier: "free",
+									tier: "free"
 								});
 
 								await AsyncStorage.setItem("lastSignInProvider", "google");
 
 								console.log("User signed in", user.email);
 								rootNavigation.reset({
-									routes: [{ name: "(tabs)" }],
+									routes: [{ name: "(tabs)" }]
 								});
 							} else {
 								console.error("No id token present");
@@ -177,18 +177,18 @@ export default function SignIn() {
 						const isAvailable = await AppleAuthentication.isAvailableAsync();
 						if (!isAvailable) {
 							console.error(
-								"Apple Authentication is not available on this device",
+								"Apple Authentication is not available on this device"
 							);
 							return;
 						}
 
 						const [err, credentials] = await _.tryit(
-							AppleAuthentication.signInAsync,
+							AppleAuthentication.signInAsync
 						)({
 							requestedScopes: [
 								AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-								AppleAuthentication.AppleAuthenticationScope.EMAIL,
-							],
+								AppleAuthentication.AppleAuthenticationScope.EMAIL
+							]
 						});
 						if (err) {
 							if (_.get(err, "code") === "ERR_CANCELED") {
@@ -212,10 +212,10 @@ export default function SignIn() {
 
 						const {
 							error,
-							data: { user },
+							data: { user }
 						} = await supabase.auth.signInWithIdToken({
 							provider: "apple",
-							token: credentials.identityToken,
+							token: credentials.identityToken
 						});
 						if (error || !user) {
 							console.error("Error signing in with Apple", error?.message);
@@ -226,14 +226,14 @@ export default function SignIn() {
 							signedIn: true,
 							user: user,
 							accessToken,
-							tier: "free",
+							tier: "free"
 						});
 
 						await AsyncStorage.setItem("lastSignInProvider", "apple");
 
 						console.log("User signed in with Apple", user.email);
 						rootNavigation.reset({
-							routes: [{ name: "(tabs)" }],
+							routes: [{ name: "(tabs)" }]
 						});
 						router.replace("/(tabs)");
 					}}

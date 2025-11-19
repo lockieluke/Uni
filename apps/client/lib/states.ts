@@ -9,7 +9,7 @@ export const userAtom = atom<{
 	tier: keyof typeof UniTiers;
 }>({
 	signedIn: false,
-	tier: "free",
+	tier: "free"
 });
 
 export type TClientLanguage = Omit<
@@ -25,13 +25,13 @@ export const languagesAtom = atom<Record<"host" | "guest", TClientLanguage>>({
 	host: {
 		code: "en-GB",
 		displayName: "English (UK)",
-		flag: "🇬🇧",
+		flag: "🇬🇧"
 	},
 	guest: {
 		code: "zh-HK",
 		displayName: "Cantonese (Hong Kong)",
-		flag: "🇭🇰",
-	},
+		flag: "🇭🇰"
+	}
 });
 
 export const availableLanguagesAtom = atom<{

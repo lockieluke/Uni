@@ -8,7 +8,7 @@ import ColumnTrigger from "@/lib/components/ColumnTrigger";
 import {
 	availableLanguagesAtom,
 	languagesAtom,
-	translationsAtom,
+	translationsAtom
 } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 
@@ -47,27 +47,27 @@ export default function LanguagesScreen() {
 									if (selectMode === "host") {
 										await mmkvStorage.setStringAsync(
 											"hostLanguage",
-											languageCode,
+											languageCode
 										);
 										setLanguages((prevLanguages) => ({
 											...prevLanguages,
-											host: item[1],
+											host: item[1]
 										}));
 									}
 
 									if (selectMode === "guest") {
 										await mmkvStorage.setStringAsync(
 											"guestLanguage",
-											languageCode,
+											languageCode
 										);
 										setLanguages((prevLanguages) => ({
 											...prevLanguages,
-											guest: item[1],
+											guest: item[1]
 										}));
 									}
 
 									setSelectMode((prevSelectMode) =>
-										prevSelectMode === "host" ? "guest" : "host",
+										prevSelectMode === "host" ? "guest" : "host"
 									);
 								}}
 							>
@@ -89,7 +89,7 @@ export default function LanguagesScreen() {
 					keyExtractor={(item) => item[0]}
 					contentContainerClassName="px-5 py-3"
 					contentContainerStyle={{
-						paddingHorizontal: 20,
+						paddingHorizontal: 20
 					}}
 				/>
 			</View>

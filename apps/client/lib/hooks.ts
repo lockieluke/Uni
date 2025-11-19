@@ -3,7 +3,7 @@ import { useEffect } from "react";
 // From npm:use-async-effect
 export const useAsyncEffect = (
 	effect: () => Promise<CallableFunction | unknown>,
-	deps?: unknown[],
+	deps?: unknown[]
 ) => {
 	return useEffect(() => {
 		let cb: CallableFunction | unknown;

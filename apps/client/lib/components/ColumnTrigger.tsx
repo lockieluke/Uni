@@ -7,7 +7,7 @@ export default function ColumnTrigger({
 	children,
 	className,
 	onPress,
-	subpage = false,
+	subpage = false
 }: {
 	children: string | React.ReactNode;
 	className?: string;
@@ -20,7 +20,7 @@ export default function ColumnTrigger({
 			onPress={() => onPress?.()}
 			className={cn(
 				"bg-slate-200 dark:bg-zinc-900 w-[90vw] flex flex-row justify-between items-center p-4 rounded-lg",
-				className,
+				className
 			)}
 		>
 			{typeof children === "string" ? (
@@ -31,7 +31,7 @@ export default function ColumnTrigger({
 			<When condition={subpage}>
 				<FontAwesome
 					style={{
-						textAlign: "center",
+						textAlign: "center"
 					}}
 					name="angle-right"
 					size={20}

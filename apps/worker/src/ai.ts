@@ -1,7 +1,7 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import type {
 	OpenAITranscriptionModelSchema,
-	TranslationLLMMPropertySchema,
+	TranslationLLMMPropertySchema
 } from "@uni/api";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
@@ -10,7 +10,7 @@ import type { z } from "zod/v4";
 
 export const useOpenRouter = createOpenRouter({
 	baseURL: `${process.env.OPENROUTER_API_BASE || "https://openrouter.ai/api/v1"}`,
-	apiKey: `${process.env.OPENROUTER_API_KEY}`,
+	apiKey: `${process.env.OPENROUTER_API_KEY}`
 });
 
 export const openai = new OpenAI();
@@ -23,7 +23,7 @@ export const translationModel: Record<
 	string
 > = {
 	advanced: "openai/gpt-5-mini",
-	fast: "qwen/qwen3-235b-a22b-2507",
+	fast: "qwen/qwen3-235b-a22b-2507"
 };
 
 const openRouterProviderObj = (opts?: unknown) => {
@@ -31,9 +31,9 @@ const openRouterProviderObj = (opts?: unknown) => {
 		? {
 				openrouter: {
 					provider: {
-						...opts,
-					},
-				},
+						...opts
+					}
+				}
 			}
 		: {};
 };
@@ -45,14 +45,14 @@ export const translationProvider: Record<
 	default: openRouterProviderObj(),
 	advanced: openRouterProviderObj(),
 	fast: openRouterProviderObj({
-		sort: "latency",
-	}),
+		sort: "latency"
+	})
 };
 
 export const specificModelOverrideProvider: Record<string, object> = {
 	"google/gemini-2.5-flash": openRouterProviderObj({
-		only: "google-ai-studio",
-	}),
+		only: "google-ai-studio"
+	})
 };
 
 export const transcriptionModel: Record<
@@ -60,7 +60,7 @@ export const transcriptionModel: Record<
 	string
 > = {
 	fast: "whisper-1",
-	accurate: "gpt-4o-transcribe",
+	accurate: "gpt-4o-transcribe"
 };
 
 export const groq = new Groq();
