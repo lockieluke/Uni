@@ -12,29 +12,15 @@ export default function DevServerSetting() {
 	const navigation = useNavigation();
 	const navigationState = navigation.getState();
 
-	const [useDevServer, setUseDevServer] = useMMKVStorage(
-		"useDevServer",
-		mmkvStorage,
-		false
-	);
-	const [devServerUrl, setDevServerUrl] = useMMKVStorage(
-		"devServerUrl",
-		mmkvStorage,
-		"http://127.0.0.1:8787"
-	);
-	const [liquidGlassEnabled] = useMMKVStorage(
-		"liquidGlassEnabled",
-		mmkvStorage,
-		isLiquidGlassAvailable()
-	);
+	const [useDevServer, setUseDevServer] = useMMKVStorage("useDevServer", mmkvStorage, false);
+	const [devServerUrl, setDevServerUrl] = useMMKVStorage("devServerUrl", mmkvStorage, "http://127.0.0.1:8787");
+	const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
 	if (!navigationState) return null;
 
-	const lastRoute =
-		navigationState.routes[navigationState.routes.length - 1].name;
+	const lastRoute = navigationState.routes[navigationState.routes.length - 1].name;
 
-	const AdaptiveColumnTrigger =
-		liquidGlassEnabled && lastRoute === "sign-in" ? GlassView : ColumnTrigger;
+	const AdaptiveColumnTrigger = liquidGlassEnabled && lastRoute === "sign-in" ? GlassView : ColumnTrigger;
 
 	return (
 		<AdaptiveColumnTrigger
@@ -45,9 +31,7 @@ export default function DevServerSetting() {
 		>
 			<View className="flex-col w-full">
 				<View className="flex w-full flex-row items-center justify-between">
-					<Text className="text-t-primary font-semibold text-md">
-						Use Dev Server
-					</Text>
+					<Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
 					<Switch value={useDevServer} onValueChange={setUseDevServer} />
 				</View>
 				<When condition={useDevServer && Device.isDevice}>

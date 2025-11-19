@@ -9,12 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
-import {
-	specificModelOverrideProvider,
-	translationModel,
-	translationProvider,
-	useOpenRouter
-} from "../ai";
+import { specificModelOverrideProvider, translationModel, translationProvider, useOpenRouter } from "../ai";
 import type { THono } from "../types";
 import { withMsgpack } from "../utils";
 
@@ -40,10 +35,7 @@ translateRouter.post("/", async (c) => {
 	}
 
 	const { phrase, hints } = reqBody.data;
-	const { data: mode, success } =
-		await TranslationLLMMPropertySchema.safeParseAsync(
-			c.req.query("mode") || "default"
-		);
+	const { data: mode, success } = await TranslationLLMMPropertySchema.safeParseAsync(c.req.query("mode") || "default");
 	if (!success)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
@@ -69,11 +61,7 @@ translateRouter.post("/", async (c) => {
 			});
 			const fetchedAt = dayjs(_.get(langCache.metadata, "fetchedAt"));
 			const value = langCache.value;
-			if (
-				dayjs().diff(fetchedAt, "hour") < 12 &&
-				KV_CACHE_ENABLED &&
-				!_.isNullish(value)
-			) {
+			if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value)) {
 				languageSpecificPrompts.set(hint, value === "null" ? null : value);
 				specificPromptCacheHit = true;
 			}
@@ -81,37 +69,25 @@ translateRouter.post("/", async (c) => {
 
 		let modelOverrideCacheHit = false;
 		const retrieveLanguageModelOverrideCache = async () => {
-			const langModelOverrideCache =
-				await LANG_MO_CACHE.getWithMetadata<string>(hint, {
-					type: "text"
-				});
-			const fetchedAt = dayjs(
-				_.get(langModelOverrideCache.metadata, "fetchedAt")
-			);
+			const langModelOverrideCache = await LANG_MO_CACHE.getWithMetadata<string>(hint, {
+				type: "text"
+			});
+			const fetchedAt = dayjs(_.get(langModelOverrideCache.metadata, "fetchedAt"));
 			const value = langModelOverrideCache.value;
-			if (
-				dayjs().diff(fetchedAt, "hour") < 12 &&
-				KV_CACHE_ENABLED &&
-				!_.isNullish(value) &&
-				value !== "null"
-			) {
+			if (dayjs().diff(fetchedAt, "hour") < 12 && KV_CACHE_ENABLED && !_.isNullish(value) && value !== "null") {
 				languageModelOverrides.set(hint, value);
 				modelOverrideCacheHit = true;
 			}
 		};
 
-		await Promise.all([
-			retrieveLanguagePromptCache(),
-			retrieveLanguageModelOverrideCache()
-		]);
+		await Promise.all([retrieveLanguagePromptCache(), retrieveLanguageModelOverrideCache()]);
 
 		if (!specificPromptCacheHit) {
-			const { data: languagePromptsData, error: languagePromptsError } =
-				await supabase
-					.from("languages")
-					.select("custom_prompt")
-					.eq("lang", hint)
-					.single();
+			const { data: languagePromptsData, error: languagePromptsError } = await supabase
+				.from("languages")
+				.select("custom_prompt")
+				.eq("lang", hint)
+				.single();
 			if (languagePromptsError) {
 				throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 					res: withMsgpack(
@@ -136,10 +112,7 @@ translateRouter.post("/", async (c) => {
 		}
 
 		if (!modelOverrideCacheHit) {
-			const {
-				data: languageModelOverrideData,
-				error: languageModelOverrideError
-			} = await supabase
+			const { data: languageModelOverrideData, error: languageModelOverrideError } = await supabase
 				.from("languages")
 				.select("model_override")
 				.eq("lang", hint)
@@ -168,21 +141,14 @@ translateRouter.post("/", async (c) => {
 		}
 	});
 
-	if (c.env.DEV)
-		console.log(
-			`Configured translation engine for phrase ${phrase} in ${performance.now() - totalTiming}ms`
-		);
+	if (c.env.DEV) console.log(`Configured translation engine for phrase ${phrase} in ${performance.now() - totalTiming}ms`);
 
-	const flattenedLanguageSpecificPrompts = languageSpecificPrompts
-		.values()
-		.toArray();
+	const flattenedLanguageSpecificPrompts = languageSpecificPrompts.values().toArray();
 
 	let autoModel: LanguageModel | undefined;
 	const languageModelOverrideArr = languageModelOverrides.values().toArray();
 	// TODO: Using last model override found for now
-	const modelOverride = languageModelOverrideArr
-		.filter((override) => !_.isNullish(override))
-		.at(-1);
+	const modelOverride = languageModelOverrideArr.filter((override) => !_.isNullish(override)).at(-1);
 	if (modelOverride) {
 		const [prefix, model] = modelOverride.split(":");
 		if (prefix === "cerebras") autoModel = cerebras(model);
@@ -219,9 +185,7 @@ Please also remove any garbage characters or transcription errors that might not
 				}
 			],
 			schema: z.object({
-				pretranslatedPhrase: z
-					.string()
-					.describe("The phrase before translation"),
+				pretranslatedPhrase: z.string().describe("The phrase before translation"),
 				translatedPhrase: z.string().describe("The phrase after translation"),
 				sourceLanguage: z.string(),
 				targetLanguage: z.string()
@@ -258,12 +222,7 @@ Please also remove any garbage characters or transcription errors that might not
 			});
 		}
 
-		if (
-			!(
-				hints.includes(object.sourceLanguage) &&
-				hints.includes(object.targetLanguage)
-			)
-		) {
+		if (!(hints.includes(object.sourceLanguage) && hints.includes(object.targetLanguage))) {
 			throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 				res: withMsgpack(
 					{
@@ -289,10 +248,7 @@ Please also remove any garbage characters or transcription errors that might not
 			res: withMsgpack(
 				{
 					error: {
-						message:
-							error instanceof Error
-								? error.message
-								: "An error occurred during translation"
+						message: error instanceof Error ? error.message : "An error occurred during translation"
 					}
 				},
 				c

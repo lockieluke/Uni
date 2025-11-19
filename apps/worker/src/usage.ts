@@ -4,10 +4,7 @@ import type { Database } from "./database.types";
 import type { THono } from "./types";
 
 export async function incrementUsage(c: Context<THono>, usageName: string) {
-	const adminSupabase = createClient<Database>(
-		c.env.SUPABASE_URL,
-		c.env.SUPABASE_ADMIN_KEY
-	);
+	const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);
 	const user = c.get("user");
 
 	const { error } = await adminSupabase.rpc("increment_usage", {

@@ -6,8 +6,7 @@ export const UniTiers = {
 	max: 2
 } as const;
 
-export const getTierById = (id: (typeof UniTiers)[keyof typeof UniTiers]) =>
-	_.invert(UniTiers)[id];
+export const getTierById = (id: (typeof UniTiers)[keyof typeof UniTiers]) => _.invert(UniTiers)[id];
 
 export const UniMonthlyLimits: {
 	[key: string]: {

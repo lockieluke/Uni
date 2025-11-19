@@ -2,21 +2,9 @@ import { MenuView } from "@react-native-menu/menu";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Skeleton } from "moti/skeleton";
 import { useState } from "react";
-import {
-	Dimensions,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	useColorScheme,
-	View
-} from "react-native";
+import { Dimensions, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { cn } from "@/lib/utils";
-import {
-	availableLanguagesAtom,
-	languagesAtom,
-	type TClientLanguage,
-	translationsAtom
-} from "../states";
+import { availableLanguagesAtom, languagesAtom, type TClientLanguage, translationsAtom } from "../states";
 
 export default function TranslationText({
 	translating = false,
@@ -45,10 +33,7 @@ export default function TranslationText({
 
 	return (
 		<View className={"flex flex-col px-5 gap-5 h-36"}>
-			<TouchableOpacity
-				className="flex justfy-center items-start"
-				onPress={() => {}}
-			>
+			<TouchableOpacity className="flex justfy-center items-start" onPress={() => {}}>
 				<Text
 					onLayout={(event) => {
 						event.currentTarget.measureInWindow((_x, _y, width, height) => {
@@ -103,11 +88,7 @@ export default function TranslationText({
 						setTranslations({});
 					}}
 					actions={Object.values(availableLanguages)
-						.filter((lang) =>
-							role !== "guest"
-								? languages.guest.code !== lang.code
-								: languages.host.code !== lang.code
-						)
+						.filter((lang) => (role !== "guest" ? languages.guest.code !== lang.code : languages.host.code !== lang.code))
 						.map((lang) => ({
 							title: `${lang.flag} ${lang.displayName}`,
 							id: lang.code,

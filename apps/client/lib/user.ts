@@ -12,18 +12,10 @@ export const UserMetadataSchema = z.object({
 export async function getUserAdditionalData() {
 	const response = await uniApi.get("/user");
 	const payload = response.data;
-	if (payload.error)
-		throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
+	if (payload.error) throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 
-	const {
-		success,
-		error: validateError,
-		data
-	} = await UserMetadataSchema.safeParseAsync(payload);
-	if (!success || !data)
-		throw new Error(
-			`Error parsing user metadata response: ${validateError?.message}`
-		);
+	const { success, error: validateError, data } = await UserMetadataSchema.safeParseAsync(payload);
+	if (!success || !data) throw new Error(`Error parsing user metadata response: ${validateError?.message}`);
 
 	return data;
 }

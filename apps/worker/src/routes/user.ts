@@ -1,7 +1,4 @@
-import {
-	createClient,
-	type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT
-} from "@supabase/supabase-js";
+import { createClient, type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from "@supabase/supabase-js";
 import { getTierById, UniMonthlyLimits } from "@uni/api";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -16,10 +13,7 @@ const userRouter = new Hono<THono>();
 
 userRouter.post("/create", async (c) => {
 	const payload = await c.req.json();
-	const adminSupabase = createClient<Database>(
-		c.env.SUPABASE_URL,
-		c.env.SUPABASE_ADMIN_KEY
-	);
+	const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);
 
 	const type: REALTIME_POSTGRES_CHANGES_LISTEN_EVENT = _.get(payload, "type");
 	const table: string = _.get(payload, "table");
@@ -125,11 +119,7 @@ userRouter.get("/", async (c) => {
 		});
 	}
 
-	const { error, data } = await supabase
-		.from("users")
-		.select("*")
-		.eq("id", id)
-		.single();
+	const { error, data } = await supabase.from("users").select("*").eq("id", id).single();
 	if (error) {
 		throw new HTTPException(StatusCodes.NOT_FOUND, {
 			res: withMsgpack(

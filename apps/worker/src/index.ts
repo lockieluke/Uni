@@ -24,17 +24,13 @@ app.use("/*", async (c, next) => {
 
 	return bearerAuth({
 		async verifyToken(token, c) {
-			const supabase = createClient(
-				c.env.SUPABASE_URL,
-				c.env.SUPABASE_ANON_KEY,
-				{
-					global: {
-						headers: {
-							Authorization: `Bearer ${token}`
-						}
+			const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_ANON_KEY, {
+				global: {
+					headers: {
+						Authorization: `Bearer ${token}`
 					}
 				}
-			);
+			});
 			const {
 				data: { user },
 				error

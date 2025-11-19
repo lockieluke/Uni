@@ -38,12 +38,7 @@ contextRouter.get("/summary", async (c) => {
 			}
 		],
 		schema: z.object({
-			title: z
-				.string()
-				.max(100)
-				.describe(
-					"A short title summarising the conversation in less than 20 words."
-				)
+			title: z.string().max(100).describe("A short title summarising the conversation in less than 20 words.")
 		}),
 		mode: "json",
 		temperature: 0.2

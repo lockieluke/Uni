@@ -1,9 +1,6 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-	GoogleSignin,
-	isSuccessResponse
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin, isSuccessResponse } from "@react-native-google-signin/google-signin";
 import { useIsFocused, usePreventRemove } from "@react-navigation/core";
 import { useEventListener } from "expo";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -13,18 +10,8 @@ import { useAtom } from "jotai";
 import * as _ from "radashi";
 import { useEffect } from "react";
 import { When } from "react-if";
-import {
-	AppState,
-	Text,
-	TouchableOpacity,
-	useColorScheme,
-	View
-} from "react-native";
-import Animated, {
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming
-} from "react-native-reanimated";
+import { AppState, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import DevServerSetting from "@/lib/components/DevServerSetting";
 import { userAtom } from "@/lib/states";
 import { getSignInNonce, supabase } from "@/lib/supabase";
@@ -47,15 +34,12 @@ export default function SignIn() {
 
 	usePreventRemove(!user.signedIn, () => {});
 
-	const player = useVideoPlayer(
-		require("@/assets/images/uni_cover.mp4"),
-		(player) => {
-			player.loop = true;
-			player.timeUpdateEventInterval = 1;
-			player.play();
-			opacity.value = 1;
-		}
-	);
+	const player = useVideoPlayer(require("@/assets/images/uni_cover.mp4"), (player) => {
+		player.loop = true;
+		player.timeUpdateEventInterval = 1;
+		player.play();
+		opacity.value = 1;
+	});
 
 	useEventListener(player, "timeUpdate", async ({ currentTime }) => {
 		if (currentTime === 0 && opacity.value === 0) {
@@ -63,8 +47,7 @@ export default function SignIn() {
 			opacity.value = 1;
 		}
 
-		if (currentTime >= player.duration - 2 && opacity.value === 1)
-			opacity.value = 0;
+		if (currentTime >= player.duration - 2 && opacity.value === 1) opacity.value = 0;
 	});
 
 	useEffect(() => {
@@ -82,21 +65,12 @@ export default function SignIn() {
 	return (
 		<View className="flex-1 bg-black">
 			<Animated.View className="flex-1" style={videoAnimatedStyle}>
-				<VideoView
-					contentFit="fill"
-					nativeControls={false}
-					player={player}
-					className="flex-1 scale-x-[2.3]"
-				/>
+				<VideoView contentFit="fill" nativeControls={false} player={player} className="flex-1 scale-x-[2.3]" />
 			</Animated.View>
 			<View className="absolute flex-1 size-full items-center justify-end py-10 gap-5">
 				<View className="absolute h-screen flex-1 flex gap-3 flex-center">
-					<Text className="text-6xl text-white text-center shadow font-black">
-						Uni
-					</Text>
-					<Text className="text-lg text-white text-center shadow font-bold">
-						Communicate without limits.
-					</Text>
+					<Text className="text-6xl text-white text-center shadow font-black">Uni</Text>
+					<Text className="text-lg text-white text-center shadow font-bold">Communicate without limits.</Text>
 				</View>
 
 				<When condition={__DEV__}>
@@ -107,9 +81,7 @@ export default function SignIn() {
 
 				<TouchableOpacity
 					activeOpacity={0.8}
-					className={
-						"flex-center flex-row gap-5 bg-blue-500 w-64 py-2.5 rounded-lg"
-					}
+					className={"flex-center flex-row gap-5 bg-blue-500 w-64 py-2.5 rounded-lg"}
 					onPress={async () => {
 						try {
 							await GoogleSignin.hasPlayServices();
@@ -159,9 +131,7 @@ export default function SignIn() {
 					}}
 				>
 					<AntDesign name="google" size={24} color="white" />
-					<Text className={"text-white font-semibold"}>
-						Sign In with Google
-					</Text>
+					<Text className={"text-white font-semibold"}>Sign In with Google</Text>
 				</TouchableOpacity>
 
 				<AppleAuthentication.AppleAuthenticationButton
@@ -176,19 +146,12 @@ export default function SignIn() {
 					onPress={async () => {
 						const isAvailable = await AppleAuthentication.isAvailableAsync();
 						if (!isAvailable) {
-							console.error(
-								"Apple Authentication is not available on this device"
-							);
+							console.error("Apple Authentication is not available on this device");
 							return;
 						}
 
-						const [err, credentials] = await _.tryit(
-							AppleAuthentication.signInAsync
-						)({
-							requestedScopes: [
-								AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-								AppleAuthentication.AppleAuthenticationScope.EMAIL
-							]
+						const [err, credentials] = await _.tryit(AppleAuthentication.signInAsync)({
+							requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL]
 						});
 						if (err) {
 							if (_.get(err, "code") === "ERR_CANCELED") {

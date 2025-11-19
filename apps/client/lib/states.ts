@@ -12,10 +12,7 @@ export const userAtom = atom<{
 	tier: "free"
 });
 
-export type TClientLanguage = Omit<
-	TLanguageSchema,
-	"disclaimer" | "customPrompt" | "displayName"
-> & {
+export type TClientLanguage = Omit<TLanguageSchema, "disclaimer" | "customPrompt" | "displayName"> & {
 	code: string;
 	displayName: string;
 	disclaimer?: string;

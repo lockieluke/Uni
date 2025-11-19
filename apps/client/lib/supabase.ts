@@ -1,8 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-	GoogleSignin,
-	isNoSavedCredentialFoundResponse
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin, isNoSavedCredentialFoundResponse } from "@react-native-google-signin/google-signin";
 import { createClient } from "@supabase/supabase-js";
 import { CryptoDigestAlgorithm, digestStringAsync } from "expo-crypto";
 import { getDefaultStore } from "jotai";
@@ -29,8 +26,7 @@ export async function checkSignedIn() {
 	if (lastSignInProvider === "google") {
 		// From: https://react-native-google-signin.github.io/docs/original#signinsilently
 		const [err, response] = await _.tryit(GoogleSignin.signInSilently)();
-		if (err || !response)
-			throw new Error(`Error signing in silently: ${err.message}`);
+		if (err || !response) throw new Error(`Error signing in silently: ${err.message}`);
 
 		const token = response.data?.idToken;
 
@@ -81,9 +77,6 @@ export async function getSignInNonce() {
 	// which is included in the ID token from RN-google-signin.
 	const rawNonce = getUrlSafeNonce();
 	// `nonceDigest` goes to the `nonce` parameter in RN-google-signin APIs
-	const nonceDigest = await digestStringAsync(
-		CryptoDigestAlgorithm.SHA256,
-		rawNonce
-	);
+	const nonceDigest = await digestStringAsync(CryptoDigestAlgorithm.SHA256, rawNonce);
 	return { rawNonce, nonceDigest };
 }

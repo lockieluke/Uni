@@ -1,9 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring
-} from "react-native-reanimated";
+import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { cn } from "@/lib/utils";
 import AnimatedTouchable from "./AnimatedTouchable";
 
@@ -36,17 +32,9 @@ export default function TranscriptButton({
 				onPressOut?.();
 			}}
 			style={animatedStyle}
-			className={cn(
-				"bg-purple-600 flex w-28 h-28 items-center justify-center rounded-full",
-				className
-			)}
+			className={cn("bg-purple-600 flex w-28 h-28 items-center justify-center rounded-full", className)}
 		>
-			<FontAwesome
-				className={"text-center"}
-				name="microphone"
-				size={40}
-				color="white"
-			/>
+			<FontAwesome className={"text-center"} name="microphone" size={40} color="white" />
 		</AnimatedTouchable>
 	);
 }

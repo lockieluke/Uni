@@ -17,11 +17,7 @@ import { mmkvStorage } from "@/lib/storage";
 export default function TabLayout() {
 	const { signedIn } = useAtomValue(userAtom);
 	const colorScheme = useColorScheme();
-	const [liquidGlassEnabled] = useMMKVStorage(
-		"liquidGlassEnabled",
-		mmkvStorage,
-		isLiquidGlassAvailable()
-	);
+	const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
 	return (
 		<>
@@ -80,22 +76,16 @@ export default function TabLayout() {
 					<Tabs.Screen
 						name="index"
 						options={{
-							headerTitle: ({ children }) => (
-								<TranslateHeader>{children}</TranslateHeader>
-							),
+							headerTitle: ({ children }) => <TranslateHeader>{children}</TranslateHeader>,
 							title: "Translate",
-							tabBarIcon: ({ color }) => (
-								<IconSymbol size={28} name="translate" color={color} />
-							)
+							tabBarIcon: ({ color }) => <IconSymbol size={28} name="translate" color={color} />
 						}}
 					/>
 					<Tabs.Screen
 						name="you"
 						options={{
 							title: "You",
-							tabBarIcon: ({ color }) => (
-								<IconSymbol size={28} name="person.fill" color={color} />
-							),
+							tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
 							headerShown: false
 						}}
 					/>

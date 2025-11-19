@@ -38,7 +38,8 @@
 		"formatter": {
 			"quoteStyle": "double",
 			"semicolons": "always",
-			"trailingCommas": "none"
+			"trailingCommas": "none",
+			"lineWidth": 150
 		}
 	},
 	"assist": {

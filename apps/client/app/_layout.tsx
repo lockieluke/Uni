@@ -1,10 +1,6 @@
 import Entypo from "@expo/vector-icons/Entypo";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider
-} from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { AudioRecorderProvider } from "@siteed/expo-audio-studio";
 import { AppleAuthenticationButton } from "expo-apple-authentication";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
@@ -40,21 +36,9 @@ export default function RootLayout() {
 
 	const setLanguages = useSetAtom(languagesAtom);
 	const setAvailableLanguages = useSetAtom(availableLanguagesAtom);
-	const [hostLanguage, setHostLanguage] = useMMKVStorage(
-		"hostLanguage",
-		mmkvStorage,
-		"en-GB"
-	);
-	const [guestLanguage, setGuestLanguage] = useMMKVStorage(
-		"guestLanguage",
-		mmkvStorage,
-		"zh-HK"
-	);
-	const [liquidGlassEnabled] = useMMKVStorage(
-		"liquidGlassEnabled",
-		mmkvStorage,
-		isLiquidGlassAvailable()
-	);
+	const [hostLanguage, setHostLanguage] = useMMKVStorage("hostLanguage", mmkvStorage, "en-GB");
+	const [guestLanguage, setGuestLanguage] = useMMKVStorage("guestLanguage", mmkvStorage, "zh-HK");
+	const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
 	GoogleSignin.configure({
 		scopes: [],
@@ -110,12 +94,7 @@ export default function RootLayout() {
 								if (!canGoBack) return null;
 
 								const Icon = () => (
-									<Entypo
-										name="chevron-down"
-										className="text-center"
-										size={24}
-										color={colorScheme === "dark" ? "white" : "black"}
-									/>
+									<Entypo name="chevron-down" className="text-center" size={24} color={colorScheme === "dark" ? "white" : "black"} />
 								);
 
 								return liquidGlassEnabled ? (

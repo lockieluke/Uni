@@ -1,7 +1,4 @@
-import type {
-	OpenAITranscriptionModelSchema,
-	TranscriptionProviderSchema
-} from "@uni/api";
+import type { OpenAITranscriptionModelSchema, TranscriptionProviderSchema } from "@uni/api";
 import { File } from "expo-file-system";
 import { getDefaultStore } from "jotai";
 import * as _ from "radashi";
@@ -28,19 +25,16 @@ export async function transcriptRealtime(
 
 		const accessToken = getDefaultStore().get(userAtom).accessToken;
 
-		const eventSource = new EventSource<"transcript" | "done">(
-			`${UNI_API_BASE_URL}/transcript?mode=${mode}&provider=openai-realtime`,
-			{
-				method: "POST",
-				body: formData,
-				headers: {
-					"Content-Type": "application/x-msgpack",
-					"User-Agent": "Uni/1.0.0",
-					Authorization: `Bearer ${accessToken}`
-				},
-				pollingInterval: 0
-			}
-		);
+		const eventSource = new EventSource<"transcript" | "done">(`${UNI_API_BASE_URL}/transcript?mode=${mode}&provider=openai-realtime`, {
+			method: "POST",
+			body: formData,
+			headers: {
+				"Content-Type": "application/x-msgpack",
+				"User-Agent": "Uni/1.0.0",
+				Authorization: `Bearer ${accessToken}`
+			},
+			pollingInterval: 0
+		});
 
 		eventSource.addEventListener("open", () => {
 			// console.log("Connection to Uni API opened.");
@@ -70,10 +64,7 @@ export async function transcriptRealtime(
 export async function transcript(
 	uri: string,
 	mode: z.infer<typeof OpenAITranscriptionModelSchema> = "accurate",
-	provider: Exclude<
-		z.infer<typeof TranscriptionProviderSchema>,
-		"openai-realtime"
-	> = "openai"
+	provider: Exclude<z.infer<typeof TranscriptionProviderSchema>, "openai-realtime"> = "openai"
 ): Promise<{
 	language: string;
 	transcript: string;
@@ -92,8 +83,7 @@ export async function transcript(
 		}
 	});
 	const payload = response.data;
-	if (payload.error)
-		throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
+	if (payload.error) throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 
 	const transcript: string = _.get(payload, "transcript", "");
 

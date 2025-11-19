@@ -18,16 +18,9 @@ export default function ColumnTrigger({
 		<TouchableOpacity
 			activeOpacity={0.8}
 			onPress={() => onPress?.()}
-			className={cn(
-				"bg-slate-200 dark:bg-zinc-900 w-[90vw] flex flex-row justify-between items-center p-4 rounded-lg",
-				className
-			)}
+			className={cn("bg-slate-200 dark:bg-zinc-900 w-[90vw] flex flex-row justify-between items-center p-4 rounded-lg", className)}
 		>
-			{typeof children === "string" ? (
-				<Text className="text-md text-t-primary font-semibold">{children}</Text>
-			) : (
-				children
-			)}
+			{typeof children === "string" ? <Text className="text-md text-t-primary font-semibold">{children}</Text> : children}
 			<When condition={subpage}>
 				<FontAwesome
 					style={{

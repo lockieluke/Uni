@@ -1,8 +1,5 @@
 import { encode } from "@msgpack/msgpack";
-import type {
-	TranslationLLMMPropertySchema,
-	TranslationSchema
-} from "@uni/api";
+import type { TranslationLLMMPropertySchema, TranslationSchema } from "@uni/api";
 import { getLocales } from "expo-localization";
 import * as _ from "radashi";
 import { z } from "zod/v4";
@@ -20,11 +17,8 @@ const TranslationResponseSchema = z.object({
 	timestamp: z.date()
 });
 
-export async function getLanguages(
-	hostLang: string = getLocales()[0].languageCode ?? "en-GB"
-): Promise<{ [key: string]: TClientLanguage }> {
-	const disableCache =
-		(await mmkvStorage.getBoolAsync("disableCache")) ?? false;
+export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: TClientLanguage }> {
+	const disableCache = (await mmkvStorage.getBoolAsync("disableCache")) ?? false;
 
 	const response = await uniApi.get("/languages", {
 		headers: disableCache
@@ -36,18 +30,13 @@ export async function getLanguages(
 			: {}
 	});
 	const payload = response.data;
-	if (payload.error)
-		throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
+	if (payload.error) throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
 	const languages = _.get(payload, "languages", {});
 
 	return {
 		..._.mapValues(languages, (language, key) => ({
 			...(_.isPlainObject(language) ? language : {}),
-			displayName: _.get(
-				language,
-				`displayName.${hostLang}`,
-				_.get(language, "displayName.en-GB")
-			),
+			displayName: _.get(language, `displayName.${hostLang}`, _.get(language, "displayName.en-GB")),
 			code: key
 		}))
 	};
@@ -71,27 +60,14 @@ export default async function translatePhrase(
 	);
 	const payload = response.data;
 
-	const {
-		success,
-		error: validateError,
-		data
-	} = await TranslationResponseSchema.safeParseAsync(payload);
-	if (!success || !data)
-		throw new Error(
-			`Error parsing translation response: ${validateError?.message}`
-		);
+	const { success, error: validateError, data } = await TranslationResponseSchema.safeParseAsync(payload);
+	if (!success || !data) throw new Error(`Error parsing translation response: ${validateError?.message}`);
 
-	if (data.pretranslatedPhrase !== phrase)
-		throw new Error("Pretranslated phrase does not match original phrase");
+	if (data.pretranslatedPhrase !== phrase) throw new Error("Pretranslated phrase does not match original phrase");
 
-	if (data.sourceLanguage === data.targetLanguage)
-		throw new Error("Source and target languages are the same");
+	if (data.sourceLanguage === data.targetLanguage) throw new Error("Source and target languages are the same");
 
-	if (
-		!hints.includes(data.sourceLanguage) ||
-		!hints.includes(data.targetLanguage)
-	)
-		throw new Error("Source and target languages are not in hints");
+	if (!hints.includes(data.sourceLanguage) || !hints.includes(data.targetLanguage)) throw new Error("Source and target languages are not in hints");
 
 	return {
 		...data,

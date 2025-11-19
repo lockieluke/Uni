@@ -3,13 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "react-native";
 import { cn } from "@/lib/utils";
 
-export default function TierBadge({
-	tier,
-	className
-}: {
-	tier: keyof typeof UniTiers;
-	className?: string;
-}) {
+export default function TierBadge({ tier, className }: { tier: keyof typeof UniTiers; className?: string }) {
 	return (
 		<LinearGradient
 			className={cn("p-3 rounded-2xl flex-center", className)}

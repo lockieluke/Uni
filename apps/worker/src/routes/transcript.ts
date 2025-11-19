@@ -1,9 +1,4 @@
-import {
-	getTierById,
-	OpenAITranscriptionModelSchema,
-	TranscriptionProviderSchema,
-	UniMonthlyLimits
-} from "@uni/api";
+import { getTierById, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, UniMonthlyLimits } from "@uni/api";
 import dayjs from "dayjs";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -40,10 +35,7 @@ transcriptRouter.post("/", async (c) => {
 
 	startTime(c, "check-speech-usage");
 
-	const [usage, tier] = await Promise.all([
-		getUsage(c, "speech_translation"),
-		getTier(c)
-	]);
+	const [usage, tier] = await Promise.all([getUsage(c, "speech_translation"), getTier(c)]);
 	if (usage >= UniMonthlyLimits["speech_translation"][getTierById(tier)])
 		throw new HTTPException(StatusCodes.FORBIDDEN, {
 			res: withMsgpack(
@@ -72,10 +64,7 @@ transcriptRouter.post("/", async (c) => {
 		});
 	}
 
-	const { data: provider, success } =
-		await TranscriptionProviderSchema.safeParseAsync(
-			c.req.query("provider") || "openai"
-		);
+	const { data: provider, success } = await TranscriptionProviderSchema.safeParseAsync(c.req.query("provider") || "openai");
 	if (!success)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
@@ -94,13 +83,7 @@ transcriptRouter.post("/", async (c) => {
 
 	const transcriptStart = dayjs();
 
-	const {
-		data: mode,
-		error,
-		success: modeSuccess
-	} = await OpenAITranscriptionModelSchema.safeParseAsync(
-		c.req.query("mode") ?? "fast"
-	);
+	const { data: mode, error, success: modeSuccess } = await OpenAITranscriptionModelSchema.safeParseAsync(c.req.query("mode") ?? "fast");
 	if (!modeSuccess || !mode)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
 			res: withMsgpack(
@@ -118,16 +101,12 @@ transcriptRouter.post("/", async (c) => {
 			const { text } = await groq.audio.transcriptions.create({
 				file,
 				model: "whisper-large-v3-turbo",
-				prompt:
-					"When transcribing audio in Cantonese, please use the Cantonese dialect",
+				prompt: "When transcribing audio in Cantonese, please use the Cantonese dialect",
 				response_format: "json",
 				temperature: 0
 			});
 			const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
-			if (c.env.DEV)
-				console.log(
-					`Transcribing file ${file.name} took ${transcriptTiming}ms`
-				);
+			if (c.env.DEV) console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
 
 			return withMsgpack(
 				{
@@ -142,10 +121,7 @@ transcriptRouter.post("/", async (c) => {
 				res: withMsgpack(
 					{
 						error: {
-							message:
-								error instanceof Error
-									? error.message
-									: "An error occurred during transcription"
+							message: error instanceof Error ? error.message : "An error occurred during transcription"
 						}
 					},
 					c
@@ -163,8 +139,7 @@ transcriptRouter.post("/", async (c) => {
 		});
 
 		const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
-		if (c.env.DEV)
-			console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
+		if (c.env.DEV) console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
 
 		endTime(c, "transcription");
 

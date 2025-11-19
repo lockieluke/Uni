@@ -2,31 +2,15 @@ import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { Text } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
-import Animated, {
-	Easing,
-	runOnJS,
-	useAnimatedStyle,
-	useSharedValue,
-	withTiming
-} from "react-native-reanimated";
+import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { languagesAtom, translationsAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 
-export default function TranslateHeader({
-	children
-}: {
-	children: React.ReactNode;
-}) {
-	const [flipGuestLanguage] = useMMKVStorage(
-		"flipGuestLang",
-		mmkvStorage,
-		false
-	);
+export default function TranslateHeader({ children }: { children: React.ReactNode }) {
+	const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
 	const translations = useAtomValue(translationsAtom);
 	const languages = useAtomValue(languagesAtom);
-	const [disclaimerState, setDisclaimerState] = useState<"host" | "guest">(
-		"host"
-	);
+	const [disclaimerState, setDisclaimerState] = useState<"host" | "guest">("host");
 
 	const showDisclaimers = translations?.host && translations?.guest;
 	const opacity = useSharedValue(1);
@@ -40,10 +24,7 @@ export default function TranslateHeader({
 						easing: Easing.inOut(Easing.ease)
 					},
 					(finished) => {
-						if (finished && opacity.value === 0)
-							runOnJS(setDisclaimerState)(
-								disclaimerState === "host" ? "guest" : "host"
-							);
+						if (finished && opacity.value === 0) runOnJS(setDisclaimerState)(disclaimerState === "host" ? "guest" : "host");
 					}
 				)
 			: 1
@@ -59,10 +40,7 @@ export default function TranslateHeader({
 		};
 	}, [opacity]);
 
-	const disclaimer = languages[disclaimerState].disclaimer?.replace(
-		"{{PRODUCT_NAME}}",
-		"Uni Translate"
-	);
+	const disclaimer = languages[disclaimerState].disclaimer?.replace("{{PRODUCT_NAME}}", "Uni Translate");
 
 	return (
 		<Animated.View

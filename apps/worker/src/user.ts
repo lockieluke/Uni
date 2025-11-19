@@ -3,9 +3,7 @@ import type { Context } from "hono";
 import * as _ from "radashi";
 import type { THono } from "./types";
 
-export async function getTier(
-	c: Context<THono>
-): Promise<(typeof UniTiers)[keyof typeof UniTiers]> {
+export async function getTier(c: Context<THono>): Promise<(typeof UniTiers)[keyof typeof UniTiers]> {
 	const user = c.get("user");
 	const supabase = c.get("supabase");
 
@@ -15,11 +13,7 @@ export async function getTier(
 
 	if (error) throw new Error(`Failed to get user tier: ${error.message}`);
 
-	if (
-		_.isNullish(tier) ||
-		!(Object.values(UniTiers) as number[]).includes(tier)
-	)
-		throw new Error(`Invalid tier value: ${tier}`);
+	if (_.isNullish(tier) || !(Object.values(UniTiers) as number[]).includes(tier)) throw new Error(`Invalid tier value: ${tier}`);
 
 	// @ts-expect-error "tier" casting to relevant tier type
 	return tier ?? 0;
