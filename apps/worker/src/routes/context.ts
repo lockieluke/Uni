@@ -3,8 +3,8 @@ import { generateObject } from "ai";
 import { Hono } from "hono";
 import { endTime, setMetric, startTime } from "hono/timing";
 import { z } from "zod/v4";
-import type { THono } from "../types";
-import { withMsgpack } from "../utils";
+import type { THono } from "../lib/types";
+import { withMsgpack } from "../lib/utils";
 
 const contextRouter = new Hono<THono>();
 

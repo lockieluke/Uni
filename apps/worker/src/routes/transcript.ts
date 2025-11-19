@@ -5,11 +5,11 @@ import { HTTPException } from "hono/http-exception";
 import { streamSSE } from "hono/streaming";
 import { endTime, setMetric, startTime } from "hono/timing";
 import { StatusCodes } from "http-status-codes";
-import { groq, openai, transcriptionModel } from "../ai";
-import type { THono } from "../types";
-import { getUsage, incrementUsage } from "../usage";
-import { getTier } from "../user";
-import { withMsgpack } from "../utils";
+import { groq, openai, transcriptionModel } from "../lib/ai";
+import type { THono } from "../lib/types";
+import { getUsage, incrementUsage } from "../lib/usage";
+import { getTier } from "../lib/user";
+import { withMsgpack } from "../lib/utils";
 
 const transcriptRouter = new Hono<THono>();
 

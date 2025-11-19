@@ -9,9 +9,9 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
-import { specificModelOverrideProvider, translationModel, translationProvider, useOpenRouter } from "../ai";
-import type { THono } from "../types";
-import { withMsgpack } from "../utils";
+import { specificModelOverrideProvider, translationModel, translationProvider, useOpenRouter } from "../lib/ai";
+import type { THono } from "../lib/types";
+import { withMsgpack } from "../lib/utils";
 
 const translateRouter = new Hono<THono>();
 

@@ -5,8 +5,8 @@ import { StatusCodes } from "http-status-codes";
 import * as async from "modern-async";
 import * as _ from "radashi";
 import type { z } from "zod/v4";
-import type { THono } from "../types";
-import { withMsgpack } from "../utils";
+import type { THono } from "../lib/types";
+import { withMsgpack } from "../lib/utils";
 
 const languagesRouter = new Hono<THono>();
 
