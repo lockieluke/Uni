@@ -3,7 +3,7 @@ import type { TLanguageSchema, UniTiers } from "@uni/api";
 import { atom } from "jotai";
 import { atomWithReset } from "jotai/utils";
 
-export const userAtom = atom<{
+export const userAtom = atomWithReset<{
 	signedIn: boolean;
 	user?: User;
 	accessToken?: string;
@@ -32,7 +32,7 @@ export const languagesAtom = atom<Record<"host" | "guest", TClientLanguage>>({
 	}
 });
 
-export const availableLanguagesAtom = atom<{
+export const availableLanguagesAtom = atomWithReset<{
 	[key: string]: TClientLanguage;
 }>({});
 
