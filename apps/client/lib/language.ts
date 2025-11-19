@@ -42,7 +42,26 @@ export async function getLanguages(hostLang: string = getLocales()[0].languageCo
 	};
 }
 
-export default async function translatePhrase(
+export async function summariseConversation(phrases: { [key: string]: string }[]) {
+	const response = await uniApi.post<{
+		titles: { [key: string]: string };
+	}>(
+		"/context/summary",
+		JSON.stringify({
+			phrases
+		}),
+		{
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}
+	);
+	const { titles } = response.data;
+
+	return titles;
+}
+
+export async function translatePhrase(
 	{ hints, phrase }: z.infer<typeof TranslationSchema>,
 	model: z.infer<typeof TranslationLLMMPropertySchema> = "default"
 ) {

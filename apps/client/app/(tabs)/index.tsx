@@ -7,6 +7,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useAtom, useAtomValue } from "jotai";
+import { RESET } from "jotai/utils";
 import * as async from "modern-async";
 import { MotiView } from "moti";
 import * as _ from "radashi";
@@ -18,7 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import TranscriptButton from "@/lib/components/TranscriptButton";
 import TranslationText from "@/lib/components/TranslationText";
 import { useAsyncEffect } from "@/lib/hooks";
-import translatePhrase from "@/lib/language";
+import { summariseConversation, translatePhrase } from "@/lib/language";
 import { transcriptRealtime } from "@/lib/speech";
 import { languagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
@@ -43,6 +44,7 @@ export default function HomeScreen() {
 	const [speechReady, setSpeechReady] = useState<"unknown" | "denied" | "granted">("unknown");
 
 	const blockingNewAudioStream = useRef(false);
+	const conversation = useRef<{ [key: string]: string }[]>([]);
 
 	const bottomTabHeight = dimensions.height * 0.15;
 	const recordingDelay = 80;
@@ -149,11 +151,21 @@ export default function HomeScreen() {
 										duration: 300
 									}}
 								>
-									<TranslationText translating={translationState === "translating"} language={languages.guest} revertEnabled={flipGuestLanguage}>
+									<TranslationText
+										title={translations.title[languages.guest.code]}
+										translating={translationState === "translating"}
+										language={languages.guest}
+										revertEnabled={flipGuestLanguage}
+									>
 										{translations?.guest}
 									</TranslationText>
 									<View className={"border-[0.05rem] border-gray-300 w-full"} />
-									<TranslationText translating={translationState === "translating"} language={languages.host} revertEnabled={false}>
+									<TranslationText
+										title={translations.title[languages.host.code]}
+										translating={translationState === "translating"}
+										language={languages.host}
+										revertEnabled={false}
+									>
 										{translations?.host}
 									</TranslationText>
 									<View className={"border-[0.05rem] border-gray-300 w-full"} />
@@ -237,7 +249,7 @@ export default function HomeScreen() {
 												const result = await audioRecorder.stopRecording();
 
 												if (result) {
-													setTranslations({});
+													setTranslations(RESET);
 
 													const hostLanguageCode = languages.host.code;
 													const guestLanguageCode = languages.guest.code;
@@ -256,7 +268,7 @@ export default function HomeScreen() {
 														if (translationErr) {
 															if (translationErr instanceof AxiosError) {
 																console.error("Translation request failed", _.get(translationErr.response?.data, "error.message", "unknown error"));
-																setTranslations({});
+																setTranslations(RESET);
 																return;
 															}
 															console.error("Error translating:", translationErr.message);
@@ -266,9 +278,24 @@ export default function HomeScreen() {
 														if (response) {
 															const { translatedPhrase, sourceLanguage, pretranslatedPhrase } = response;
 
+															const newConversationEntry: { [key: string]: string } = {};
+															newConversationEntry[hostLanguageCode] =
+																languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase;
+															newConversationEntry[guestLanguageCode] =
+																languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase;
+															conversation.current = [
+																...conversation.current,
+																{
+																	...newConversationEntry
+																}
+															];
+
+															const title = await summariseConversation(conversation.current);
+
 															setTranslations({
 																host: languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
-																guest: languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase
+																guest: languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
+																title
 															});
 														}
 													}

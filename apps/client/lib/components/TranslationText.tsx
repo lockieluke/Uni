@@ -1,17 +1,20 @@
 import { MenuView } from "@react-native-menu/menu";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { RESET } from "jotai/utils";
 import { Skeleton } from "moti/skeleton";
 import { useState } from "react";
-import { Dimensions, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { Dimensions, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { cn } from "@/lib/utils";
 import { availableLanguagesAtom, languagesAtom, type TClientLanguage, translationsAtom } from "../states";
 
 export default function TranslationText({
+	title,
 	translating = false,
 	revertEnabled,
 	language,
 	children
 }: {
+	title: string;
 	translating?: boolean;
 	revertEnabled: boolean;
 	language: TClientLanguage;
@@ -32,7 +35,7 @@ export default function TranslationText({
 	const role = languages.guest.code === language.code ? "guest" : "host";
 
 	return (
-		<View className={"flex flex-col px-5 gap-5 h-36"}>
+		<View className={"flex flex-col px-5 h-36"}>
 			<TouchableOpacity className="flex justfy-center items-start" onPress={() => {}}>
 				<Text
 					onLayout={(event) => {
@@ -85,7 +88,7 @@ export default function TranslationText({
 							}));
 						}
 
-						setTranslations({});
+						setTranslations(RESET);
 					}}
 					actions={Object.values(availableLanguages)
 						.filter((lang) => (role !== "guest" ? languages.guest.code !== lang.code : languages.host.code !== lang.code))
@@ -96,25 +99,24 @@ export default function TranslationText({
 						}))}
 				/>
 			</TouchableOpacity>
-			<ScrollView>
-				<Skeleton
-					width={"90%"}
-					colorMode={colorScheme === "dark" ? "dark" : "light"}
-					transition={{
-						type: "spring"
-					}}
-				>
-					{translating ? null : (
-						<Text
-							className={cn("text-t-primary font-semibold text-5xl text-left", {
-								"rotate-180": revertEnabled
-							})}
-						>
-							{children}
-						</Text>
-					)}
-				</Skeleton>
-			</ScrollView>
+			<Text className="text-zinc-700 dark:text-zinc-500 pb-3 pt-1">{title}</Text>
+			<Skeleton
+				width={"90%"}
+				colorMode={colorScheme === "dark" ? "dark" : "light"}
+				transition={{
+					type: "spring"
+				}}
+			>
+				{translating ? null : (
+					<Text
+						className={cn("text-t-primary font-semibold text-5xl text-left", {
+							"rotate-180": revertEnabled
+						})}
+					>
+						{children}
+					</Text>
+				)}
+			</Skeleton>
 		</View>
 	);
 }

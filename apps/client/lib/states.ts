@@ -1,6 +1,7 @@
 import type { User } from "@supabase/auth-js";
 import type { TLanguageSchema, UniTiers } from "@uni/api";
 import { atom } from "jotai";
+import { atomWithReset } from "jotai/utils";
 
 export const userAtom = atom<{
 	signedIn: boolean;
@@ -35,7 +36,10 @@ export const availableLanguagesAtom = atom<{
 	[key: string]: TClientLanguage;
 }>({});
 
-export const translationsAtom = atom<{
+export const translationsAtom = atomWithReset<{
 	host?: string;
 	guest?: string;
-}>();
+	title: { [key: string]: string };
+}>({
+	title: {}
+});

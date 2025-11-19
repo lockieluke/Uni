@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { FlashList } from "@shopify/flash-list";
 import { useFocusEffect } from "expo-router";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { RESET } from "jotai/utils";
 import { useState } from "react";
 import { Text, useColorScheme, View } from "react-native";
 import ColumnTrigger from "@/lib/components/ColumnTrigger";
@@ -18,7 +19,7 @@ export default function LanguagesScreen() {
 
 	useFocusEffect(() => {
 		return () => {
-			setTranslations({});
+			setTranslations(RESET);
 		};
 	});
 

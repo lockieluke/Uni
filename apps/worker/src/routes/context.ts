@@ -8,13 +8,20 @@ import { withMsgpack } from "../lib/utils";
 
 const contextRouter = new Hono<THono>();
 
-contextRouter.get("/summary", async (c) => {
+contextRouter.post("/summary", async (c) => {
 	const { phrases } = await c.req.json<{
-		phrases: string[][];
-		titles: { [key: string]: string };
+		phrases: { [key: string]: string }[];
 	}>();
 
 	startTime(c, "summarisation");
+
+	const formattedPhrases = phrases.map((phrase) =>
+		Object.values(phrase)
+			.map((p, index) => `${Object.keys(phrase).at(index)}: "${p}"`)
+			.join(", ")
+	);
+
+	const languageCodes = [...new Set(phrases.flatMap((phrase) => Object.keys(phrase)))];
 
 	const { object, response } = await generateObject({
 		model: cerebras("qwen-3-32b"),
@@ -33,12 +40,18 @@ contextRouter.get("/summary", async (c) => {
 				role: "user",
 				content: `
         Here are the phrases mentioned in the conversation:
-        ${phrases.map((phrase) => `${phrase.map((p, key) => `${key}: "${p.replaceAll('"', "")}"`).join(" ")}`).join("\n")}
+        ${formattedPhrases.join("\n")}
       `.trim()
 			}
 		],
 		schema: z.object({
-			title: z.string().max(100).describe("A short title summarising the conversation in less than 20 words.")
+			titles: z.record(
+				z
+					.string()
+					.refine((langCode) => languageCodes.includes(langCode))
+					.describe("Language code for summary"),
+				z.string().describe("Summary for said language")
+			)
 		}),
 		mode: "json",
 		temperature: 0.2
@@ -50,7 +63,7 @@ contextRouter.get("/summary", async (c) => {
 
 	return withMsgpack(
 		{
-			title: object.title
+			titles: object.titles as { [key: string]: string }
 		},
 		c
 	);
