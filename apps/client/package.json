@@ -9,7 +9,8 @@
 		"local-ios": "expo run:ios --configuration Release",
 		"build-production:ios": "eas build --platform ios --profile production",
 		"web": "expo start --web",
-		"lint": "expo lint"
+		"lint": "expo lint",
+		"postinstall": "bun scripts/postinstall.ts"
 	},
 	"dependencies": {
 		"@expo/ui": "~0.2.0-beta.7",

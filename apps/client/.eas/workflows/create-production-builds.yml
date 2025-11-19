@@ -10,10 +10,8 @@ jobs:
   #   type: build # This job type creates a production build for Android
   #   params:
   #     platform: android
-  #   working_directory: apps/client
-
+  #
   build_ios:
     type: build # This job type creates a production build for iOS
     params:
       platform: ios
-    working_directory: apps/client
