@@ -1,21 +1,21 @@
 {
-  "name": "@uni/api",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "bun run build.ts && tsc"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "radashi": "^12.7.0",
-    "wrangler": "^4.45.4",
-    "zod": "^3.25.76"
-  }
+	"name": "@uni/api",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "bun run build.ts && tsc"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"radashi": "^12.7.0",
+		"wrangler": "^4.45.4",
+		"zod": "^3.25.76"
+	}
 }
