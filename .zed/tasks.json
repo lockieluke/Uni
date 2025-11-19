@@ -24,6 +24,14 @@
 		"allow_concurrent_runs": false
 	},
 	{
+		"label": "Lint",
+		"command": "bun lint",
+		"cwd": "$ZED_WORKTREE_ROOT",
+		"hide": "on_success",
+		"use_new_terminal": false,
+		"allow_concurrent_runs": false
+	},
+	{
 		"label": "Start wrangler Dev Server",
 		"command": "bun dev",
 		"hide": "on_success",
