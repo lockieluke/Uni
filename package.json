@@ -1,32 +1,32 @@
 {
-	"name": "uni",
-	"description": "Communicate without limits",
-	"type": "module",
-	"private": true,
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
-	"scripts": {
-		"build:all": "bun run --filter ./packages/** build",
-		"lint": "bunx biome check --write"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.6",
-		"@types/bun": "latest",
-		"lefthook": "^2.0.4"
-	},
-	"peerDependencies": {
-		"typescript": "^5"
-	},
-	"trustedDependencies": [
-		"bufferutil",
-		"core-js-pure",
-		"esbuild",
-		"lefthook",
-		"sharp",
-		"supabase",
-		"utf-8-validate",
-		"workerd"
-	]
+  "name": "uni",
+  "description": "Communicate without limits",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:all": "bun run --filter ./packages/** build",
+    "lint": "bunx biome check --write"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.6",
+    "@types/bun": "1.3.2",
+    "lefthook": "^2.0.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "trustedDependencies": [
+    "bufferutil",
+    "core-js-pure",
+    "esbuild",
+    "lefthook",
+    "sharp",
+    "supabase",
+    "utf-8-validate",
+    "workerd"
+  ]
 }
