@@ -1,6 +1,6 @@
 import { cerebras } from "@ai-sdk/cerebras";
 import { decode } from "@msgpack/msgpack";
-import { TranslationLLMMPropertySchema } from "@uni/api";
+import { TranslationLLMMPropertySchema, TranslationSchema } from "@uni/api";
 import { generateObject, type LanguageModel } from "ai";
 import dayjs from "dayjs";
 import { Hono } from "hono";
@@ -15,7 +15,6 @@ import {
 	translationProvider,
 	useOpenRouter
 } from "../ai";
-import { TranslationSchema } from "../schemas";
 import type { THono } from "../types";
 import { withMsgpack } from "../utils";
 

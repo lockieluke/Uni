@@ -328,7 +328,13 @@ export default function HomeScreen() {
 													if (!_.isEmpty(transcripted)) {
 														const [translationErr, response] = await _.tryit(
 															translatePhrase
-														)(transcripted, hints, "default");
+														)(
+															{
+																hints,
+																phrase: transcripted
+															},
+															"default"
+														);
 														if (translationErr) {
 															if (translationErr instanceof AxiosError) {
 																console.error(

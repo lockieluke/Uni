@@ -20,4 +20,9 @@ export const LanguageSchema = z.object({
 	disclaimer: z.string()
 });
 
+export const TranslationSchema = z.object({
+	phrase: z.string(),
+	hints: z.array(z.string())
+});
+
 export type TLanguageSchema = z.infer<typeof LanguageSchema>;
