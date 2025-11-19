@@ -40,6 +40,8 @@ export const translationsAtom = atomWithReset<{
 	host?: string;
 	guest?: string;
 	title: { [key: string]: string };
+	conversation: { [key: string]: string }[];
 }>({
-	title: {}
+	title: {},
+	conversation: []
 });

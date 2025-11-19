@@ -2,7 +2,9 @@ import { MenuView } from "@react-native-menu/menu";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { Skeleton } from "moti/skeleton";
+import * as _ from "radashi";
 import { useState } from "react";
+import { Unless } from "react-if";
 import { Dimensions, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import { cn } from "@/lib/utils";
 import { availableLanguagesAtom, languagesAtom, type TClientLanguage, translationsAtom } from "../states";
@@ -99,7 +101,9 @@ export default function TranslationText({
 						}))}
 				/>
 			</TouchableOpacity>
-			<Text className="text-zinc-700 dark:text-zinc-500 pb-3 pt-1">{title}</Text>
+			<Unless condition={_.isEmpty(title)}>
+				<Text className="text-zinc-700 dark:text-zinc-500 pb-3 pt-1">{title}</Text>
+			</Unless>
 			<Skeleton
 				width={"90%"}
 				colorMode={colorScheme === "dark" ? "dark" : "light"}

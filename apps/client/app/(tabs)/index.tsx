@@ -44,7 +44,6 @@ export default function HomeScreen() {
 	const [speechReady, setSpeechReady] = useState<"unknown" | "denied" | "granted">("unknown");
 
 	const blockingNewAudioStream = useRef(false);
-	const conversation = useRef<{ [key: string]: string }[]>([]);
 
 	const bottomTabHeight = dimensions.height * 0.15;
 	const recordingDelay = 80;
@@ -151,7 +150,7 @@ export default function HomeScreen() {
 									}}
 								>
 									<TranslationText
-										title={translations.title[languages.guest.code]}
+										title={translations.title[languages.guest.code] ?? ""}
 										translating={translationState === "translating"}
 										language={languages.guest}
 										revertEnabled={flipGuestLanguage}
@@ -160,7 +159,7 @@ export default function HomeScreen() {
 									</TranslationText>
 									<View className={"border-[0.05rem] border-gray-300 w-full"} />
 									<TranslationText
-										title={translations.title[languages.host.code]}
+										title={translations.title[languages.host.code] ?? ""}
 										translating={translationState === "translating"}
 										language={languages.host}
 										revertEnabled={false}
@@ -282,20 +281,15 @@ export default function HomeScreen() {
 																languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase;
 															newConversationEntry[guestLanguageCode] =
 																languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase;
-															conversation.current = [
-																...conversation.current,
-																{
-																	...newConversationEntry
-																}
-															];
 
-															const title = await summariseConversation(conversation.current);
+															const title = await summariseConversation([...translations.conversation, newConversationEntry]);
 
-															setTranslations({
+															setTranslations((prevTranslations) => ({
 																host: languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
 																guest: languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
-																title
-															});
+																title,
+																conversation: [...prevTranslations.conversation, newConversationEntry]
+															}));
 														}
 													}
 												}
