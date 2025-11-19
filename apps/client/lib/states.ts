@@ -1,7 +1,6 @@
-import { Language } from "@/lib/constants/Language";
 import type { User } from "@supabase/auth-js";
+import { TLanguageSchema, UniTiers } from "@uni/api";
 import { atom } from "jotai";
-import { UniTiers } from "@uni/api";
 
 export const userAtom = atom<{
   signedIn: boolean;
@@ -13,11 +12,13 @@ export const userAtom = atom<{
   tier: "free"
 });
 
+export type TClientLanguage = Omit<TLanguageSchema, "disclaimer" | "customPrompt" | "displayName"> & {
+  code: string;
+  displayName: string;
+  disclaimer?: string;
+};
 
-export const languagesAtom = atom<{
-  host: Language,
-  guest: Language;
-}>({
+export const languagesAtom = atom<Record<"host" | "guest", TClientLanguage>>({
   host: {
     code: "en-GB",
     displayName: "English (UK)",
@@ -31,7 +32,7 @@ export const languagesAtom = atom<{
 });
 
 export const availableLanguagesAtom = atom<{
-  [key: string]: Language;
+  [key: string]: TClientLanguage;
 }>({});
 
 export const translationsAtom = atom<{

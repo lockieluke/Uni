@@ -4,7 +4,7 @@
 import { cerebras } from '@ai-sdk/cerebras';
 import { decode } from '@msgpack/msgpack';
 import { createClient } from '@supabase/supabase-js';
-import { getTierById, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits } from "@uni/api";
+import { getTierById, LanguageSchema, OpenAITranscriptionModelSchema, TranscriptionProviderSchema, TranslationLLMMPropertySchema, UniMonthlyLimits } from "@uni/api";
 import { generateObject, LanguageModel } from "ai";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -18,7 +18,7 @@ import * as async from "modern-async";
 import * as _ from "radashi";
 import { z } from "zod/v4";
 import { groq, openai, specificModelOverrideProvider, transcriptionModel, translationModel, translationProvider, useOpenRouter } from "./ai";
-import { LanguageSchema, translateSchema } from "./schemas";
+import { TranslationSchema } from "./schemas";
 import { THono } from './types';
 import { getUsage, incrementUsage } from './usage';
 import userRouter, { getTier } from './user';
@@ -258,7 +258,7 @@ app.post("/transcript", async (c) => {
 
 app.post("/translate", async (c) => {
   const payload = decode(await c.req.arrayBuffer());
-  const reqBody = await translateSchema.safeParseAsync(payload);
+  const reqBody = await TranslationSchema.safeParseAsync(payload);
   const supabase = c.get("supabase");
   const LANG_CACHE = c.env.LANG_CACHE;
   const LANG_MO_CACHE = c.env.LANG_MO_CACHE;

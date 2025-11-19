@@ -1,16 +1,15 @@
-import { Language } from "@/lib/constants/Language";
 import { cn } from "@/lib/utils";
 import { MenuView } from '@react-native-menu/menu';
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Skeleton } from 'moti/skeleton';
 import { useState } from "react";
 import { Dimensions, ScrollView, Text, TouchableOpacity, useColorScheme, View } from "react-native";
-import { availableLanguagesAtom, languagesAtom, translationsAtom } from "../states";
+import { availableLanguagesAtom, languagesAtom, TClientLanguage, translationsAtom } from "../states";
 
 export default function TranslationText({ translating = false, revertEnabled, language, children }: {
   translating?: boolean,
   revertEnabled: boolean,
-  language: Language,
+  language: TClientLanguage,
   children: React.ReactNode
 }) {
   const colorScheme = useColorScheme();

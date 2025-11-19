@@ -1,10 +1,10 @@
-import { Language } from "@/lib/constants/Language";
 import { encode } from "@msgpack/msgpack";
 import { TranslationLLMMPropertySchema } from "@uni/api";
 import { getLocales } from "expo-localization";
 import * as _ from "radashi";
 import { z } from "zod/v4";
 import { uniApi } from "./networking";
+import { TClientLanguage } from "./states";
 import { mmkvStorage } from "./storage";
 
 const TranslationResponseSchema = z.object({
@@ -17,7 +17,7 @@ const TranslationResponseSchema = z.object({
   timestamp: z.date()
 });
 
-export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: Language; }> {
+export async function getLanguages(hostLang: string = getLocales()[0].languageCode ?? "en-GB"): Promise<{ [key: string]: TClientLanguage; }> {
   const disableCache = (await mmkvStorage.getBoolAsync("disableCache")) ?? false;
 
   const response = await uniApi.get("/languages", {
