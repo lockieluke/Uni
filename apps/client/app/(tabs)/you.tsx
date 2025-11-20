@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import * as _ from "radashi";
+import { When } from "react-if";
 import { ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -78,19 +79,14 @@ export default function YouScreen() {
 					</View>
 					<Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
 				</ColumnTrigger>
-				{__DEV__ && <DevServerSetting />}
-				{__DEV__ && isLiquidGlassAvailable() && (
-					<ColumnTrigger>
-						<Text className="text-t-primary font-semibold text-md">Use Liquid Glass</Text>
-						<Switch value={liquidGlassEnabled} onValueChange={setLiquidGlassEnabled} />
-					</ColumnTrigger>
-				)}
-				<ColumnTrigger>
-					<Text className="text-t-primary font-semibold text-md">Disable Cache</Text>
-					<Switch value={disableCache} onValueChange={setDisableCache} />
-				</ColumnTrigger>
-				<ColumnTrigger subpage>Licences</ColumnTrigger>
-				{__DEV__ && (
+				<When condition={__DEV__}>
+					<DevServerSetting />
+					<When condition={isLiquidGlassAvailable()}>
+						<ColumnTrigger>
+							<Text className="text-t-primary font-semibold text-md">Use Liquid Glass</Text>
+							<Switch value={liquidGlassEnabled} onValueChange={setLiquidGlassEnabled} />
+						</ColumnTrigger>
+					</When>
 					<ColumnTrigger
 						onPress={async () => {
 							if (accessToken) await Clipboard.setStringAsync(accessToken);
@@ -98,7 +94,12 @@ export default function YouScreen() {
 					>
 						Copy JWT
 					</ColumnTrigger>
-				)}
+					<ColumnTrigger>
+						<Text className="text-t-primary font-semibold text-md">Disable Cache</Text>
+						<Switch value={disableCache} onValueChange={setDisableCache} />
+					</ColumnTrigger>
+				</When>
+				<ColumnTrigger subpage>Licences</ColumnTrigger>
 				<ColumnTrigger
 					onPress={async () => {
 						setUser(RESET);
