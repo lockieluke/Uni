@@ -1,5 +1,5 @@
 import { createClient, type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from "@supabase/supabase-js";
-import { getTierById, UniMonthlyLimits } from "@uni/api";
+import { getTierById, UniMonthlyLimits, UniTiers } from "@uni/api";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { StatusCodes } from "http-status-codes";
@@ -150,6 +150,69 @@ userRouter.get("/", async (c) => {
 					usage: speechTranslationUsage
 				}
 			}
+		},
+		c
+	);
+});
+
+userRouter.post("/request-purchase-fulfillment", async (c) => {
+	const { rcCustomerId } = await c.req.parseBody<{
+		rcCustomerId: string;
+	}>();
+
+	const user = c.get("user");
+	const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);
+
+	const response = await fetch(`https://api.revenuecat.com/v2/projects/proj596f0d76/customers/${rcCustomerId}/active_entitlements`);
+	const payload = await response.json<{
+		items: {
+			object: string;
+			entitlement_id: string;
+			expires_at: number;
+		}[];
+	}>();
+	if (!response.ok)
+		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+			res: withMsgpack(
+				{
+					error: {
+						message: `Failed to fetch active entitlements: ${_.get(payload, "type", "unknown error")}`
+					}
+				},
+				c
+			)
+		});
+
+	const { items } = payload;
+
+	const hasEntitlement = (entitlement: string) => items.some((item) => item.entitlement_id === entitlement);
+	let tier: (typeof UniTiers)[keyof typeof UniTiers] = 0;
+	if (hasEntitlement("basic")) tier = UniTiers.basic;
+
+	if (hasEntitlement("max")) tier = UniTiers.max;
+
+	const { error } = await adminSupabase
+		.from("users")
+		.update({
+			tier
+		})
+		.eq("id", user.id);
+	if (error)
+		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+			res: withMsgpack(
+				{
+					error: {
+						message: `Failed to update user tier: ${error.message}`
+					}
+				},
+				c
+			)
+		});
+
+	return withMsgpack(
+		{
+			activeEntitlements: items.map((item) => item.entitlement_id),
+			tier
 		},
 		c
 	);

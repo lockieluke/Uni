@@ -8,6 +8,7 @@ type HonoBindings = {
 	SUPABASE_URL: string;
 	SUPABASE_ANON_KEY: string;
 	SUPABASE_ADMIN_KEY: string;
+	REVENUECAT_API_KEY: string;
 	DEV: boolean;
 	LANG_CACHE: KVNamespace;
 	LANG_MO_CACHE: KVNamespace;
