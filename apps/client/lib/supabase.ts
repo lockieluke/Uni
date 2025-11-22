@@ -6,7 +6,10 @@ import { getDefaultStore } from "jotai";
 import * as _ from "radashi";
 import { userAtom } from "@/lib/states";
 import "react-native-url-polyfill/auto";
+import { getTierById } from "@uni/api";
+import Purchases from "react-native-purchases";
 import { getUrlSafeNonce } from "./crypto";
+import { getUserAdditionalData } from "./user";
 
 const supabaseUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}`;
 const supabaseAnonKey = `${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`;
@@ -20,7 +23,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 	}
 });
 
-export async function checkSignedIn() {
+export async function refreshSignInState() {
 	const lastSignInProvider = await AsyncStorage.getItem("lastSignInProvider");
 
 	if (lastSignInProvider === "google") {
@@ -52,22 +55,50 @@ export async function checkSignedIn() {
 	const user = session?.user;
 	const isSignedIn = !_.isNullish(user);
 
-	getDefaultStore().set(userAtom, (prevUser) => ({
+	const defaultStore = getDefaultStore();
+
+	defaultStore.set(userAtom, (prevUser) => ({
 		...prevUser,
 		signedIn: isSignedIn,
 		user,
 		accessToken: session?.access_token
 	}));
 
+	const email = user?.email;
+	if (email)
+		await Purchases.setAttributes({
+			email
+		});
+
+	if (user) {
+		const { created } = await Purchases.logIn(user.id);
+		const appUserId = await Purchases.getAppUserID();
+		if (created) console.log(`Created new RevenueCat user with ID: ${appUserId}`);
+		else console.log(`Logged in to RevenueCat with existing user ID: ${appUserId}`);
+
+		await Purchases.syncPurchases();
+
+		const { entitlements } = await Purchases.getCustomerInfo();
+		console.log("Active Entitlements", entitlements.active);
+
+		const { tier } = await getUserAdditionalData();
+		if (isSignedIn) {
+			defaultStore.set(userAtom, (prevUser) => ({
+				...prevUser,
+				tier: getTierById(tier)
+			}));
+		}
+	}
+
 	return isSignedIn;
 }
 
 export async function signOut() {
-	const { error } = await supabase.auth.signOut();
-	if (error) throw new Error(error.message);
-
-	const [err] = await _.tryit(GoogleSignin.signOut)();
-	if (err) throw new Error(`Error signing out of Google: ${err}`);
+	try {
+		await Promise.all([supabase.auth.signOut(), GoogleSignin.signOut(), Purchases.logOut()]);
+	} catch (error) {
+		console.error("Unable to sign out: ", _.get(error, "message", "unknown error"));
+	}
 }
 
 // From: https://react-native-google-signin.github.io/docs/security#custom-nonce

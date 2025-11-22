@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getTierById } from "@uni/api";
+import { AxiosError } from "axios";
 import { useAssets } from "expo-asset";
 import * as Clipboard from "expo-clipboard";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
@@ -11,15 +11,16 @@ import * as _ from "radashi";
 import { When } from "react-if";
 import { ScrollView, Switch, Text, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
+import Purchases from "react-native-purchases";
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ColumnTrigger from "@/lib/components/ColumnTrigger";
 import DevServerSetting from "@/lib/components/DevServerSetting";
 import TierBadge from "@/lib/components/TierBadge";
-import { useAsyncEffect } from "@/lib/hooks";
 import { availableLanguagesAtom, translationsAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { signOut } from "@/lib/supabase";
-import { getUserAdditionalData } from "@/lib/user";
+import { requestPurchaseFulfillment } from "@/lib/user";
 
 export default function YouScreen() {
 	const router = useRouter();
@@ -28,21 +29,6 @@ export default function YouScreen() {
 	const [{ signedIn, user, accessToken, tier }, setUser] = useAtom(userAtom);
 	const setTranslations = useSetAtom(translationsAtom);
 	const setAvailableLanguages = useSetAtom(availableLanguagesAtom);
-
-	useAsyncEffect(async () => {
-		if (!signedIn) return;
-
-		const [err, additionalUserInfo] = await _.tryit(getUserAdditionalData)();
-		if (err) {
-			console.error("Error fetching user metadata:", err.message);
-			return;
-		}
-
-		setUser((prevUser) => ({
-			...prevUser,
-			tier: getTierById(additionalUserInfo.tier)
-		}));
-	}, [signedIn, user]);
 
 	const [flipGuestLanguage, setFlipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
 	const [disableCache, setDisableCache] = useMMKVStorage("disableCache", mmkvStorage, false);
@@ -72,6 +58,35 @@ export default function YouScreen() {
 			<Text className="text-t-primary">{user.email}</Text>
 
 			<ScrollView contentContainerClassName="flex-center my-5 pb-20 gap-y-5">
+				<ColumnTrigger
+					onPress={async () => {
+						const [err, result] = await _.tryit(RevenueCatUI.presentPaywall)();
+						if (result === PAYWALL_RESULT.CANCELLED) return;
+
+						if (err) {
+							console.error("Purchase failed or cancelled", err.message);
+							return;
+						}
+
+						if (result === PAYWALL_RESULT.PURCHASED)
+							try {
+								await requestPurchaseFulfillment();
+							} catch (err) {
+								if (err instanceof AxiosError) {
+									console.error("Error requesting purchase fulfillment:", _.get(err.response?.data, "error.message", "unknown error"));
+								}
+							}
+					}}
+				>
+					<Text className="font-bold text-purple-600">Upgrade Now</Text>
+				</ColumnTrigger>
+				<ColumnTrigger
+					onPress={async () => {
+						await Purchases.showManageSubscriptions();
+					}}
+				>
+					<Text>Manage Subscription</Text>
+				</ColumnTrigger>
 				<ColumnTrigger>
 					<View className={"flex-col flex items-start w-2/3 gap-2"}>
 						<Text className="font-semibold texT-md text-t-primary">Flip Guest Language</Text>

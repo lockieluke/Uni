@@ -14,7 +14,7 @@ import { AppState, Text, TouchableOpacity, useColorScheme, View } from "react-na
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import DevServerSetting from "@/lib/components/DevServerSetting";
 import { userAtom } from "@/lib/states";
-import { getSignInNonce, supabase } from "@/lib/supabase";
+import { getSignInNonce, refreshSignInState, supabase } from "@/lib/supabase";
 
 export default function SignIn() {
 	const rootNavigation = useNavigationContainerRef();
@@ -118,6 +118,8 @@ export default function SignIn() {
 
 								await AsyncStorage.setItem("lastSignInProvider", "google");
 
+								await refreshSignInState();
+
 								console.log("User signed in", user.email);
 								rootNavigation.reset({
 									routes: [{ name: "(tabs)" }]
@@ -193,6 +195,8 @@ export default function SignIn() {
 						});
 
 						await AsyncStorage.setItem("lastSignInProvider", "apple");
+
+						await refreshSignInState();
 
 						console.log("User signed in with Apple", user.email);
 						rootNavigation.reset({

@@ -1,6 +1,6 @@
 import { createClient, type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from "@supabase/supabase-js";
 import { getTierById, UniMonthlyLimits, UniTiers } from "@uni/api";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { StatusCodes } from "http-status-codes";
 import * as _ from "radashi";
@@ -119,6 +119,8 @@ userRouter.get("/", async (c) => {
 		});
 	}
 
+	const { tier } = await updateUserTier(id, c);
+
 	const { error, data } = await supabase.from("users").select("*").eq("id", id).single();
 	if (error) {
 		throw new HTTPException(StatusCodes.NOT_FOUND, {
@@ -134,9 +136,7 @@ userRouter.get("/", async (c) => {
 		});
 	}
 
-	const tier = getTierById(data.tier as never);
-
-	const speechTranslationLimit = UniMonthlyLimits["speech_translation"][tier];
+	const speechTranslationLimit = UniMonthlyLimits["speech_translation"][getTierById(tier)];
 	const speechTranslationUsage = await getUsage(c, "speech_translation");
 
 	return withMsgpack(
@@ -156,14 +156,28 @@ userRouter.get("/", async (c) => {
 });
 
 userRouter.post("/request-purchase-fulfillment", async (c) => {
-	const { rcCustomerId } = await c.req.parseBody<{
-		rcCustomerId: string;
-	}>();
-
 	const user = c.get("user");
-	const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);
+	const userId = user?.id;
 
-	const response = await fetch(`https://api.revenuecat.com/v2/projects/proj596f0d76/customers/${rcCustomerId}/active_entitlements`);
+	const { tier, items } = await updateUserTier(userId, c);
+
+	return withMsgpack(
+		{
+			activeEntitlements: items.map((item) => item.entitlement_id),
+			tier
+		},
+		c
+	);
+});
+
+async function updateUserTier(userId: string, c: Context<THono>) {
+	const adminSupabase = createClient<Database>(`${process.env.SUPABASE_URL}`, `${process.env.SUPABASE_ADMIN_KEY}`);
+
+	const response = await fetch(`https://api.revenuecat.com/v2/projects/proj596f0d76/customers/${userId}/active_entitlements`, {
+		headers: {
+			Authorization: `Bearer ${c.env.REVENUECAT_API_KEY}`
+		}
+	});
 	const payload = await response.json<{
 		items: {
 			object: string;
@@ -185,18 +199,19 @@ userRouter.post("/request-purchase-fulfillment", async (c) => {
 
 	const { items } = payload;
 
+	console.log(items);
+
 	const hasEntitlement = (entitlement: string) => items.some((item) => item.entitlement_id === entitlement);
 	let tier: (typeof UniTiers)[keyof typeof UniTiers] = 0;
-	if (hasEntitlement("basic")) tier = UniTiers.basic;
-
-	if (hasEntitlement("max")) tier = UniTiers.max;
+	if (hasEntitlement("entl66ecdebf11")) tier = UniTiers.basic;
+	if (hasEntitlement("entlf02ae41ac8")) tier = UniTiers.max;
 
 	const { error } = await adminSupabase
 		.from("users")
 		.update({
 			tier
 		})
-		.eq("id", user.id);
+		.eq("id", userId);
 	if (error)
 		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 			res: withMsgpack(
@@ -209,13 +224,10 @@ userRouter.post("/request-purchase-fulfillment", async (c) => {
 			)
 		});
 
-	return withMsgpack(
-		{
-			activeEntitlements: items.map((item) => item.entitlement_id),
-			tier
-		},
-		c
-	);
-});
+	return {
+		tier,
+		items
+	};
+}
 
 export default userRouter;

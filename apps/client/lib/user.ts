@@ -19,3 +19,9 @@ export async function getUserAdditionalData() {
 
 	return data;
 }
+
+export async function requestPurchaseFulfillment() {
+	const response = await uniApi.post("/user/request-purchase-fulfillment");
+	const payload = response.data;
+	if (payload.error) throw new Error(`${_.get(payload, "error.message", "Unknown error")}`);
+}

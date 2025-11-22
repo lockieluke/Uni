@@ -14,11 +14,12 @@ import { useSetAtom } from "jotai";
 import { cssInterop } from "nativewind";
 import { Pressable, TouchableOpacity, useColorScheme } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
+import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { useAsyncEffect } from "@/lib/hooks";
 import { getLanguages } from "@/lib/language";
 import { availableLanguagesAtom, languagesAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
-import { checkSignedIn } from "@/lib/supabase";
+import { refreshSignInState } from "@/lib/supabase";
 import "react-native-reanimated";
 import "./global.css";
 
@@ -46,7 +47,13 @@ export default function RootLayout() {
 	});
 
 	useAsyncEffect(async () => {
-		const isSignedIn = await checkSignedIn();
+		if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.ERROR);
+
+		Purchases.configure({
+			apiKey: `${process.env.EXPO_PUBLIC_REVENUECAT_API}`
+		});
+
+		const isSignedIn = await refreshSignInState();
 
 		if (isSignedIn) {
 			const supportedLanguages = await getLanguages();
