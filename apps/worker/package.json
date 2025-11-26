@@ -4,7 +4,7 @@
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
 		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
-		"supabase-typegen": "supabase gen types typescript --project-id \"tfxryudfyorrheoimbva\" --schema public > src/database.types.ts"
+		"supabase-typegen": "supabase gen types typescript --project-id \"tfxryudfyorrheoimbva\" --schema public > src/lib/database.types.ts"
 	},
 	"dependencies": {
 		"@ai-sdk/cerebras": "^1.0.29",
