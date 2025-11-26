@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { type UniMonthlyLimits, UniTiers } from "./tiers";
 
 export const OpenAITranscriptionModelSchema = z.enum(["fast", "accurate"]);
 export const TranscriptionProviderSchema = z.enum(["openai", "openai-realtime", "groq"]);
@@ -14,6 +15,20 @@ export const LanguageSchema = z.object({
 export const TranslationSchema = z.object({
 	phrase: z.string(),
 	hints: z.array(z.string())
+});
+
+export const UserMetadataSchema = z.object({
+	id: z.string().readonly(),
+	email: z.email().readonly(),
+	tier: z.enum(UniTiers).readonly(),
+	limits: z
+		.custom<{
+			[key in keyof typeof UniMonthlyLimits]: {
+				readonly monthly_limit: number;
+				readonly usage: number;
+			};
+		}>()
+		.readonly()
 });
 
 export type TLanguageSchema = z.infer<typeof LanguageSchema>;

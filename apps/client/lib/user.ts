@@ -1,13 +1,6 @@
-import { UniTiers } from "@uni/api";
+import { UserMetadataSchema } from "@uni/api";
 import * as _ from "radashi";
-import { z } from "zod/v4";
 import { uniApi } from "./networking";
-
-export const UserMetadataSchema = z.object({
-	id: z.string(),
-	email: z.email(),
-	tier: z.enum(UniTiers)
-});
 
 export async function getUserAdditionalData() {
 	const response = await uniApi.get("/user");

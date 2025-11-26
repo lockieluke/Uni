@@ -7,6 +7,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
+import { MotiProgressBar } from "moti";
 import * as _ from "radashi";
 import { When } from "react-if";
 import { ScrollView, Switch, Text, View } from "react-native";
@@ -26,7 +27,7 @@ export default function YouScreen() {
 	const router = useRouter();
 
 	const [assets, error] = useAssets([require("@/assets/images/user.jpg")]);
-	const [{ signedIn, user, accessToken, tier }, setUser] = useAtom(userAtom);
+	const [{ signedIn, user, accessToken, tier, limits }, setUser] = useAtom(userAtom);
 	const setTranslations = useSetAtom(translationsAtom);
 	const setAvailableLanguages = useSetAtom(availableLanguagesAtom);
 
@@ -35,6 +36,8 @@ export default function YouScreen() {
 	const [liquidGlassEnabled, setLiquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
 
 	if (error || !assets || !user || !signedIn) return null;
+
+	const { speech_translation } = limits;
 
 	const defaultProfilePicture = assets[0].localUri;
 	const userMetadata = user.user_metadata;
@@ -78,14 +81,25 @@ export default function YouScreen() {
 							}
 					}}
 				>
-					<Text className="font-bold text-purple-600">Upgrade Now</Text>
+					<View className="w-full flex-center flex-col gap-3">
+						<Text className="self-start text-t-primary">
+							Usage Limits ({speech_translation.usage}/{speech_translation.monthly_limit})
+						</Text>
+						<MotiProgressBar
+							height={8}
+							progress={speech_translation.usage / speech_translation.monthly_limit}
+							color="#9334E9"
+							containerColor="white"
+						/>
+						<Text className="my-2 font-bold text-purple-600">Upgrade Now</Text>
+					</View>
 				</ColumnTrigger>
 				<ColumnTrigger
 					onPress={async () => {
 						await Purchases.showManageSubscriptions();
 					}}
 				>
-					<Text>Manage Subscription</Text>
+					<Text className="text-t-primary">Manage Subscription</Text>
 				</ColumnTrigger>
 				<ColumnTrigger>
 					<View className={"flex-col flex items-start w-2/3 gap-2"}>

@@ -8,14 +8,14 @@ export const UniTiers = {
 
 export const getTierById = (id: (typeof UniTiers)[keyof typeof UniTiers]) => _.invert(UniTiers)[id];
 
-export const UniMonthlyLimits: {
-	[key: string]: {
-		[K in keyof typeof UniTiers]: number;
-	};
-} = {
+export const UniMonthlyLimits = {
 	speech_translation: {
 		free: 25,
 		basic: 3000,
 		max: Number.MAX_SAFE_INTEGER
 	}
+} satisfies {
+	[key: string]: {
+		[K in keyof typeof UniTiers]: number;
+	};
 };

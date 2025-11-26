@@ -81,11 +81,12 @@ export async function refreshSignInState() {
 		const { entitlements } = await Purchases.getCustomerInfo();
 		console.log("Active Entitlements", entitlements.active);
 
-		const { tier } = await getUserAdditionalData();
+		const { tier, limits } = await getUserAdditionalData();
 		if (isSignedIn) {
 			defaultStore.set(userAtom, (prevUser) => ({
 				...prevUser,
-				tier: getTierById(tier)
+				tier: getTierById(tier),
+				limits
 			}));
 		}
 	}

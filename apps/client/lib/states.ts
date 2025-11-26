@@ -1,16 +1,24 @@
 import type { User } from "@supabase/auth-js";
-import type { TLanguageSchema, UniTiers } from "@uni/api";
+import type { TLanguageSchema, UniTiers, UserMetadataSchema } from "@uni/api";
 import { atom } from "jotai";
 import { atomWithReset } from "jotai/utils";
+import type { z } from "zod/v4";
 
 export const userAtom = atomWithReset<{
 	signedIn: boolean;
 	user?: User;
 	accessToken?: string;
 	tier: keyof typeof UniTiers;
+	limits: z.infer<typeof UserMetadataSchema.shape.limits>;
 }>({
 	signedIn: false,
-	tier: "free"
+	tier: "free",
+	limits: {
+		speech_translation: {
+			monthly_limit: 0,
+			usage: 0
+		}
+	}
 });
 
 export type TClientLanguage = Omit<TLanguageSchema, "disclaimer" | "customPrompt" | "displayName"> & {

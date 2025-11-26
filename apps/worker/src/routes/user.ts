@@ -1,9 +1,10 @@
 import { createClient, type REALTIME_POSTGRES_CHANGES_LISTEN_EVENT } from "@supabase/supabase-js";
-import { getTierById, UniMonthlyLimits, UniTiers } from "@uni/api";
+import { getTierById, UniMonthlyLimits, UniTiers, type UserMetadataSchema } from "@uni/api";
 import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { StatusCodes } from "http-status-codes";
 import * as _ from "radashi";
+import type { z } from "zod/v4";
 import type { Database } from "../lib/database.types";
 import type { THono } from "../lib/types";
 import { getUsage } from "../lib/usage";
@@ -143,14 +144,14 @@ userRouter.get("/", async (c) => {
 		{
 			id: data.id,
 			email: data.email,
-			tier: data.tier,
+			tier,
 			limits: {
 				speech_translation: {
 					monthly_limit: speechTranslationLimit,
 					usage: speechTranslationUsage
 				}
 			}
-		},
+		} satisfies z.infer<typeof UserMetadataSchema>,
 		c
 	);
 });
@@ -170,7 +171,19 @@ userRouter.post("/request-purchase-fulfillment", async (c) => {
 	);
 });
 
-async function updateUserTier(userId: string, c: Context<THono>) {
+type RevenueCatActiveEntitlements = {
+	object: string;
+	entitlement_id: string;
+	expires_at: number;
+};
+
+async function updateUserTier(
+	userId: string,
+	c: Context<THono>
+): Promise<{
+	items: RevenueCatActiveEntitlements[];
+	tier: (typeof UniTiers)[keyof typeof UniTiers];
+}> {
 	const adminSupabase = createClient<Database>(`${process.env.SUPABASE_URL}`, `${process.env.SUPABASE_ADMIN_KEY}`);
 
 	const response = await fetch(`https://api.revenuecat.com/v2/projects/proj596f0d76/customers/${userId}/active_entitlements`, {
@@ -179,11 +192,7 @@ async function updateUserTier(userId: string, c: Context<THono>) {
 		}
 	});
 	const payload = await response.json<{
-		items: {
-			object: string;
-			entitlement_id: string;
-			expires_at: number;
-		}[];
+		items: RevenueCatActiveEntitlements[];
 	}>();
 	if (!response.ok)
 		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
@@ -198,8 +207,6 @@ async function updateUserTier(userId: string, c: Context<THono>) {
 		});
 
 	const { items } = payload;
-
-	console.log(items);
 
 	const hasEntitlement = (entitlement: string) => items.some((item) => item.entitlement_id === entitlement);
 	let tier: (typeof UniTiers)[keyof typeof UniTiers] = 0;
