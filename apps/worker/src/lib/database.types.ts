@@ -82,7 +82,7 @@ export type Database = {
 					email: string;
 					id: string;
 					name: string | null;
-					subscription_monthly_start: string | null;
+					role: string;
 					tier: number;
 				};
 				Insert: {
@@ -90,7 +90,7 @@ export type Database = {
 					email: string;
 					id?: string;
 					name?: string | null;
-					subscription_monthly_start?: string | null;
+					role?: string;
 					tier?: number;
 				};
 				Update: {
@@ -98,7 +98,7 @@ export type Database = {
 					email?: string;
 					id?: string;
 					name?: string | null;
-					subscription_monthly_start?: string | null;
+					role?: string;
 					tier?: number;
 				};
 				Relationships: [];

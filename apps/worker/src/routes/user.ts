@@ -8,6 +8,7 @@ import type { z } from "zod/v4";
 import type { Database } from "../lib/database.types";
 import type { THono } from "../lib/types";
 import { getUsage } from "../lib/usage";
+import { getRole } from "../lib/user";
 import { withMsgpack } from "../lib/utils";
 
 const userRouter = new Hono<THono>();
@@ -213,23 +214,26 @@ async function updateUserTier(
 	if (hasEntitlement("entl66ecdebf11")) tier = UniTiers.basic;
 	if (hasEntitlement("entlf02ae41ac8")) tier = UniTiers.max;
 
-	const { error } = await adminSupabase
-		.from("users")
-		.update({
-			tier
-		})
-		.eq("id", userId);
-	if (error)
-		throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-			res: withMsgpack(
-				{
-					error: {
-						message: `Failed to update user tier: ${error.message}`
-					}
-				},
-				c
-			)
-		});
+	const role = await getRole(c);
+	if (role !== "superadmin") {
+		const { error } = await adminSupabase
+			.from("users")
+			.update({
+				tier
+			})
+			.eq("id", userId);
+		if (error)
+			throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+				res: withMsgpack(
+					{
+						error: {
+							message: `Failed to update user tier: ${error.message}`
+						}
+					},
+					c
+				)
+			});
+	}
 
 	return {
 		tier,

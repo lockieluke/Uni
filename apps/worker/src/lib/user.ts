@@ -1,6 +1,7 @@
-import { UniTiers } from "@uni/api";
+import { UniTiers, UserRoleSchema } from "@uni/api";
 import type { Context } from "hono";
 import * as _ from "radashi";
+import type { z } from "zod/v4";
 import type { THono } from "./types";
 
 export async function getTier(c: Context<THono>): Promise<(typeof UniTiers)[keyof typeof UniTiers]> {
@@ -17,4 +18,14 @@ export async function getTier(c: Context<THono>): Promise<(typeof UniTiers)[keyo
 
 	// @ts-expect-error "tier" casting to relevant tier type
 	return tier ?? 0;
+}
+
+export async function getRole(c: Context<THono>): Promise<z.infer<typeof UserRoleSchema>> {
+	const user = c.get("user");
+	const supabase = c.get("supabase");
+
+	const { data, error } = await supabase.from("users").select("role").eq("id", user.id).single();
+	if (error) throw new Error(`Failed to get user role: ${error.message}`);
+
+	return UserRoleSchema.parse(data.role);
 }
