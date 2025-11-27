@@ -212,6 +212,20 @@ export default function HomeScreen() {
                 <Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
               </TouchableOpacity>*/}
 
+							<When condition={_.isEmpty(translations.conversation) && !isTranscribing}>
+								<MotiText
+									from={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{
+										type: "spring",
+										duration: 300
+									}}
+									className="text-t-primary my-5"
+								>
+									Press and hold to start, release when done speaking
+								</MotiText>
+							</When>
+
 							<When condition={translations.conversation.length > 0 && !isTranscribing}>
 								<MenuView
 									onPressAction={({ nativeEvent }) => {
@@ -263,7 +277,7 @@ export default function HomeScreen() {
 										type: "spring",
 										duration: 300
 									}}
-									className="text-t-primary"
+									className="text-t-primary my-5"
 								>
 									Release when phrase has been fully transcribed
 								</MotiText>
