@@ -48,5 +48,12 @@
 		"hide": "on_success",
 		"use_new_terminal": false,
 		"allow_concurrent_runs": false
+	},
+	{
+		"label": "Build packages",
+		"command": "bun build:all",
+		"hide": "on_success",
+		"use_new_terminal": false,
+		"allow_concurrent_runs": false
 	}
 ]
