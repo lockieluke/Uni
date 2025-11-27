@@ -83,7 +83,13 @@ export default function YouScreen() {
 				>
 					<View className="w-full flex-center flex-col gap-3">
 						<Text className="self-start text-t-primary">
-							Usage Limits ({speech_translation.usage}/{speech_translation.monthly_limit})
+							Usage Limits ({speech_translation.usage}/
+							{speech_translation.monthly_limit === Number.MAX_SAFE_INTEGER ? (
+								<Text className="font-bold text-xl"> ∞</Text>
+							) : (
+								speech_translation.monthly_limit
+							)}
+							)
 						</Text>
 						<MotiProgressBar
 							height={8}
