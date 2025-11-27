@@ -62,14 +62,15 @@ export async function summariseConversation(phrases: { [key: string]: string }[]
 }
 
 export async function translatePhrase(
-	{ hints, phrase }: z.infer<typeof TranslationSchema>,
+	{ hints, phrase, history }: z.infer<typeof TranslationSchema>,
 	model: z.infer<typeof TranslationLLMMPropertySchema> = "default"
 ) {
 	const response = await uniApi.post(
 		"/translate",
 		encode({
 			phrase,
-			hints
+			hints,
+			history
 		}),
 		{
 			params: {

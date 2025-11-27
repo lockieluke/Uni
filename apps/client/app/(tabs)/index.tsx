@@ -1,4 +1,5 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { MenuView } from "@react-native-menu/menu";
 import { type RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
 import { requestRecordingPermissionsAsync } from "expo-audio";
@@ -9,11 +10,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { useAtom, useAtomValue } from "jotai";
 import { RESET } from "jotai/utils";
 import * as async from "modern-async";
-import { MotiView } from "moti";
+import { MotiText, MotiView } from "moti";
 import * as _ from "radashi";
 import { useEffect, useRef, useState } from "react";
 import { Unless, When } from "react-if";
-import { Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from "react-native";
+import { Platform, Text, useColorScheme, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TranscriptButton from "@/lib/components/TranscriptButton";
@@ -45,8 +46,9 @@ export default function HomeScreen() {
 
 	const blockingNewAudioStream = useRef(false);
 
-	const bottomTabHeight = dimensions.height * 0.15;
+	const bottomTabHeight = dimensions.height * 0.18;
 	const recordingDelay = 80;
+	const isTranscribing = translationState === "transcripting" && audioRecorder.isRecording;
 
 	const recordingConfig: RecordingConfig = {
 		sampleRate: 16000,
@@ -197,18 +199,75 @@ export default function HomeScreen() {
 							style={{
 								bottom: bottomTabHeight
 							}}
-							className={"flex-center absolute bottom-14"}
+							className={"flex-center gap-5 absolute bottom-14"}
 						>
-							<TouchableOpacity
-								className="flex-center flex-col gap-3 my-5"
-								onPress={() => {
-									router.push("/languages");
-								}}
-							>
-								<Text className="text-t-primary text-lg font-semibold">{languages.host.displayName}</Text>
-								<MaterialIcons className="rotate-90" name="compare-arrows" size={28} color={colorScheme === "dark" ? "white" : "black"} />
-								<Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
-							</TouchableOpacity>
+							{/*<TouchableOpacity
+                className="flex-center flex-col gap-3 my-5"
+                onPress={() => {
+                  router.push("/languages");
+                }}
+              >
+                <Text className="text-t-primary text-lg font-semibold">{languages.host.displayName}</Text>
+                <MaterialIcons className="rotate-90" name="compare-arrows" size={28} color={colorScheme === "dark" ? "white" : "black"} />
+                <Text className="text-t-primary text-lg font-semibold">{languages.guest.displayName}</Text>
+              </TouchableOpacity>*/}
+
+							<When condition={translations.conversation.length > 0 && !isTranscribing}>
+								<MenuView
+									onPressAction={({ nativeEvent }) => {
+										const code = nativeEvent.event;
+
+										if (code === "clear_context") setTranslations(RESET);
+									}}
+									actions={[
+										{
+											id: "clear_context",
+											title: "Clear Context",
+											image: Platform.select({
+												ios: "trash"
+											}),
+											imageColor: "#fc3d39",
+											attributes: {
+												destructive: true
+											}
+										},
+										{
+											title: "Using Context",
+											subtitle: `${Object.values(translations.title).join(", ")}`,
+											attributes: {
+												disabled: true
+											}
+										}
+									]}
+								>
+									<MotiView
+										from={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										transition={{
+											type: "spring",
+											duration: 300
+										}}
+										className="flex-row flex-center gap-3 p-3 bg-gray-500 dark:bg-slate-400 rounded-full"
+									>
+										<Ionicons name="sparkles-sharp" size={24} color="white" />
+										<Text className="text-white">Using Context</Text>
+									</MotiView>
+								</MenuView>
+							</When>
+
+							<When condition={isTranscribing}>
+								<MotiText
+									from={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{
+										type: "spring",
+										duration: 300
+									}}
+									className="text-t-primary"
+								>
+									Release when phrase has been fully transcribed
+								</MotiText>
+							</When>
 
 							<TranscriptButton
 								onPressIn={async () => {
@@ -259,7 +318,8 @@ export default function HomeScreen() {
 														const [translationErr, response] = await _.tryit(translatePhrase)(
 															{
 																hints,
-																phrase: transcripted
+																phrase: transcripted,
+																history: translations.conversation
 															},
 															"default"
 														);

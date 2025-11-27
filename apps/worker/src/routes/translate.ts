@@ -34,7 +34,7 @@ translateRouter.post("/", async (c) => {
 		});
 	}
 
-	const { phrase, hints } = reqBody.data;
+	const { phrase, history, hints } = reqBody.data;
 	const { data: mode, success } = await TranslationLLMMPropertySchema.safeParseAsync(c.req.query("mode") || "default");
 	if (!success)
 		throw new HTTPException(StatusCodes.BAD_REQUEST, {
@@ -169,14 +169,37 @@ translateRouter.post("/", async (c) => {
 				{
 					role: "system",
 					content: `
+<instruction>
 You are given a phrase.  This phrase could be in the languages represented by these language codes: ${hints.join(", ")}
 1. Detect the source language of the phrase.
 2. Identify the target language as the other code in the pair.
-3. Translate the phrase into the target language.
+3. Translate the phrase into the target language with the help of the relevant context provided including conversation previously translated.
 4. In your response, include the source language code, the target language code, and the translated phrase.
-${flattenedLanguageSpecificPrompts.length > 0 ? `\nLanguage specific instructions: ${flattenedLanguageSpecificPrompts.filter((prompt) => !_.isNullish(prompt) && prompt !== "null").join("\n\n")}\n` : ""}
+</instruction>
+
+<language-specific-prompts>
+${flattenedLanguageSpecificPrompts.length > 0 ? `${flattenedLanguageSpecificPrompts.filter((prompt) => !_.isNullish(prompt) && prompt !== "null").join("\n\n")}` : ""}
+</language-specific-prompts>
+
+<context>
+${
+	history.length > 0
+		? `<history>\n${history
+				.map(
+					(entry) =>
+						`"${Object.keys(entry)
+							.map((langCode) => `${langCode}: ${entry[langCode]}`)
+							.join(" ")}"`
+				)
+				.join("\n")}\n</history>`
+		: ""
+}
+</context>
+
+<order>
 Do not interpret the phrase, just translate it.
 Please also remove any garbage characters or transcription errors that might not contain any of the source langauges from the pretranslated phrase.
+</order>
             `.trim()
 				},
 				{

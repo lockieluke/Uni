@@ -16,6 +16,7 @@ export const LanguageSchema = z.object({
 
 export const TranslationSchema = z.object({
 	phrase: z.string(),
+	history: z.array(z.record(z.string(), z.string())),
 	hints: z.array(z.string())
 });
 
