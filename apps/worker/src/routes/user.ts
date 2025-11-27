@@ -8,7 +8,7 @@ import type { z } from "zod/v4";
 import type { Database } from "../lib/database.types";
 import type { THono } from "../lib/types";
 import { getUsage } from "../lib/usage";
-import { getRole } from "../lib/user";
+import { getRole, getTier } from "../lib/user";
 import { withMsgpack } from "../lib/utils";
 
 const userRouter = new Hono<THono>();
@@ -233,7 +233,7 @@ async function updateUserTier(
 					c
 				)
 			});
-	}
+	} else tier = await getTier(c);
 
 	return {
 		tier,
