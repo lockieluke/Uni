@@ -1,4 +1,5 @@
-import { MenuView } from "@react-native-menu/menu";
+import { type MenuAction, MenuView } from "@react-native-menu/menu";
+import { useRouter } from "expo-router";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { Skeleton } from "moti/skeleton";
@@ -22,6 +23,7 @@ export default function TranslationText({
 	language: TClientLanguage;
 	children: React.ReactNode;
 }) {
+	const router = useRouter();
 	const colorScheme = useColorScheme();
 
 	const [languages, setLanguages] = useAtom(languagesAtom);
@@ -35,6 +37,13 @@ export default function TranslationText({
 	const [inLangMenu, setInLangMenu] = useState(false);
 
 	const role = languages.guest.code === language.code ? "guest" : "host";
+	const menuActions: MenuAction[] = Object.values(availableLanguages)
+		.filter((lang) => (role !== "guest" ? languages.guest.code !== lang.code : languages.host.code !== lang.code))
+		.map((lang) => ({
+			title: `${lang.flag} ${lang.displayName}`,
+			id: lang.code,
+			state: lang.code === language.code ? "on" : "off"
+		}));
 
 	return (
 		<View className={"flex flex-col px-5 h-36"}>
@@ -76,6 +85,13 @@ export default function TranslationText({
 						const code = event.nativeEvent.event;
 						const choosenLanguage = availableLanguages[code];
 
+						setTranslations(RESET);
+
+						if (code === "more_languages") {
+							router.push("/languages");
+							return;
+						}
+
 						if (role === "guest") {
 							setLanguages((prevLanguages) => ({
 								...prevLanguages,
@@ -89,16 +105,14 @@ export default function TranslationText({
 								host: choosenLanguage
 							}));
 						}
-
-						setTranslations(RESET);
 					}}
-					actions={Object.values(availableLanguages)
-						.filter((lang) => (role !== "guest" ? languages.guest.code !== lang.code : languages.host.code !== lang.code))
-						.map((lang) => ({
-							title: `${lang.flag} ${lang.displayName}`,
-							id: lang.code,
-							state: lang.code === language.code ? "on" : "off"
-						}))}
+					actions={[
+						...menuActions,
+						{
+							id: "more_languages",
+							title: "More languages..."
+						}
+					]}
 				/>
 			</TouchableOpacity>
 			<Unless condition={_.isEmpty(title)}>
