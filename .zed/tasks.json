@@ -33,7 +33,7 @@
 	},
 	{
 		"label": "Start wrangler Dev Server",
-		"command": "bun dev",
+		"command": "bun dev --ip 0.0.0.0",
 		"hide": "on_success",
 		"use_new_terminal": false,
 		"allow_concurrent_runs": false,
