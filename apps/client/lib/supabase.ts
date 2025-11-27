@@ -78,9 +78,6 @@ export async function refreshSignInState() {
 
 		await Purchases.syncPurchases();
 
-		const { entitlements } = await Purchases.getCustomerInfo();
-		console.log("Active Entitlements", entitlements.active);
-
 		const { tier, limits } = await getUserAdditionalData();
 		if (isSignedIn) {
 			defaultStore.set(userAtom, (prevUser) => ({
