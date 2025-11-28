@@ -5,7 +5,6 @@ import { AxiosError } from "axios";
 import { requestRecordingPermissionsAsync } from "expo-audio";
 import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
-import { useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useAtom, useAtomValue } from "jotai";
 import { RESET } from "jotai/utils";
@@ -14,7 +13,7 @@ import { MotiText, MotiView } from "moti";
 import * as _ from "radashi";
 import { useEffect, useRef, useState } from "react";
 import { Unless, When } from "react-if";
-import { Platform, Text, useColorScheme, useWindowDimensions, View } from "react-native";
+import { Platform, Text, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TranscriptButton from "@/lib/components/TranscriptButton";
@@ -27,9 +26,7 @@ import { mmkvStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 export default function HomeScreen() {
-	const router = useRouter();
 	const audioRecorder = useSharedAudioRecorder();
-	const colorScheme = useColorScheme();
 	const dimensions = useWindowDimensions();
 
 	const { signedIn } = useAtomValue(userAtom);
