@@ -3,6 +3,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { AudioRecorderProvider } from "@siteed/expo-audio-studio";
 import { AppleAuthenticationButton } from "expo-apple-authentication";
+import * as Device from "expo-device";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,7 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { VideoView } from "expo-video";
 import { useSetAtom } from "jotai";
 import { cssInterop } from "nativewind";
-import { Pressable, TouchableOpacity, useColorScheme } from "react-native";
+import { Platform, Pressable, TouchableOpacity, useColorScheme } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { useAsyncEffect } from "@/lib/hooks";
@@ -50,7 +51,12 @@ export default function RootLayout() {
 		if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.ERROR);
 
 		Purchases.configure({
-			apiKey: `${process.env.EXPO_PUBLIC_REVENUECAT_API}`
+			apiKey:
+				!__DEV__ && Device.isDevice
+					? `${Platform.select({
+							ios: `${process.env.EXPO_PUBLIC_REVENUECAT_API_PROD_IOS}`
+						})}`
+					: `${process.env.EXPO_PUBLIC_REVENUECAT_API_DEBUG}`
 		});
 
 		const isSignedIn = await refreshSignInState();
