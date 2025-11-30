@@ -11,6 +11,7 @@ import { MotiProgressBar } from "moti";
 import * as _ from "radashi";
 import { When } from "react-if";
 import { ScrollView, Switch, Text, View } from "react-native";
+import { ReactNativeLegal } from "react-native-legal";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import Purchases from "react-native-purchases";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
@@ -134,7 +135,14 @@ export default function YouScreen() {
 						<Switch value={disableCache} onValueChange={setDisableCache} />
 					</ColumnTrigger>
 				</When>
-				<ColumnTrigger subpage>Licences</ColumnTrigger>
+				<ColumnTrigger
+					onPress={() => {
+						ReactNativeLegal.launchLicenseListScreen("Licences");
+					}}
+					subpage
+				>
+					Licences
+				</ColumnTrigger>
 				<ColumnTrigger
 					onPress={async () => {
 						setUser(RESET);

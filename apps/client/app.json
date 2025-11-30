@@ -104,7 +104,8 @@
 						"allowBackgroundAudioControls": false
 					}
 				}
-			]
+			],
+			"react-native-legal"
 		],
 		"experiments": {
 			"typedRoutes": true
