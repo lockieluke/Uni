@@ -109,13 +109,6 @@ export default function SignIn() {
 									return;
 								}
 
-								setUser({
-									signedIn: true,
-									user,
-									accessToken: session.access_token,
-									tier: "free"
-								});
-
 								await AsyncStorage.setItem("lastSignInProvider", "google");
 
 								await refreshSignInState();
