@@ -10,14 +10,14 @@ import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { VideoView } from "expo-video";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { cssInterop } from "nativewind";
 import { Platform, Pressable, TouchableOpacity, useColorScheme } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
 import Purchases, { LOG_LEVEL } from "react-native-purchases";
 import { useAsyncEffect } from "@/lib/hooks";
 import { getLanguages } from "@/lib/language";
-import { availableLanguagesAtom, languagesAtom } from "@/lib/states";
+import { availableLanguagesAtom, languagesAtom, userAtom } from "@/lib/states";
 import { mmkvStorage } from "@/lib/storage";
 import { refreshSignInState } from "@/lib/supabase";
 import "react-native-reanimated";
@@ -37,6 +37,8 @@ export default function RootLayout() {
 
 	const setLanguages = useSetAtom(languagesAtom);
 	const setAvailableLanguages = useSetAtom(availableLanguagesAtom);
+	const { signedIn } = useAtomValue(userAtom);
+
 	const [hostLanguage, setHostLanguage] = useMMKVStorage("hostLanguage", mmkvStorage, "en-GB");
 	const [guestLanguage, setGuestLanguage] = useMMKVStorage("guestLanguage", mmkvStorage, "zh-HK");
 	const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
@@ -59,7 +61,14 @@ export default function RootLayout() {
 
 		const isSignedIn = await refreshSignInState();
 
-		if (isSignedIn) {
+		if (!isSignedIn) {
+			SplashScreen.hide();
+			router.replace("/sign-in");
+		}
+	}, []);
+
+	useAsyncEffect(async () => {
+		if (signedIn) {
 			const supportedLanguages = await getLanguages();
 			setAvailableLanguages(supportedLanguages);
 
@@ -73,11 +82,8 @@ export default function RootLayout() {
 					guest: supportedLanguages[guestLanguage]
 				});
 			}
-		} else {
-			SplashScreen.hide();
-			router.replace("/sign-in");
 		}
-	}, []);
+	}, [signedIn]);
 
 	return (
 		<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
