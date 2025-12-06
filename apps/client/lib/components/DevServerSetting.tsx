@@ -1,6 +1,7 @@
 import * as Device from "expo-device";
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { useNavigation } from "expo-router";
+import { isTestFlight } from "expo-testflight";
 import { When } from "react-if";
 import { Switch, Text, TextInput, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
@@ -23,27 +24,29 @@ export default function DevServerSetting() {
 	const AdaptiveColumnTrigger = liquidGlassEnabled && lastRoute === "sign-in" ? GlassView : ColumnTrigger;
 
 	return (
-		<AdaptiveColumnTrigger
-			glassEffectStyle="clear"
-			className={cn({
-				"p-5 mx-5 rounded-xl": liquidGlassEnabled
-			})}
-		>
-			<View className="flex-col w-full">
-				<View className="flex w-full flex-row items-center justify-between">
-					<Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
-					<Switch value={useDevServer} onValueChange={setUseDevServer} />
+		<When condition={__DEV__ || isTestFlight}>
+			<AdaptiveColumnTrigger
+				glassEffectStyle="clear"
+				className={cn({
+					"p-5 mx-5 rounded-xl": liquidGlassEnabled
+				})}
+			>
+				<View className="flex-col w-full">
+					<View className="flex w-full flex-row items-center justify-between">
+						<Text className="text-t-primary font-semibold text-md">Use Dev Server</Text>
+						<Switch value={useDevServer} onValueChange={setUseDevServer} />
+					</View>
+					<When condition={useDevServer && Device.isDevice}>
+						<TextInput
+							className="my-3 text-t-primary"
+							onChange={(e) => setDevServerUrl(e.nativeEvent.text)}
+							value={devServerUrl}
+							enterKeyHint="done"
+							placeholder="Dev Server URL"
+						/>
+					</When>
 				</View>
-				<When condition={useDevServer && Device.isDevice}>
-					<TextInput
-						className="my-3 text-t-primary"
-						onChange={(e) => setDevServerUrl(e.nativeEvent.text)}
-						value={devServerUrl}
-						enterKeyHint="done"
-						placeholder="Dev Server URL"
-					/>
-				</When>
-			</View>
-		</AdaptiveColumnTrigger>
+			</AdaptiveColumnTrigger>
+		</When>
 	);
 }

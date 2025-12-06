@@ -9,7 +9,6 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { useAtom } from "jotai";
 import * as _ from "radashi";
 import { useEffect } from "react";
-import { When } from "react-if";
 import { AppState, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import DevServerSetting from "@/lib/components/DevServerSetting";
@@ -73,11 +72,9 @@ export default function SignIn() {
 					<Text className="text-lg text-white text-center shadow font-bold">Communicate without limits.</Text>
 				</View>
 
-				<When condition={__DEV__}>
-					<View className="absolute top-20 flex flex-col gap-5">
-						<DevServerSetting />
-					</View>
-				</When>
+				<View className="absolute top-20 flex flex-col gap-5">
+					<DevServerSetting />
+				</View>
 
 				<TouchableOpacity
 					activeOpacity={0.8}
@@ -96,7 +93,7 @@ export default function SignIn() {
 
 							if (isSuccessResponse(response) && token) {
 								const {
-									data: { session, user },
+									data: { user },
 									error
 								} = await supabase.auth.signInWithIdToken({
 									provider: "google",

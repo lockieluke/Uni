@@ -115,8 +115,8 @@ export default function YouScreen() {
 					</View>
 					<Switch value={flipGuestLanguage} onValueChange={setFlipGuestLanguage} />
 				</ColumnTrigger>
+				<DevServerSetting />
 				<When condition={__DEV__}>
-					<DevServerSetting />
 					<When condition={isLiquidGlassAvailable()}>
 						<ColumnTrigger>
 							<Text className="text-t-primary font-semibold text-md">Use Liquid Glass</Text>
