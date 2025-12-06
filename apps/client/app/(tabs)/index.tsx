@@ -1,8 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { MenuView } from "@react-native-menu/menu";
-import { type RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
+import { ExpoAudioStreamModule, type RecordingConfig, useSharedAudioRecorder } from "@siteed/expo-audio-studio";
 import { AxiosError } from "axios";
-import { requestRecordingPermissionsAsync } from "expo-audio";
 import { File } from "expo-file-system";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import * as SplashScreen from "expo-splash-screen";
@@ -50,6 +49,13 @@ export default function HomeScreen() {
 	const recordingConfig: RecordingConfig = {
 		sampleRate: 16000,
 		keepAwake: true,
+		ios: {
+			audioSession: {
+				category: "PlayAndRecord",
+				categoryOptions: ["MixWithOthers", "DefaultToSpeaker"],
+				mode: "Default"
+			}
+		},
 		intervalAnalysis: 100,
 		interval: 10,
 		onAudioStream: async (event) => {
@@ -99,7 +105,10 @@ export default function HomeScreen() {
 	};
 
 	useAsyncEffect(async () => {
-		const [, requestedPermission] = await Promise.all([audioRecorder.prepareRecording(recordingConfig), requestRecordingPermissionsAsync()]);
+		const [, requestedPermission] = await Promise.all([
+			audioRecorder.prepareRecording(recordingConfig),
+			ExpoAudioStreamModule.requestedPermissionAsync()
+		]);
 		setSpeechReady(requestedPermission.granted ? "granted" : "denied");
 
 		SplashScreen.hide();
