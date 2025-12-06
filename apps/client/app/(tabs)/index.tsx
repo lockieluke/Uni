@@ -107,7 +107,7 @@ export default function HomeScreen() {
 	useAsyncEffect(async () => {
 		const [, requestedPermission] = await Promise.all([
 			audioRecorder.prepareRecording(recordingConfig),
-			ExpoAudioStreamModule.requestedPermissionAsync()
+			ExpoAudioStreamModule.requestPermissionsAsync()
 		]);
 		setSpeechReady(requestedPermission.granted ? "granted" : "denied");
 
