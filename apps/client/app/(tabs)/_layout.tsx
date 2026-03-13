@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
-import { Icon, NativeTabs, VectorIcon } from "expo-router/unstable-native-tabs";
+import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { useAtomValue } from "jotai";
 import { Unless, When } from "react-if";
 import { DynamicColorIOS, Platform, useColorScheme } from "react-native";
@@ -31,26 +31,18 @@ export default function TabLayout() {
 						})
 					}}
 				>
-					<NativeTabs.Trigger
-						name="index"
-						options={{
-							title: "Translate"
-						}}
-					>
+					<NativeTabs.Trigger name="index">
+						<NativeTabs.Trigger.Label>Translate</NativeTabs.Trigger.Label>
 						{Platform.select({
-							ios: <Icon sf="globe" selectedColor={"purple"} />,
-							android: <VectorIcon family={MaterialIcons} name="translate" />
+							ios: <NativeTabs.Trigger.Icon sf="globe" selectedColor={"purple"} />,
+							android: <NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="translate" />
 						})}
 					</NativeTabs.Trigger>
-					<NativeTabs.Trigger
-						name="you"
-						options={{
-							title: "You"
-						}}
-					>
+					<NativeTabs.Trigger name="you">
+						<NativeTabs.Trigger.Label>You</NativeTabs.Trigger.Label>
 						{Platform.select({
-							ios: <Icon sf="person.fill" selectedColor={"purple"} />,
-							android: <VectorIcon family={MaterialIcons} name="person" />
+							ios: <NativeTabs.Trigger.Icon sf="person.fill" selectedColor={"purple"} />,
+							android: <NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="person" />
 						})}
 					</NativeTabs.Trigger>
 				</NativeTabs>
@@ -58,7 +50,7 @@ export default function TabLayout() {
 			<Unless condition={liquidGlassEnabled}>
 				<Tabs
 					screenOptions={{
-						tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+						tabBarActiveTintColor: Colors[colorScheme === "dark" ? "dark" : "light"].tint,
 						// headerShown: false,
 						tabBarButton: signedIn ? HapticTab : () => <></>,
 						tabBarBackground: TabBarBackground,

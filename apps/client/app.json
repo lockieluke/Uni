@@ -7,7 +7,6 @@
 		"icon": "./assets/images/icon.png",
 		"scheme": "uni",
 		"userInterfaceStyle": "automatic",
-		"newArchEnabled": true,
 		"ios": {
 			"supportsTablet": true,
 			"usesAppleSignIn": true,
@@ -25,7 +24,6 @@
 				"foregroundImage": "./assets/images/adaptive-icon.png",
 				"backgroundColor": "#ffffff"
 			},
-			"edgeToEdgeEnabled": true,
 			"permissions": [
 				"android.permission.RECORD_AUDIO",
 				"android.permission.MODIFY_AUDIO_SETTINGS",
@@ -105,7 +103,16 @@
 					}
 				}
 			],
-			"react-native-legal"
+			"react-native-legal",
+			"expo-image",
+			[
+				"expo-build-properties",
+				{
+					"android": {
+						"enableEdgeToEdge": true
+					}
+				}
+			]
 		],
 		"experiments": {
 			"typedRoutes": true
