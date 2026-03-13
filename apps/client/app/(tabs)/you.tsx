@@ -47,7 +47,7 @@ export default function YouScreen() {
 	if (!defaultProfilePicture) return null;
 
 	return (
-		<SafeAreaView className={"flex-1 items-center gap-y-3 bg-white dark:bg-black"}>
+		<SafeAreaView edges={["top", "left", "right"]} className={"flex-1 items-center gap-y-3 bg-white dark:bg-black"}>
 			<View>
 				<Image
 					className="my-5 w-36 aspect-square rounded-full"
@@ -61,7 +61,7 @@ export default function YouScreen() {
 			<Text className="text-t-primary text-3xl font-bold">{_.get(userMetadata, "full_name") ?? (provider === "apple" ? "Apple ID User" : "")}</Text>
 			<Text className="text-t-primary">{user.email}</Text>
 
-			<ScrollView contentContainerClassName="flex-center my-5 pb-20 gap-y-5">
+			<ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="flex-center my-5 gap-y-5 pb-5">
 				<ColumnTrigger
 					onPress={async () => {
 						const [err, result] = await _.tryit(RevenueCatUI.presentPaywall)();
