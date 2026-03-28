@@ -185,7 +185,7 @@ async function updateUserTier(
 	items: RevenueCatActiveEntitlements[];
 	tier: (typeof UniTiers)[keyof typeof UniTiers];
 }> {
-	const adminSupabase = createClient<Database>(`${process.env.SUPABASE_URL}`, `${process.env.SUPABASE_ADMIN_KEY}`);
+	const adminSupabase = createClient<Database>(c.env.SUPABASE_URL, c.env.SUPABASE_ADMIN_KEY);
 
 	const response = await fetch(`https://api.revenuecat.com/v2/projects/proj596f0d76/customers/${userId}/active_entitlements`, {
 		headers: {

@@ -25,11 +25,11 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250807.0",
+		"@cloudflare/workers-types": "^4.20260317.1",
 		"@types/bun": "^1.2.19",
 		"@types/http-status-codes": "^1.2.0",
 		"@types/qs": "^6.14.0",
 		"supabase": "^2.33.9",
-		"wrangler": "^4.73.0"
+		"wrangler": "^4.78.0"
 	}
 }

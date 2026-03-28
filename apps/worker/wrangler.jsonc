@@ -3,6 +3,7 @@
 	"name": "uni-api",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-05-06",
+	"upload_source_maps": true,
 	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
 		"DEV": false

@@ -82,18 +82,18 @@ translateRouter.post("/", async (c) => {
 
 		await Promise.all([retrieveLanguagePromptCache(), retrieveLanguageModelOverrideCache()]);
 
-		if (!specificPromptCacheHit) {
-			const { data: languagePromptsData, error: languagePromptsError } = await supabase
+		if (!specificPromptCacheHit || !modelOverrideCacheHit) {
+			const { data: languageData, error: languageError } = await supabase
 				.from("languages")
-				.select("custom_prompt")
+				.select("custom_prompt, model_override")
 				.eq("lang", hint)
 				.single();
-			if (languagePromptsError) {
+			if (languageError) {
 				throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 					res: withMsgpack(
 						{
 							error: {
-								message: `Error fetching language prompt for ${hint}: ${languagePromptsError.message}`
+								message: `Error fetching language data for ${hint}: ${languageError.message}`
 							}
 						},
 						c
@@ -101,43 +101,21 @@ translateRouter.post("/", async (c) => {
 				});
 			}
 
-			const customPrompt = languagePromptsData.custom_prompt;
-			await LANG_CACHE.put(hint, customPrompt ?? "null", {
-				metadata: {
-					fetchedAt: dayjs().toJSON()
-				}
-			});
-
-			languageSpecificPrompts.set(hint, languagePromptsData?.custom_prompt);
-		}
-
-		if (!modelOverrideCacheHit) {
-			const { data: languageModelOverrideData, error: languageModelOverrideError } = await supabase
-				.from("languages")
-				.select("model_override")
-				.eq("lang", hint)
-				.single();
-			if (languageModelOverrideError) {
-				throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
-					res: withMsgpack(
-						{
-							error: {
-								message: `Error fetching language model override for ${hint}: ${languageModelOverrideError.message}`
-							}
-						},
-						c
-					)
+			if (!specificPromptCacheHit) {
+				const customPrompt = languageData.custom_prompt;
+				await LANG_CACHE.put(hint, customPrompt ?? "null", {
+					metadata: { fetchedAt: dayjs().toJSON() }
 				});
+				languageSpecificPrompts.set(hint, customPrompt);
 			}
 
-			const modelOverride = languageModelOverrideData.model_override;
-			await LANG_MO_CACHE.put(hint, modelOverride ?? "null", {
-				metadata: {
-					fetchedAt: dayjs().toJSON()
-				}
-			});
-
-			if (modelOverride) languageModelOverrides.set(hint, modelOverride);
+			if (!modelOverrideCacheHit) {
+				const modelOverride = languageData.model_override;
+				await LANG_MO_CACHE.put(hint, modelOverride ?? "null", {
+					metadata: { fetchedAt: dayjs().toJSON() }
+				});
+				if (modelOverride) languageModelOverrides.set(hint, modelOverride);
+			}
 		}
 	});
 
