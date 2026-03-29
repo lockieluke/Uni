@@ -8,14 +8,14 @@
 		"build": "bun run build.ts && tsc"
 	},
 	"devDependencies": {
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"wrangler": "^4.45.4"
 	},
 	"peerDependencies": {
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
 		"radashi": "^12.7.0",
-		"wrangler": "^4.45.4",
 		"zod": "^3.25.76"
 	}
 }
