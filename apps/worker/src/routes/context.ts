@@ -24,7 +24,7 @@ contextRouter.post("/summary", async (c) => {
 	const languageCodes = [...new Set(phrases.flatMap((phrase) => Object.keys(phrase)))];
 
 	const { object, response } = await generateObject({
-		model: cerebras("qwen-3-32b"),
+		model: cerebras("gpt-oss-120b"),
 		messages: [
 			{
 				role: "system",
