@@ -38,7 +38,7 @@ export const translationProvider: Record<Exclude<z.infer<typeof TranslationLLMMP
 };
 
 export const specificModelOverrideProvider: Record<string, object> = {
-	"google/gemini-2.5-flash": openRouterProviderObj({
+	"google/gemini-3-flash-preview": openRouterProviderObj({
 		only: "google-ai-studio"
 	})
 };
