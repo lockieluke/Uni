@@ -45,7 +45,7 @@ export async function refreshSignInState(options?: { session: Session; user: Use
 	}
 
 	const { data, error } = await supabase.auth.getSession();
-	if (error) {
+	if (error && _.isNullish(options?.session)) {
 		console.error("Error getting user:", error);
 		return false;
 	}
