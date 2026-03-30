@@ -4,7 +4,7 @@ import { GoogleSignin, isSuccessResponse } from "@react-native-google-signin/goo
 import { useIsFocused, usePreventRemove } from "@react-navigation/core";
 import { useEventListener } from "expo";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { Link, useNavigationContainerRef, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useAtomValue } from "jotai";
 import * as _ from "radashi";
@@ -16,8 +16,6 @@ import { userAtom } from "@/lib/states";
 import { getSignInNonce, refreshSignInState, supabase } from "@/lib/supabase";
 
 export default function SignIn() {
-	const rootNavigation = useNavigationContainerRef();
-
 	const colorScheme = useColorScheme();
 	const router = useRouter();
 	const isFocused = useIsFocused();
@@ -114,9 +112,7 @@ export default function SignIn() {
 								});
 
 								console.log("User signed in", user.email);
-								rootNavigation.reset({
-									routes: [{ name: "(tabs)" }]
-								});
+								router.replace("/(tabs)");
 							} else {
 								console.error("No id token present");
 							}
@@ -188,9 +184,6 @@ export default function SignIn() {
 						});
 
 						console.log("User signed in with Apple", user.email);
-						rootNavigation.reset({
-							routes: [{ name: "(tabs)" }]
-						});
 						router.replace("/(tabs)");
 					}}
 				/>
