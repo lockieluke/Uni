@@ -75,7 +75,8 @@ export async function translatePhrase(
 		{
 			params: {
 				mode: model
-			}
+			},
+			timeout: 60 * 1000
 		}
 	);
 	const payload = response.data;
