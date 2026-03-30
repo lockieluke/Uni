@@ -6,7 +6,7 @@ import { useEventListener } from "expo";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Link, useNavigationContainerRef, useRouter } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import * as _ from "radashi";
 import { useEffect } from "react";
 import { AppState, Text, TouchableOpacity, useColorScheme, View } from "react-native";
@@ -22,7 +22,7 @@ export default function SignIn() {
 	const router = useRouter();
 	const isFocused = useIsFocused();
 
-	const [user, setUser] = useAtom(userAtom);
+	const user = useAtomValue(userAtom);
 
 	const opacity = useSharedValue(0);
 	const videoAnimatedStyle = useAnimatedStyle(() => ({
@@ -176,13 +176,6 @@ export default function SignIn() {
 							console.error("Error signing in with Apple", error?.message);
 							return;
 						}
-
-						setUser({
-							signedIn: true,
-							user: user,
-							accessToken,
-							tier: "free"
-						});
 
 						await AsyncStorage.setItem("lastSignInProvider", "apple");
 
