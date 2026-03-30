@@ -50,11 +50,11 @@ export default function SignIn() {
 	});
 
 	useEffect(() => {
-		const focusCallback = () => {
+		const subscription = AppState.addEventListener("change", () => {
 			if (AppState.currentState === "active") player.play();
-		};
+		});
 
-		AppState.addEventListener("change", focusCallback);
+		return () => subscription.remove();
 	}, [player]);
 
 	useEffect(() => {
