@@ -53,7 +53,7 @@ export async function refreshSignInState() {
 	}
 
 	const user = session?.user;
-	const isSignedIn = !_.isNullish(user);
+	const isSignedIn = !_.isNullish(user) && _.isString(session?.access_token);
 
 	const defaultStore = getDefaultStore();
 
