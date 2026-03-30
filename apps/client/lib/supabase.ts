@@ -1,13 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin, isNoSavedCredentialFoundResponse } from "@react-native-google-signin/google-signin";
 import { createClient } from "@supabase/supabase-js";
+import { getTierById } from "@uni/api";
 import { CryptoDigestAlgorithm, digestStringAsync } from "expo-crypto";
 import { getDefaultStore } from "jotai";
 import * as _ from "radashi";
+import Purchases from "react-native-purchases";
 import { userAtom } from "@/lib/states";
 import "react-native-url-polyfill/auto";
-import { getTierById } from "@uni/api";
-import Purchases from "react-native-purchases";
 import { getUrlSafeNonce } from "./crypto";
 import { getUserAdditionalData } from "./user";
 
@@ -92,11 +92,15 @@ export async function refreshSignInState() {
 }
 
 export async function signOut() {
+	const lastSignInProvider = await AsyncStorage.getItem("lastSignInProvider");
+
 	try {
-		await Promise.all([supabase.auth.signOut(), GoogleSignin.signOut(), Purchases.logOut()]);
+		await Promise.all([supabase.auth.signOut(), lastSignInProvider === "google" ? GoogleSignin.signOut() : async () => {}, Purchases.logOut()]);
 	} catch (error) {
 		console.error("Unable to sign out: ", _.get(error, "message", "unknown error"));
 	}
+
+	AsyncStorage.clear();
 }
 
 // From: https://react-native-google-signin.github.io/docs/security#custom-nonce
