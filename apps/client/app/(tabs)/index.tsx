@@ -10,7 +10,7 @@ import { RESET } from "jotai/utils";
 import * as async from "modern-async";
 import { MotiText, MotiView } from "moti";
 import * as _ from "radashi";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Unless, When } from "react-if";
 import { Platform, Text, useWindowDimensions, View } from "react-native";
 import { useMMKVStorage } from "react-native-mmkv-storage";
@@ -34,7 +34,7 @@ export default function HomeScreen() {
 
 	const [flipGuestLanguage] = useMMKVStorage("flipGuestLang", mmkvStorage, false);
 	const [liquidGlassEnabled] = useMMKVStorage("liquidGlassEnabled", mmkvStorage, isLiquidGlassAvailable());
-	const [cachedAudioPaths, setCachedAudioPaths] = useMMKVStorage<string[]>("cachedAudioPaths", mmkvStorage, []);
+	const cachedAudioPaths = useRef<string[]>([]);
 
 	const [translationState, setTranslationState] = useState<"idle" | "translating" | "transcripting">("idle");
 	const [transcriptionPreview, setTranscriptionPreview] = useState<string[]>([]);
@@ -66,7 +66,7 @@ export default function HomeScreen() {
 
 			await _.sleep(recordingDelay);
 
-			setCachedAudioPaths((prevPaths) => (prevPaths.some((path) => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]));
+			if (!cachedAudioPaths.current.includes(event.fileUri)) cachedAudioPaths.current.push(event.fileUri);
 
 			const currentPreviewChunkIndex = previewChunkIndexRef.current;
 			let finalReceived = false;
@@ -116,12 +116,34 @@ export default function HomeScreen() {
 		]);
 		setSpeechReady(requestedPermission.granted ? "granted" : "denied");
 
+		await cleanupAudioFiles();
+
 		SplashScreen.hide();
+
+		return () => cleanupAudioFiles();
 	}, []);
 
 	useEffect(() => {
 		if (translationState !== "transcripting") setTranscriptionPreview([]);
 	}, [translationState]);
+
+	const cleanupAudioFiles = useCallback(async () => {
+		await async.asyncForEach(
+			cachedAudioPaths.current,
+			(path) => {
+				const file = new File(path);
+				if (file.exists) {
+					try {
+						file.delete();
+					} catch (error) {
+						console.error("Error deleting cached audio file:", _.get(error, "message"));
+					}
+				}
+			},
+			10
+		);
+		cachedAudioPaths.current = [];
+	}, []);
 
 	return (
 		<SafeAreaView className={cn("flex-1 justify-center items-center bg-white dark:bg-black")}>
@@ -300,21 +322,7 @@ export default function HomeScreen() {
 									"opacity-0": translationState === "translating"
 								})}
 								onPressIn={async () => {
-									await async.asyncForEach(
-										cachedAudioPaths,
-										(path) => {
-											const file = new File(path);
-											if (file.exists) {
-												try {
-													file.delete();
-												} catch (error) {
-													console.error("Error deleting cached audio file:", _.get(error, "message"));
-												}
-											}
-										},
-										10
-									);
-									setCachedAudioPaths([]);
+									await cleanupAudioFiles();
 
 									setTranscriptionPreview([]);
 									previewChunkIndexRef.current = 0;
