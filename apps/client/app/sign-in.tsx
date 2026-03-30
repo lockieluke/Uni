@@ -5,6 +5,7 @@ import { useIsFocused, usePreventRemove } from "@react-navigation/core";
 import { useEventListener } from "expo";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Link, useRouter } from "expo-router";
+import * as Updates from "expo-updates";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useAtomValue } from "jotai";
 import * as _ from "radashi";
@@ -194,6 +195,7 @@ export default function SignIn() {
 						lockie.dev
 					</Link>{" "}
 					product
+					{!__DEV__ && !Updates.isEmbeddedLaunch ? `∙ ${Updates.channel} ${Updates.updateId}` : ""}
 				</Text>
 			</View>
 		</View>

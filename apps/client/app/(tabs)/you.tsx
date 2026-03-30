@@ -6,6 +6,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { isTestFlight } from "expo-testflight";
+import * as Updates from "expo-updates";
 import { useAtom, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { MotiProgressBar } from "moti";
@@ -159,6 +160,12 @@ export default function YouScreen() {
 				>
 					Sign Out
 				</ColumnTrigger>
+
+				<When condition={!__DEV__ && !Updates.isEmbeddedLaunch}>
+					<ColumnTrigger>
+						{Updates.channel} ∙ ${Updates.manifest.id} ∙ ${Updates.updateId}
+					</ColumnTrigger>
+				</When>
 			</ScrollView>
 		</SafeAreaView>
 	);
