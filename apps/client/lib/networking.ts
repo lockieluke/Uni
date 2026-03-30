@@ -1,12 +1,15 @@
 import { decode } from "@msgpack/msgpack";
 import axios from "axios";
+import { isTestFlight } from "expo-testflight";
 import { getDefaultStore } from "jotai";
 import * as _ from "radashi";
 import { userAtom } from "./states";
 import { mmkvStorage } from "./storage";
 
 export const UNI_API_BASE_URL =
-	mmkvStorage.getBool("useDevServer") && __DEV__ ? (mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787") : "https://uni-api.lockie.dev";
+	mmkvStorage.getBool("useDevServer") && (__DEV__ || isTestFlight)
+		? (mmkvStorage.getString("devServerUrl") ?? "http://127.0.0.1:8787")
+		: "https://uni-api.lockie.dev";
 
 const uniApi = axios.create({
 	baseURL: UNI_API_BASE_URL,
