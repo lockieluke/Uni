@@ -62,9 +62,9 @@ export default function HomeScreen() {
 		onAudioStream: async (event) => {
 			if (event.data.length === 0 || blockingNewAudioStream.current) return;
 
-			await _.sleep(recordingDelay);
-
 			blockingNewAudioStream.current = true;
+
+			await _.sleep(recordingDelay);
 
 			setCachedAudioPaths((prevPaths) => (prevPaths.some((path) => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]));
 
