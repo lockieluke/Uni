@@ -41,6 +41,7 @@ export default function HomeScreen() {
 	const [speechReady, setSpeechReady] = useState<"unknown" | "denied" | "granted">("unknown");
 
 	const blockingNewAudioStream = useRef(false);
+	const previewChunkIndexRef = useRef(0);
 
 	const bottomTabHeight = dimensions.height * 0.18;
 	const recordingDelay = 80;
@@ -67,9 +68,10 @@ export default function HomeScreen() {
 
 			setCachedAudioPaths((prevPaths) => (prevPaths.some((path) => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]));
 
-			const currentPreviewChunkIndex = transcriptionPreview.length;
+			const currentPreviewChunkIndex = previewChunkIndexRef.current++;
+			let finalReceived = false;
 			const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", (transcription) => {
-				if (_.isNullish(transcripted)) {
+				if (!finalReceived) {
 					setTranscriptionPreview((prevPreviews) =>
 						_.isNullish(prevPreviews.at(currentPreviewChunkIndex))
 							? [...prevPreviews, transcription]
@@ -84,8 +86,11 @@ export default function HomeScreen() {
 					);
 				}
 			});
+			finalReceived = true;
+
 			if (transcriptionErr) {
 				console.error("Error transcribing in realtime:", transcriptionErr.message);
+				blockingNewAudioStream.current = false;
 				return;
 			}
 
@@ -308,6 +313,7 @@ export default function HomeScreen() {
 									setCachedAudioPaths([]);
 
 									setTranscriptionPreview([]);
+									previewChunkIndexRef.current = 0;
 									setTranslationState("transcripting");
 
 									try {

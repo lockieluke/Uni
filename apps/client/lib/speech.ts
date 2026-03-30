@@ -29,7 +29,6 @@ export async function transcriptRealtime(
 			method: "POST",
 			body: formData,
 			headers: {
-				"Content-Type": "application/x-msgpack",
 				"User-Agent": "Uni/1.0.0",
 				Authorization: `Bearer ${accessToken}`
 			},
