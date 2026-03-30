@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GoogleSignin, isNoSavedCredentialFoundResponse } from "@react-native-google-signin/google-signin";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type Session, type User } from "@supabase/supabase-js";
 import { getTierById } from "@uni/api";
 import { CryptoDigestAlgorithm, digestStringAsync } from "expo-crypto";
 import { getDefaultStore } from "jotai";
@@ -23,7 +23,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 	}
 });
 
-export async function refreshSignInState() {
+export async function refreshSignInState(options?: { session: Session; user: User }) {
 	const lastSignInProvider = await AsyncStorage.getItem("lastSignInProvider");
 
 	if (lastSignInProvider === "google") {
@@ -43,16 +43,14 @@ export async function refreshSignInState() {
 			return false;
 	}
 
-	const {
-		data: { session },
-		error
-	} = await supabase.auth.getSession();
+	const { data, error } = await supabase.auth.getSession();
 	if (error) {
 		console.error("Error getting user:", error);
 		return false;
 	}
 
-	const user = session?.user;
+	const session = options?.session ?? data.session;
+	const user = options?.user ?? session?.user;
 	const isSignedIn = !_.isNullish(user) && _.isString(session?.access_token);
 
 	const defaultStore = getDefaultStore();

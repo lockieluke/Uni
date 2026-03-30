@@ -93,7 +93,7 @@ export default function SignIn() {
 
 							if (isSuccessResponse(response) && token) {
 								const {
-									data: { user },
+									data: { user, session },
 									error
 								} = await supabase.auth.signInWithIdToken({
 									provider: "google",
@@ -108,7 +108,10 @@ export default function SignIn() {
 
 								await AsyncStorage.setItem("lastSignInProvider", "google");
 
-								await refreshSignInState();
+								await refreshSignInState({
+									user,
+									session
+								});
 
 								console.log("User signed in", user.email);
 								rootNavigation.reset({
@@ -167,7 +170,7 @@ export default function SignIn() {
 
 						const {
 							error,
-							data: { user }
+							data: { user, session }
 						} = await supabase.auth.signInWithIdToken({
 							provider: "apple",
 							token: credentials.identityToken
@@ -179,7 +182,10 @@ export default function SignIn() {
 
 						await AsyncStorage.setItem("lastSignInProvider", "apple");
 
-						await refreshSignInState();
+						await refreshSignInState({
+							user,
+							session
+						});
 
 						console.log("User signed in with Apple", user.email);
 						rootNavigation.reset({
