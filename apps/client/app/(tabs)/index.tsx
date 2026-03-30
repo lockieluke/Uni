@@ -183,7 +183,7 @@ export default function HomeScreen() {
 								</MotiView>
 							</Unless>
 
-							<When condition={translationState === "transcripting" || translationState === "translating"}>
+							<When condition={translationState !== "idle"}>
 								<MotiView
 									from={{
 										opacity: 0
@@ -290,11 +290,15 @@ export default function HomeScreen() {
 									}}
 									className="text-t-primary my-5"
 								>
-									Release when phrase has been fully transcribed
+									Release when phrase transcribed has been fully appeared
 								</MotiText>
 							</When>
 
 							<TranscriptButton
+								disabled={translationState === "translating"}
+								className={cn({
+									"opacity-0": translationState === "translating"
+								})}
 								onPressIn={async () => {
 									await async.asyncForEach(
 										cachedAudioPaths,
@@ -333,6 +337,7 @@ export default function HomeScreen() {
 
 												if (result) {
 													setTranslations(RESET);
+													setTranslationState("translating");
 
 													const hostLanguageCode = languages.host.code;
 													const guestLanguageCode = languages.guest.code;
@@ -370,6 +375,7 @@ export default function HomeScreen() {
 
 															const title = await summariseConversation([...translations.conversation, newConversationEntry]);
 
+															setTranslationState("idle");
 															setTranslations((prevTranslations) => ({
 																host: languages.host.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,
 																guest: languages.guest.code === sourceLanguage ? pretranslatedPhrase : translatedPhrase,

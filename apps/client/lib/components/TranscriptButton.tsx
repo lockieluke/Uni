@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import AnimatedTouchable from "./AnimatedTouchable";
 
 export default function TranscriptButton({
+	disabled = false,
 	className,
 	onPressIn,
 	onPressOut
 }: {
+	disabled?: boolean;
 	className?: string;
 	onPressIn?: () => void;
 	onPressOut?: () => void;
@@ -22,6 +24,7 @@ export default function TranscriptButton({
 
 	return (
 		<AnimatedTouchable
+			disabled={disabled}
 			activeOpacity={1}
 			onPressIn={() => {
 				scale.value = 0.9;
