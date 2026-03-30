@@ -15,7 +15,9 @@ const transcriptRouter = new Hono<THono>();
 
 transcriptRouter.use("/", async (c, next) => {
 	await next();
-	await incrementUsage(c, "speech_translation");
+	if (c.res.status >= 200 && c.res.status < 300) {
+		await incrementUsage(c, "speech_translation");
+	}
 });
 
 transcriptRouter.post("/", async (c) => {
@@ -131,38 +133,53 @@ transcriptRouter.post("/", async (c) => {
 	}
 
 	if (provider === "openai") {
-		const { text } = await openai.audio.transcriptions.create({
-			file,
-			model: transcriptionModel[mode],
-			response_format: "json",
-			temperature: 0
-		});
+		try {
+			const { text } = await openai.audio.transcriptions.create({
+				file,
+				model: transcriptionModel[mode],
+				response_format: "json",
+				temperature: 0
+			});
 
-		const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
-		if (c.env.DEV) console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
+			const transcriptTiming = dayjs().diff(transcriptStart, "millisecond");
+			if (c.env.DEV) console.log(`Transcribing file ${file.name} took ${transcriptTiming}ms`);
 
-		endTime(c, "transcription");
+			endTime(c, "transcription");
 
-		if (!text) {
+			if (!text) {
+				throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
+					res: withMsgpack(
+						{
+							error: {
+								message: "No text found in response"
+							}
+						},
+						c
+					)
+				});
+			}
+
+			return withMsgpack(
+				{
+					transcript: text,
+					timing: transcriptTiming
+				},
+				c
+			);
+		} catch (error) {
+			if (error instanceof HTTPException) throw error;
+			console.error("Error during transcription:", error);
 			throw new HTTPException(StatusCodes.INTERNAL_SERVER_ERROR, {
 				res: withMsgpack(
 					{
 						error: {
-							message: "No text found in response"
+							message: error instanceof Error ? error.message : "An error occurred during transcription"
 						}
 					},
 					c
 				)
 			});
 		}
-
-		return withMsgpack(
-			{
-				transcript: text,
-				timing: transcriptTiming
-			},
-			c
-		);
 	}
 
 	if (provider === "openai-realtime") {
