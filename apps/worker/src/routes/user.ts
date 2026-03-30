@@ -121,7 +121,7 @@ userRouter.get("/", async (c) => {
 		});
 	}
 
-	const { tier } = await updateUserTier(id, c);
+	// const { tier } = await updateUserTier(id, c);
 
 	const { error, data } = await supabase.from("users").select("*").eq("id", id).single();
 	if (error) {
@@ -138,6 +138,7 @@ userRouter.get("/", async (c) => {
 		});
 	}
 
+	const tier = data.tier as 0 | 1 | 2;
 	const speechTranslationLimit = UniMonthlyLimits["speech_translation"][getTierById(tier)];
 	const speechTranslationUsage = await getUsage(c, "speech_translation");
 
