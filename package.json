@@ -19,6 +19,9 @@
 	"peerDependencies": {
 		"typescript": "^5"
 	},
+	"engines": {
+		"bun": "1.3.10"
+	},
 	"trustedDependencies": [
 		"bufferutil",
 		"core-js-pure",
