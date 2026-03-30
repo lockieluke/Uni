@@ -8,6 +8,7 @@ import * as _ from "radashi";
 import Purchases from "react-native-purchases";
 import { userAtom } from "@/lib/states";
 import "react-native-url-polyfill/auto";
+import { isTestFlight } from "expo-testflight";
 import { getUrlSafeNonce } from "./crypto";
 import { getUserAdditionalData } from "./user";
 
@@ -63,18 +64,20 @@ export async function refreshSignInState(options?: { session: Session; user: Use
 	}));
 
 	const email = user?.email;
-	if (email)
+	if (email && !isTestFlight)
 		await Purchases.setAttributes({
 			email
 		});
 
 	if (user) {
-		const { created } = await Purchases.logIn(user.id);
-		const appUserId = await Purchases.getAppUserID();
-		if (created) console.log(`Created new RevenueCat user with ID: ${appUserId}`);
-		else console.log(`Logged in to RevenueCat with existing user ID: ${appUserId}`);
+		if (!isTestFlight) {
+			const { created } = await Purchases.logIn(user.id);
+			const appUserId = await Purchases.getAppUserID();
+			if (created) console.log(`Created new RevenueCat user with ID: ${appUserId}`);
+			else console.log(`Logged in to RevenueCat with existing user ID: ${appUserId}`);
 
-		await Purchases.syncPurchases();
+			await Purchases.syncPurchases();
+		}
 
 		const { tier, limits } = await getUserAdditionalData();
 		if (isSignedIn) {

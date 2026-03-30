@@ -22,6 +22,7 @@ import { mmkvStorage } from "@/lib/storage";
 import { refreshSignInState } from "@/lib/supabase";
 import "react-native-reanimated";
 import "./global.css";
+import { isTestFlight } from "expo-testflight";
 
 cssInterop(Image, { className: "style" });
 cssInterop(LinearGradient, { className: "style" });
@@ -51,13 +52,15 @@ export default function RootLayout() {
 	useAsyncEffect(async () => {
 		if (__DEV__) await Purchases.setLogLevel(LOG_LEVEL.ERROR);
 
-		Purchases.configure({
-			apiKey: !__DEV__
-				? `${Platform.select({
-						ios: `${process.env.EXPO_PUBLIC_REVENUECAT_API_PROD_IOS}`
-					})}`
-				: `${process.env.EXPO_PUBLIC_REVENUECAT_API_DEBUG}`
-		});
+		if (!isTestFlight) {
+			Purchases.configure({
+				apiKey: !__DEV__
+					? `${Platform.select({
+							ios: `${process.env.EXPO_PUBLIC_REVENUECAT_API_PROD_IOS}`
+						})}`
+					: `${process.env.EXPO_PUBLIC_REVENUECAT_API_DEBUG}`
+			});
+		}
 
 		const isSignedIn = await refreshSignInState();
 

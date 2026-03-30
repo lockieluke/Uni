@@ -5,6 +5,7 @@ import * as Clipboard from "expo-clipboard";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { isTestFlight } from "expo-testflight";
 import { useAtom, useSetAtom } from "jotai";
 import { RESET } from "jotai/utils";
 import { MotiProgressBar } from "moti";
@@ -64,6 +65,8 @@ export default function YouScreen() {
 			<ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerClassName="flex-center my-5 gap-y-5 pb-5">
 				<ColumnTrigger
 					onPress={async () => {
+						if (isTestFlight) return;
+
 						const [err, result] = await _.tryit(RevenueCatUI.presentPaywall)();
 						if (result === PAYWALL_RESULT.CANCELLED) return;
 
@@ -103,7 +106,7 @@ export default function YouScreen() {
 				</ColumnTrigger>
 				<ColumnTrigger
 					onPress={async () => {
-						await Purchases.showManageSubscriptions();
+						if (!isTestFlight) await Purchases.showManageSubscriptions();
 					}}
 				>
 					<Text className="text-t-primary">Manage Subscription</Text>
