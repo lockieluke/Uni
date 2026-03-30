@@ -68,7 +68,7 @@ export default function HomeScreen() {
 
 			setCachedAudioPaths((prevPaths) => (prevPaths.some((path) => path === event.fileUri) ? [...prevPaths] : [...prevPaths, event.fileUri]));
 
-			const currentPreviewChunkIndex = previewChunkIndexRef.current++;
+			const currentPreviewChunkIndex = previewChunkIndexRef.current;
 			let finalReceived = false;
 			const [transcriptionErr, transcripted] = await _.tryit(transcriptRealtime)(event.fileUri, "accurate", (transcription) => {
 				if (!finalReceived) {
